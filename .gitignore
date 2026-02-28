@@ -1,0 +1,30 @@
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.rhp
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

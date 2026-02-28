@@ -1,5 +1,7 @@
 # Rhino AIRenderer
 Rhino 插件：通过截图调用 Gemini Nano Banana API 进行图生图渲染。
+<img width="1737" height="1090" alt="b31e9cdee58ec7bf6f3a84ab4c7589f8" src="https://github.com/user-attachments/assets/1532692d-f689-4a62-8964-c07aaa9a598e" />
+
 
 ## 功能
 

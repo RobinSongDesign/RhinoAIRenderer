@@ -4,10 +4,13 @@ using Rhino;
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 
 namespace AIRenderer.ViewModels
 {
@@ -22,16 +25,36 @@ namespace AIRenderer.ViewModels
         private bool _hasSourceImage;
         private bool _hasResultImage;
 
-        public AIRenderViewModel()
+        public AIRenderViewModel() : this("", "gemini-3-pro-image-preview")
+        {
+        }
+
+        public AIRenderViewModel(string apiKey, string selectedModel)
         {
             _apiService = new GeminiAPIService();
             _settings = new RenderSettings();
+
+            // Apply pre-loaded settings
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                Settings.ApiKey = apiKey;
+            }
+            if (!string.IsNullOrEmpty(selectedModel))
+            {
+                Settings.SelectedModel = selectedModel;
+            }
 
             // Initialize commands
             CaptureCommand = new RelayCommand(CaptureScreen, () => !IsGenerating);
             GenerateCommand = new RelayCommand(async () => await GenerateImageAsync(), CanGenerate);
             ClearCommand = new RelayCommand(ClearAll, () => !IsGenerating);
             SaveResultCommand = new RelayCommand(SaveResult, () => HasResultImage);
+            UseResultAsSourceCommand = new RelayCommand(UseResultAsSource, () => HasResultImage);
+        }
+
+        private void SaveSettings()
+        {
+            SettingsService.SaveSettings(Settings.ApiKey, Settings.SelectedModel);
         }
 
         public RenderSettings Settings
@@ -116,6 +139,7 @@ namespace AIRenderer.ViewModels
         public ICommand GenerateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SaveResultCommand { get; }
+        public ICommand UseResultAsSourceCommand { get; }
 
         private void CaptureScreen()
         {
@@ -128,6 +152,10 @@ namespace AIRenderer.ViewModels
                 {
                     SourceImage = ScreenCapture.BitmapToBitmapSource(bitmap);
                     ResultImage = null;
+
+                    // Set source dimensions
+                    Settings.SetSourceDimensions(bitmap.Width, bitmap.Height);
+
                     StatusMessage = $"Captured: {bitmap.Width}x{bitmap.Height}";
                     RhinoApp.WriteLine($"Screenshot captured: {bitmap.Width}x{bitmap.Height}");
                 }
@@ -152,6 +180,9 @@ namespace AIRenderer.ViewModels
 
         private async Task GenerateImageAsync()
         {
+            // Save settings before generating
+            SaveSettings();
+
             if (SourceImage == null)
             {
                 StatusMessage = "Please capture a source image first";
@@ -216,16 +247,52 @@ namespace AIRenderer.ViewModels
             try
             {
                 var bitmap = ScreenCapture.BitmapSourceToBitmap(ResultImage);
-                string path = ScreenCapture.SaveToTempFile(bitmap, "result");
-                if (path != null)
+
+                var saveDialog = new SaveFileDialog
                 {
-                    StatusMessage = $"Saved to: {path}";
-                    RhinoApp.WriteLine($"Result saved to: {path}");
+                    Filter = "PNG Image|*.png|JPEG Image|*.jpg|All Files|*.*",
+                    DefaultExt = ".png",
+                    FileName = $"AIRender_{DateTime.Now:yyyyMMdd_HHmmss}"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var format = Path.GetExtension(saveDialog.FileName).ToLower() == ".jpg"
+                        ? System.Drawing.Imaging.ImageFormat.Jpeg
+                        : System.Drawing.Imaging.ImageFormat.Png;
+
+                    bitmap.Save(saveDialog.FileName, format);
+                    StatusMessage = $"Saved to: {saveDialog.FileName}";
+                    RhinoApp.WriteLine($"Result saved to: {saveDialog.FileName}");
                 }
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Save error: {ex.Message}";
+            }
+        }
+
+        private void UseResultAsSource()
+        {
+            if (ResultImage == null) return;
+
+            try
+            {
+                // Copy result to source
+                SourceImage = ResultImage;
+                ResultImage = null;
+
+                // Update dimensions
+                if (SourceImage != null)
+                {
+                    Settings.SetSourceDimensions((int)SourceImage.Width, (int)SourceImage.Height);
+                }
+
+                StatusMessage = "Result copied to source";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
             }
         }
 

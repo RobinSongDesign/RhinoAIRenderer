@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIRenderer.Views"
         mc:Ignorable="d"
-        Title="AI Render - Image to Image" Height="700" Width="1000"
+        Title="AI Render - Gemini Nano Banana" Height="700" Width="1000"
         WindowStartupLocation="CenterScreen"
         Background="#F5F5F5">
     <Window.Resources>
@@ -104,7 +104,7 @@
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="380"/>
             </Grid.ColumnDefinitions>
 
             <!-- Left Panel - Image Preview -->
@@ -148,7 +148,7 @@
             </Grid>
 
             <!-- Right Panel - Settings -->
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
                 <StackPanel>
                     <!-- Capture Section -->
                     <TextBlock Text="1. CAPTURE" Style="{StaticResource SectionHeaderStyle}"/>
@@ -158,13 +158,15 @@
                     <!-- API Configuration -->
                     <TextBlock Text="2. API CONFIGURATION" Style="{StaticResource SectionHeaderStyle}"/>
 
-                    <TextBlock Text="API URL" Style="{StaticResource LabelStyle}"/>
-                    <TextBox Text="{Binding Settings.ApiUrl, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource InputStyle}"/>
-
                     <TextBlock Text="API Key" Style="{StaticResource LabelStyle}"/>
                     <PasswordBox x:Name="ApiKeyBox" Style="{StaticResource InputStylePass}"
                                  PasswordChanged="ApiKeyBox_PasswordChanged"/>
+                    <TextBlock Margin="0,4,0,0">
+                        <Hyperlink NavigateUri="https://aistudio.google.com/app/apikey"
+                                   RequestNavigate="Hyperlink_RequestNavigate">
+                            Get API KEY
+                        </Hyperlink>
+                    </TextBlock>
 
                     <!-- Generation Parameters -->
                     <TextBlock Text="3. GENERATION PARAMETERS" Style="{StaticResource SectionHeaderStyle}"/>
@@ -176,75 +178,55 @@
                               FontSize="12"
                               Margin="0,0,0,8"/>
 
+                    <!-- Style Template -->
+                    <TextBlock Text="Style Template" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox ItemsSource="{Binding Settings.StyleTemplates}"
+                              SelectedItem="{Binding Settings.SelectedStyle}"
+                              DisplayMemberPath="Name"
+                              Padding="8,6"
+                              FontSize="12"
+                              Margin="0,0,0,8"/>
+
                     <TextBlock Text="Prompt" Style="{StaticResource LabelStyle}"/>
-                    <TextBox Text="{Binding Settings.Prompt, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="PromptTextBox"
+                             Text="{Binding Settings.Prompt, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource InputStyle}"
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
-                             Height="80"
+                             Height="60"
                              VerticalScrollBarVisibility="Auto"/>
 
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <!-- Hidden System Prompt -->
+                    <TextBox x:Name="SystemPromptTextBox"
+                             Text="{Binding Settings.SystemPrompt, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="Collapsed"/>
 
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="Steps" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding Settings.Steps, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputStyle}"/>
-                        </StackPanel>
+                    <!-- Aspect Ratio -->
+                    <TextBlock Text="Aspect Ratio" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox ItemsSource="{Binding Settings.AspectRatios}"
+                              SelectedItem="{Binding Settings.SelectedAspectRatio}"
+                              DisplayMemberPath="Name"
+                              Padding="8,6"
+                              FontSize="12"
+                              Margin="0,0,0,8"/>
 
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="Seed (-1 = random)" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding Settings.Seed, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputStyle}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="Guidance Scale" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding Settings.GuidanceScale, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputStyle}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="Strength (0-1)" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding Settings.Strength, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputStyle}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="Width" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding Settings.Width, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputStyle}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="Height" Style="{StaticResource LabelStyle}"/>
-                            <TextBox Text="{Binding Settings.Height, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputStyle}"/>
-                        </StackPanel>
-                    </Grid>
+                    <!-- Image Size -->
+                    <TextBlock Text="Image Size" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox ItemsSource="{Binding Settings.ImageSizes}"
+                              SelectedItem="{Binding Settings.SelectedImageSize}"
+                              Padding="8,6"
+                              FontSize="12"
+                              Margin="0,0,0,8"/>
 
                     <!-- Generate Button -->
                     <Button Content="Generate Image" Command="{Binding GenerateCommand}"
                             Style="{StaticResource ButtonPrimary}"
                             Margin="0,20,0,8"/>
+
+                    <!-- Save Result Button -->
+                    <Button Content="Save Result" Command="{Binding SaveResultCommand}"
+                            Style="{StaticResource ButtonPrimary}"
+                            Margin="0,0,0,8"/>
 
                     <!-- Action Buttons -->
                     <Grid Margin="0,8,0,0">
@@ -253,7 +235,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="0" Content="Save Result" Command="{Binding SaveResultCommand}"
+                        <Button Grid.Column="0" Content="Use as Source" Command="{Binding UseResultAsSourceCommand}"
                                 Style="{StaticResource ButtonSecondary}" Margin="0,0,4,0"/>
                         <Button Grid.Column="1" Content="Clear All" Command="{Binding ClearCommand}"
                                 Style="{StaticResource ButtonSecondary}" Margin="4,0,0,0"/>

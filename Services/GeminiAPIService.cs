@@ -50,6 +50,13 @@ namespace AIRenderer.Services
                 return null;
             }
 
+            // Combine system prompt with user prompt
+            string fullPrompt = prompt;
+            if (!string.IsNullOrWhiteSpace(settings.SystemPrompt))
+            {
+                fullPrompt = $"{settings.SystemPrompt}\n\n{prompt}";
+            }
+
             try
             {
                 // Convert source image to base64
@@ -58,6 +65,21 @@ namespace AIRenderer.Services
                 // Construct full URL
                 string model = settings.SelectedModel;
                 string fullUrl = $"{baseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
+
+                // Get aspect ratio and image size from settings
+                string aspectRatio = settings.SelectedAspectRatio?.Ratio ?? "";
+                string imageSize = settings.SelectedImageSize ?? "1K";
+
+                // Build imageConfig - only include aspectRatio if specified
+                object imageConfig;
+                if (string.IsNullOrEmpty(aspectRatio))
+                {
+                    imageConfig = new { imageSize = imageSize };
+                }
+                else
+                {
+                    imageConfig = new { aspectRatio = aspectRatio, imageSize = imageSize };
+                }
 
                 // Build the request payload in Gemini format
                 var payload = new
@@ -68,17 +90,23 @@ namespace AIRenderer.Services
                         {
                             parts = new object[]
                             {
-                                new { text = prompt },
+                                new { text = fullPrompt },
                                 new
                                 {
                                     inline_data = new
                                     {
-                                        mime_type = "image/jpeg",
+                                        mime_type = "image/png",
                                         data = imageBase64
                                     }
                                 }
                             }
                         }
+                    },
+                    tools = new[] { new { google_search = new object() } },
+                    generationConfig = new
+                    {
+                        responseModalities = new[] { "TEXT", "IMAGE" },
+                        imageConfig = imageConfig
                     }
                 };
 
@@ -91,8 +119,8 @@ namespace AIRenderer.Services
 
                 RhinoApp.WriteLine($"Calling API: {fullUrl}");
                 RhinoApp.WriteLine($"Model: {model}");
-                RhinoApp.WriteLine($"Prompt: {prompt}");
-                RhinoApp.WriteLine($"Image size: {sourceImage.Width}x{sourceImage.Height}");
+                RhinoApp.WriteLine($"Prompt: {fullPrompt}");
+                RhinoApp.WriteLine($"Aspect Ratio: {aspectRatio}, Image Size: {imageSize}");
 
                 // Make the API request
                 var response = await _httpClient.PostAsync(fullUrl, content);

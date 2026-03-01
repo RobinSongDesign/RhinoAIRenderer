@@ -16,7 +16,7 @@ namespace AIRenderer.ViewModels
 {
     public class AIRenderViewModel : INotifyPropertyChanged
     {
-        private readonly GeminiAPIService _apiService;
+        private readonly AIRenderService _apiService;
         private RenderSettings _settings;
         private BitmapSource _sourceImage;
         private BitmapSource _resultImage;
@@ -25,13 +25,13 @@ namespace AIRenderer.ViewModels
         private bool _hasSourceImage;
         private bool _hasResultImage;
 
-        public AIRenderViewModel() : this("", "gemini-3-pro-image-preview")
+        public AIRenderViewModel() : this("", "gemini-3.1-flash-image-preview", ApiProvider.Gemini)
         {
         }
 
-        public AIRenderViewModel(string apiKey, string selectedModel)
+        public AIRenderViewModel(string apiKey, string selectedModel, ApiProvider selectedProvider)
         {
-            _apiService = new GeminiAPIService();
+            _apiService = new AIRenderService();
             _settings = new RenderSettings();
 
             // Apply pre-loaded settings
@@ -43,6 +43,7 @@ namespace AIRenderer.ViewModels
             {
                 Settings.SelectedModel = selectedModel;
             }
+            Settings.SelectedProvider = selectedProvider;
 
             // Initialize commands
             CaptureCommand = new RelayCommand(CaptureScreen, () => !IsGenerating);
@@ -54,7 +55,7 @@ namespace AIRenderer.ViewModels
 
         private void SaveSettings()
         {
-            SettingsService.SaveSettings(Settings.ApiKey, Settings.SelectedModel);
+            SettingsService.SaveSettings(Settings.ApiKey, Settings.SelectedModel, Settings.SelectedProvider);
         }
 
         public RenderSettings Settings
@@ -204,7 +205,7 @@ namespace AIRenderer.ViewModels
                 var sourceBitmap = ScreenCapture.BitmapSourceToBitmap(SourceImage);
 
                 var resultBitmap = await _apiService.GenerateImageAsync(
-                    Settings.ApiUrl,
+                    Settings.SelectedProvider,
                     Settings.ApiKey,
                     Settings.Prompt,
                     sourceBitmap,

@@ -1,0 +1,144 @@
+<Window x:Class="AIRenderer.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="API Settings" Height="450" Width="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#F5F5F5">
+    <Window.Resources>
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,10,0,5"/>
+            <Setter Property="Foreground" Value="#333"/>
+        </Style>
+        <Style x:Key="InputStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderBrush" Value="#CCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <Style x:Key="InputStylePass" TargetType="PasswordBox">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderBrush" Value="#CCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <Style x:Key="ButtonPrimary" TargetType="Button">
+            <Setter Property="Background" Value="#4A90D9"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3A7BC8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock x:Name="TitleText" Text="API Settings" FontSize="18" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,15"/>
+
+            <!-- Provider -->
+            <TextBlock Text="Service Provider" Style="{StaticResource LabelStyle}"/>
+            <ComboBox x:Name="ProviderComboBox"
+                      ItemsSource="{Binding AvailableProviders}"
+                      SelectedItem="{Binding SelectedProviderConfig}"
+                      DisplayMemberPath="DisplayName"
+                      Style="{StaticResource InputStyle}"
+                      SelectionChanged="ProviderComboBox_SelectionChanged"/>
+
+            <!-- API Key -->
+            <TextBlock Text="API Key" Style="{StaticResource LabelStyle}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <PasswordBox x:Name="ApiKeyBox"
+                             Grid.Column="0"
+                             Style="{StaticResource InputStylePass}"
+                             PasswordChanged="ApiKeyBox_PasswordChanged"/>
+                <Button x:Name="TestApiKeyButton" Grid.Column="1"
+                        Content="Test" Click="TestApiKey_Click"
+                        Padding="12,6" Margin="8,0,0,0"
+                        Background="#4A90D9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#3A7BC8"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#CCC"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+            <TextBlock Margin="0,4,0,0">
+                <Hyperlink x:Name="ApiKeyLink"
+                           NavigateUri="{Binding SelectedProviderConfig.ApiKeyUrl}"
+                           RequestNavigate="Hyperlink_RequestNavigate">
+                    Get API KEY
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock x:Name="TestResultText" Margin="0,8,0,0" FontSize="11"/>
+
+            <!-- API URL (Read-only) -->
+            <TextBlock Text="API URL" Style="{StaticResource LabelStyle}"/>
+            <TextBox x:Name="ApiUrlBox"
+                     Text="{Binding SelectedProviderConfig.BaseUrl, Mode=OneWay}"
+                     IsReadOnly="True"
+                     Padding="8,6"
+                     FontSize="12"
+                     BorderBrush="#DDD"
+                     Background="#FAFAFA"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Cancel" Click="CancelButton_Click"
+                    Padding="20,8" Margin="0,0,10,0"
+                    Background="#E0E0E0" Foreground="#333" BorderThickness="0" Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button Content="Save" Click="SaveButton_Click"
+                    Style="{StaticResource ButtonPrimary}"/>
+        </StackPanel>
+    </Grid>
+</Window>

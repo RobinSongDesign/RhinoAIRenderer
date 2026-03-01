@@ -7,8 +7,9 @@ namespace AIRenderer.Models
 {
     public class RenderSettings : INotifyPropertyChanged
     {
-        private string _apiUrl = "https://generativelanguage.googleapis.com";
+        private ApiProvider _selectedProvider = ApiProvider.BltAI;
         private string _apiKey = "";
+        private string _apiUrl = "";
         private string _prompt = "";
         private string _systemPrompt = "这是一张渲染图，不要更改相机位置、fov，保持图中物体结构和透视的一致性。";
         private string _selectedModel = "gemini-3.1-flash-image-preview";
@@ -20,32 +21,113 @@ namespace AIRenderer.Models
         private int _sourceWidth = 0;
         private int _sourceHeight = 0;
 
-        // Available models - Gemini models (Nano Banana)
-        public List<string> AvailableModels { get; } = new List<string>
-        {
-            "gemini-3.1-flash-image-preview",
-            "gemini-3-pro-image-preview",
-            "gemini-2.5-flash-image"
-        };
+        // Available providers
+        public List<ApiProviderConfig> AvailableProviders { get; } = ApiProviderConfig.GetAllProviders();
 
-        // Model display names
-        public Dictionary<string, string> ModelDisplayNames { get; } = new Dictionary<string, string>
+        // Current provider config
+        private ApiProviderConfig _currentProviderConfig;
+
+        public RenderSettings()
         {
-            { "gemini-3.1-flash-image-preview", "Nano Banana 2" },
-            { "gemini-3-pro-image-preview", "Nano Banana Pro" },
-            { "gemini-2.5-flash-image", "Nano Banana" }
-        };
+            // Initialize with default provider (BltAI)
+            LoadProviderModels(ApiProvider.BltAI);
+        }
+
+        public ApiProvider SelectedProvider
+        {
+            get => _selectedProvider;
+            set
+            {
+                if (_selectedProvider != value)
+                {
+                    _selectedProvider = value;
+                    OnPropertyChanged();
+                    // Load models for the selected provider
+                    LoadProviderModels(value);
+                }
+            }
+        }
+
+        private void LoadProviderModels(ApiProvider provider)
+        {
+            _currentProviderConfig = ApiProviderConfig.GetConfig(provider);
+            if (_currentProviderConfig != null)
+            {
+                AvailableModels = _currentProviderConfig.Models;
+                ModelDisplayNames = _currentProviderConfig.ModelDisplayNames;
+                // Build model list with display names
+                ModelList = new List<ModelItem>();
+                foreach (var model in _currentProviderConfig.Models)
+                {
+                    string displayName = model;
+                    if (_currentProviderConfig.ModelDisplayNames != null &&
+                        _currentProviderConfig.ModelDisplayNames.TryGetValue(model, out var name))
+                    {
+                        displayName = name;
+                    }
+                    ModelList.Add(new ModelItem { DisplayName = displayName, Model = model });
+                }
+                // Reset to default model
+                SelectedModel = _currentProviderConfig.DefaultModel;
+                // Set SelectedModelItem to match
+                foreach (var item in ModelList)
+                {
+                    if (item.Model == SelectedModel)
+                    {
+                        _selectedModelItem = item;
+                        break;
+                    }
+                }
+                // Update API URL
+                _apiUrl = _currentProviderConfig.BaseUrl;
+            }
+            OnPropertyChanged(nameof(AvailableModels));
+            OnPropertyChanged(nameof(ModelDisplayNames));
+            OnPropertyChanged(nameof(SelectedProviderDisplayName));
+            OnPropertyChanged(nameof(SelectedModelDisplayName));
+            OnPropertyChanged(nameof(ApiUrl));
+            OnPropertyChanged(nameof(ModelList));
+            OnPropertyChanged(nameof(SelectedModelItem));
+        }
+
+        // Display names for UI
+        public string SelectedProviderDisplayName => _currentProviderConfig?.DisplayName ?? "Gemini";
+        public string SelectedModelDisplayName
+        {
+            get
+            {
+                if (_currentProviderConfig?.ModelDisplayNames != null &&
+                    _currentProviderConfig.ModelDisplayNames.TryGetValue(_selectedModel, out var displayName))
+                {
+                    return displayName;
+                }
+                return _selectedModel;
+            }
+        }
+
+        // Available models for current provider
+        public List<string> AvailableModels { get; private set; } = new List<string>();
+
+        // Model list with display names
+        public List<ModelItem> ModelList { get; private set; } = new List<ModelItem>();
+
+        // Model display names for current provider
+        public Dictionary<string, string> ModelDisplayNames { get; private set; } = new Dictionary<string, string>();
 
         // Preset style templates
         public List<StyleTemplate> StyleTemplates { get; } = new List<StyleTemplate>
         {
             new StyleTemplate { Name = "Custom", Prompt = "" },
-            new StyleTemplate { Name = "Architectural Render", Prompt = "Architectural render, high quality, 4K, realistic lighting, white background" },
-            new StyleTemplate { Name = "MIR Style", Prompt = "MIR render style, architectural visualization, cinematic, unreal engine 5" },
-            new StyleTemplate { Name = "Sketch", Prompt = "Architectural sketch, hand drawn, pencil style, white paper" },
-            new StyleTemplate { Name = "Cyberpunk", Prompt = "Cyberpunk style, neon lights, futuristic, dark atmosphere" },
-            new StyleTemplate { Name = "Minimalist", Prompt = "Minimalist design, clean lines, white background, modern architecture" },
-            new StyleTemplate { Name = "Interior", Prompt = "Loft style, industrial, exposed brick, vintage furniture" }
+            new StyleTemplate { Name = "建筑渲染", Prompt = "Professional architectural rendering with photorealistic lighting, high dynamic range (HDR), ambient occlusion, soft shadows, depth of field, ultra-detailed textures, 4K resolution, clean white background or neutral gray studio backdrop, architectural photography style with proper perspective and vanishing points" },
+            new StyleTemplate { Name = "MIR风格", Prompt = "MIR architectural visualization style, cinematic rendering, moody atmosphere with dramatic lighting, high contrast, photorealistic finish, unreal engine 5 quality, architectural magazine editorial style, wide angle lens perspective, hyper-detailed render with lens flare and bloom effects" },
+            new StyleTemplate { Name = "手绘草图", Prompt = "Architectural sketch rendered in realistic hand-drawn graphite pencil technique on textured paper, architectural line drawing with proper proportions, architectural presentation sketch style, loose gestural strokes, cross-hatching for shading, sketchbook aesthetic, white or cream paper background" },
+            new StyleTemplate { Name = "赛博朋克", Prompt = "Cyberpunk aesthetic with neon lighting, reflective wet surfaces, holographic billboards, volumetric fog, dramatic low-angle shot, futuristic cityscape at night, cinematic color grading with cyan and magenta accents, Blade Runner inspired atmosphere, high contrast, lens flare, bokeh" },
+            new StyleTemplate { Name = "极简主义", Prompt = "Minimalist architectural photography, clean geometric compositions, abundant negative space, soft natural lighting from large windows, monochrome or neutral color palette, high-key studio lighting, Hasselblad medium format camera quality, architectural digest editorial style, pristine white backgrounds" },
+            new StyleTemplate { Name = "室内设计", Prompt = "Interior design photography with warm ambient lighting, golden hour natural light streaming through windows, cozy atmosphere, professional interior magazine shoot, depth of field with subject in focus and blurred background, 35mm lens perspective, lifestyle photography style, high-end residential interior, proper white balance" },
+            new StyleTemplate { Name = "写实摄影", Prompt = "Professional architectural photography shot with Canon EOS R5 or Sony A7R V, 24-70mm f/2.8 lens, proper exposure with f/8 for maximum sharpness, perspective correction, architectural tripod setup, neutral density filters for long exposure, hyperfocal distance focusing, commercial real estate photography style" },
+            new StyleTemplate { Name = "黄昏氛围", Prompt = "Golden hour architectural photography with warm sunset lighting casting long dramatic shadows, sky gradient from orange to purple, silhouette effect, romantic mood, cinematic landscape photography, time-lapse inspired aesthetic, professional architectural twilight shot, warm color temperature around 3200K" },
+            new StyleTemplate { Name = "水彩画", Prompt = "Watercolor painting illustration style, soft bleeding colors, wet-on-wet technique, architectural subject rendered in artistic watercolor, light and airy palette, delicate brush strokes, textured watercolor paper background, architectural illustration in art gallery style" },
+            new StyleTemplate { Name = "电影海报", Prompt = "Movie poster style composition, dramatic cinematic lighting, shallow depth of field, subject framed as hero, cinematic color grading with teal and orange tones, film grain texture, anamorphic lens flare, epic wide shot, IMAX aspect ratio, Hollywood movie production quality" }
         };
 
         private StyleTemplate _selectedStyle;
@@ -69,7 +151,7 @@ namespace AIRenderer.Models
             set { _selectedAspectRatio = value; OnPropertyChanged(); }
         }
 
-        private string _selectedImageSize = "1024x1024";
+        private string _selectedImageSize = "1K";
         public string SelectedImageSize
         {
             get => _selectedImageSize;
@@ -100,6 +182,22 @@ namespace AIRenderer.Models
         }
 
         // Properties
+        private ModelItem _selectedModelItem;
+        public ModelItem SelectedModelItem
+        {
+            get => _selectedModelItem;
+            set
+            {
+                _selectedModelItem = value;
+                if (value != null)
+                {
+                    _selectedModel = value.Model;
+                }
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedModel));
+            }
+        }
+
         public string SelectedModel
         {
             get => _selectedModel;
@@ -180,5 +278,11 @@ namespace AIRenderer.Models
     {
         public string Name { get; set; }
         public string Ratio { get; set; }
+    }
+
+    public class ModelItem
+    {
+        public string DisplayName { get; set; }
+        public string Model { get; set; }
     }
 }

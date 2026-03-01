@@ -1,3 +1,4 @@
+using AIRenderer.Models;
 using AIRenderer.Services;
 using AIRenderer.ViewModels;
 using System.Diagnostics;
@@ -16,28 +17,11 @@ namespace AIRenderer.Views
             InitializeComponent();
 
             // Load settings first
-            var (apiKey, selectedModel) = SettingsService.LoadSettings();
+            var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettings();
 
             // Create ViewModel
-            _viewModel = new AIRenderViewModel(apiKey, selectedModel);
+            _viewModel = new AIRenderViewModel(apiKey, selectedModel, selectedProvider);
             DataContext = _viewModel;
-
-            // Set API key in password box after binding is complete
-            Loaded += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(apiKey))
-                {
-                    ApiKeyBox.Password = apiKey;
-                }
-            };
-        }
-
-        private void ApiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
-        {
-            if (sender is PasswordBox passwordBox && _viewModel != null)
-            {
-                _viewModel.Settings.ApiKey = passwordBox.Password;
-            }
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -48,6 +32,24 @@ namespace AIRenderer.Views
                 UseShellExecute = true
             });
             e.Handled = true;
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow
+            {
+                Owner = this
+            };
+
+            if (settingsWindow.ShowDialog() == true)
+            {
+                // Settings were saved, reload them
+                var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettings();
+
+                _viewModel.Settings.ApiKey = apiKey;
+                _viewModel.Settings.SelectedModel = selectedModel;
+                _viewModel.Settings.SelectedProvider = selectedProvider;
+            }
         }
     }
 }

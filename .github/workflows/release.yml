@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'   # 推送 v1.0.0 这样的 tag 时触发
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: windows-latest

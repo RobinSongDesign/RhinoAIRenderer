@@ -3,12 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AIRenderer.Views"
         mc:Ignorable="d"
-        Title="API Settings" Height="450" Width="450"
+        Title="API Settings" Height="560" Width="450"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F5F5F5">
     <Window.Resources>
+        <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+        <local:BoolToVisibilityConverter x:Key="BoolToVis"/>
+
         <Style x:Key="LabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="0,10,0,5"/>
@@ -52,6 +56,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -63,14 +90,42 @@
         <StackPanel Grid.Row="0">
             <TextBlock x:Name="TitleText" Text="API Settings" FontSize="18" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,15"/>
 
-            <!-- Provider -->
+            <!-- Provider row: Add / Edit / Delete -->
             <TextBlock Text="Service Provider" Style="{StaticResource LabelStyle}"/>
-            <ComboBox x:Name="ProviderComboBox"
-                      ItemsSource="{Binding AvailableProviders}"
-                      SelectedItem="{Binding SelectedProviderConfig}"
-                      DisplayMemberPath="DisplayName"
-                      Style="{StaticResource InputStyle}"
-                      SelectionChanged="ProviderComboBox_SelectionChanged"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="ProviderComboBox"
+                          Grid.Column="0"
+                          ItemsSource="{Binding AvailableProviders}"
+                          SelectedItem="{Binding SelectedProviderConfig}"
+                          DisplayMemberPath="DisplayName"
+                          Style="{StaticResource InputStyle}"
+                          SelectionChanged="ProviderComboBox_SelectionChanged"/>
+                <Button x:Name="AddProviderButton" Grid.Column="1"
+                        Content="+" ToolTip="Add custom provider"
+                        Background="#4A90D9" Foreground="White"
+                        Margin="6,0,0,0"
+                        Style="{StaticResource IconButton}"
+                        Click="AddProviderButton_Click"/>
+                <Button x:Name="EditProviderButton" Grid.Column="2"
+                        Content="✎" ToolTip="Edit this provider"
+                        Background="#6AAF6A" Foreground="White"
+                        Margin="4,0,0,0"
+                        Style="{StaticResource IconButton}"
+                        Click="EditProviderButton_Click"/>
+                <Button x:Name="DeleteProviderButton" Grid.Column="3"
+                        Content="×" ToolTip="Delete this provider"
+                        Background="#E05555" Foreground="White"
+                        Margin="4,0,0,0"
+                        Visibility="{Binding SelectedProviderConfig.IsCustom, Converter={StaticResource BoolToVis}}"
+                        Style="{StaticResource IconButton}"
+                        Click="DeleteProviderButton_Click"/>
+            </Grid>
 
             <!-- API Key -->
             <TextBlock Text="API Key" Style="{StaticResource LabelStyle}"/>
@@ -104,24 +159,34 @@
                     </Button.Template>
                 </Button>
             </Grid>
-            <TextBlock Margin="0,4,0,0">
+
+            <!-- Test model selection -->
+            <TextBlock Text="Test with model" Style="{StaticResource LabelStyle}"/>
+            <ComboBox x:Name="TestModelComboBox"
+                      ItemsSource="{Binding SelectedProviderConfig.Models}"
+                      Style="{StaticResource InputStyle}"/>
+
+            <!-- Get API KEY link — hidden for custom providers -->
+            <TextBlock x:Name="ApiKeyLinkPanel" Margin="0,6,0,0"
+                       Visibility="{Binding SelectedProviderConfig.IsCustom, Converter={StaticResource InverseBoolToVis}}">
                 <Hyperlink x:Name="ApiKeyLink"
                            NavigateUri="{Binding SelectedProviderConfig.ApiKeyUrl}"
                            RequestNavigate="Hyperlink_RequestNavigate">
                     Get API KEY
                 </Hyperlink>
             </TextBlock>
-            <TextBlock x:Name="TestResultText" Margin="0,8,0,0" FontSize="11"/>
+            <TextBlock x:Name="TestResultText" Margin="0,6,0,0" FontSize="11"/>
 
-            <!-- API URL (Read-only) -->
+            <!-- API URL -->
             <TextBlock Text="API URL" Style="{StaticResource LabelStyle}"/>
             <TextBox x:Name="ApiUrlBox"
-                     Text="{Binding SelectedProviderConfig.BaseUrl, Mode=OneWay}"
-                     IsReadOnly="True"
+                     Text="{Binding SelectedProviderConfig.BaseUrl}"
                      Padding="8,6"
                      FontSize="12"
-                     BorderBrush="#DDD"
-                     Background="#FAFAFA"/>
+                     BorderBrush="#CCC"
+                     BorderThickness="1"
+                     IsReadOnly="True"
+                     Background="#F9F9F9"/>
         </StackPanel>
 
         <!-- Buttons -->

@@ -27,6 +27,50 @@ namespace AIRenderer.Models
         // Current provider config
         private ApiProviderConfig _currentProviderConfig;
 
+        // Unified provider item (supports both built-in and custom)
+        private ProviderItem _selectedProviderItem;
+        public ProviderItem SelectedProviderItem
+        {
+            get => _selectedProviderItem;
+            set
+            {
+                _selectedProviderItem = value;
+                if (value != null)
+                {
+                    if (!value.IsCustom && value.BuiltInProvider.HasValue)
+                        _selectedProvider = value.BuiltInProvider.Value;
+                    LoadProviderModelsFromItem(value);
+                }
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedProvider));
+                OnPropertyChanged(nameof(SelectedProviderDisplayName));
+            }
+        }
+
+        private void LoadProviderModelsFromItem(ProviderItem provider)
+        {
+            AvailableModels = provider.Models ?? new List<string>();
+            ModelDisplayNames = new Dictionary<string, string>();
+            ModelList = new List<ModelItem>();
+            foreach (var model in AvailableModels)
+                ModelList.Add(new ModelItem { DisplayName = model, Model = model });
+
+            var targetModel = !string.IsNullOrEmpty(provider.DefaultModel)
+                ? provider.DefaultModel
+                : (AvailableModels.Count > 0 ? AvailableModels[0] : "");
+            SelectedModel = targetModel;
+            _selectedModelItem = ModelList.Find(item => item.Model == SelectedModel);
+            _apiUrl = provider.BaseUrl;
+
+            OnPropertyChanged(nameof(AvailableModels));
+            OnPropertyChanged(nameof(ModelDisplayNames));
+            OnPropertyChanged(nameof(SelectedProviderDisplayName));
+            OnPropertyChanged(nameof(SelectedModelDisplayName));
+            OnPropertyChanged(nameof(ApiUrl));
+            OnPropertyChanged(nameof(ModelList));
+            OnPropertyChanged(nameof(SelectedModelItem));
+        }
+
         public RenderSettings()
         {
             // Initialize with default provider (BltAI)
@@ -91,7 +135,7 @@ namespace AIRenderer.Models
         }
 
         // Display names for UI
-        public string SelectedProviderDisplayName => _currentProviderConfig?.DisplayName ?? "Gemini";
+        public string SelectedProviderDisplayName => _selectedProviderItem?.DisplayName ?? _currentProviderConfig?.DisplayName ?? "Gemini";
         public string SelectedModelDisplayName
         {
             get

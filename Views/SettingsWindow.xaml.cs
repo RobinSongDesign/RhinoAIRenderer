@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,7 +19,8 @@ namespace AIRenderer.Views
 {
     public partial class SettingsWindow : Window, INotifyPropertyChanged
     {
-        private ApiProviderConfig _selectedProviderConfig;
+        private List<ProviderItem> _allProviders;
+        private ProviderItem _selectedProvider;
         private string _selectedModel;
         private readonly HttpClient _httpClient;
 
@@ -28,56 +30,27 @@ namespace AIRenderer.Views
             DataContext = this;
             _httpClient = new HttpClient();
 
-            // Load current settings
-            var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettings();
+            var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettingsWithProvider();
+            _allProviders = SettingsService.GetAllProviders();
 
-            // Find the provider config - default to BltAI (柏拉图AI)
-            var providers = ApiProviderConfig.GetAllProviders();
-            _selectedProviderConfig = providers.Find(p => p.Provider == selectedProvider);
-            if (_selectedProviderConfig == null)
-            {
-                // Default to BltAI if not found
-                _selectedProviderConfig = providers.Find(p => p.Provider == ApiProvider.BltAI) ?? providers[0];
-            }
-
-            // Set model - use loaded model or default
+            _selectedProvider = _allProviders.Find(p => p.Id == selectedProvider.Id) ?? _allProviders[0];
             _selectedModel = selectedModel;
 
-            OnPropertyChanged(nameof(SelectedProviderConfig));
-            OnPropertyChanged(nameof(SelectedModel));
-            OnPropertyChanged(nameof(AvailableModels));
             OnPropertyChanged(nameof(AvailableProviders));
+            OnPropertyChanged(nameof(SelectedProviderConfig));
 
-            // Set combobox selections and load API key after window is loaded
             Loaded += (s, e) =>
             {
-                // Set combobox to the selected provider
                 for (int i = 0; i < ProviderComboBox.Items.Count; i++)
                 {
-                    if ((ProviderComboBox.Items[i] as ApiProviderConfig).Provider == _selectedProviderConfig.Provider)
+                    if ((ProviderComboBox.Items[i] as ProviderItem)?.Id == _selectedProvider?.Id)
                     {
                         ProviderComboBox.SelectedIndex = i;
                         break;
                     }
                 }
-                LoadApiKeyForProvider(_selectedProviderConfig.Provider);
+                LoadApiKeyForProvider(_selectedProvider?.Id ?? "");
             };
-        }
-
-        private void UpdateUIText()
-        {
-            TitleText.Text = "API Settings";
-        }
-
-        private void UpdateApiKeyText()
-        {
-            // Find and update API Key label - need to find the TextBlock
-            // This is a simplified approach
-        }
-
-        private void UpdateTestButtonText()
-        {
-            TestApiKeyButton.Content = Loc.Get("Test");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -87,54 +60,48 @@ namespace AIRenderer.Views
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public List<ApiProviderConfig> AvailableProviders => ApiProviderConfig.GetAllProviders();
+        public List<ProviderItem> AvailableProviders => _allProviders;
 
-        public List<string> AvailableModels => _selectedProviderConfig?.Models ?? new List<string>();
-
-        public ApiProviderConfig SelectedProviderConfig
+        public ProviderItem SelectedProviderConfig
         {
-            get => _selectedProviderConfig;
+            get => _selectedProvider;
             set
             {
-                _selectedProviderConfig = value;
+                if (value == null) return; // ComboBox 刷新 ItemsSource 时会短暂写入 null，忽略
+                _selectedProvider = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(AvailableModels));
             }
         }
 
         public string SelectedModel
         {
             get => _selectedModel;
-            set
-            {
-                _selectedModel = value;
-                OnPropertyChanged();
-            }
+            set { _selectedModel = value; OnPropertyChanged(); }
         }
 
         public string ApiKey => ApiKeyBox.Password;
 
-        public ApiProvider SelectedProvider => _selectedProviderConfig?.Provider ?? ApiProvider.BltAI;
-
-        private void LoadApiKeyForProvider(ApiProvider provider)
+        private void LoadApiKeyForProvider(string providerId)
         {
-            string apiKey = SettingsService.GetApiKey(provider);
-            ApiKeyBox.Password = apiKey ?? "";
+            ApiKeyBox.Password = SettingsService.GetApiKey(providerId) ?? "";
             TestResultText.Text = "";
         }
 
         private void ProviderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ProviderComboBox.SelectedItem is ApiProviderConfig config)
+            if (ProviderComboBox.SelectedItem is ProviderItem provider)
             {
-                _selectedProviderConfig = config;
-                _selectedModel = config.DefaultModel;
+                _selectedProvider = provider;
+                _selectedModel = provider.DefaultModel;
+                ApiUrlBox.Text = provider.BaseUrl;
+                LoadApiKeyForProvider(provider.Id);
+
                 OnPropertyChanged(nameof(SelectedProviderConfig));
                 OnPropertyChanged(nameof(SelectedModel));
-                ApiUrlBox.Text = config.BaseUrl;
 
-                // Load API key for selected provider
-                LoadApiKeyForProvider(config.Provider);
+                // 同步测试模型下拉默认选第一项
+                if (TestModelComboBox.Items.Count > 0)
+                    TestModelComboBox.SelectedIndex = 0;
             }
         }
 
@@ -169,17 +136,9 @@ namespace AIRenderer.Views
 
             try
             {
-                bool isValid = await TestApiKeyAsync(_selectedProviderConfig, apiKey);
-                if (isValid)
-                {
-                    TestResultText.Text = "API Key is valid!";
-                    TestResultText.Foreground = Brushes.Green;
-                }
-                else
-                {
-                    TestResultText.Text = "API Key is invalid";
-                    TestResultText.Foreground = Brushes.Red;
-                }
+                bool isValid = await TestApiKeyAsync(_selectedProvider, apiKey);
+                TestResultText.Text = isValid ? "API Key is valid!" : "API Key is invalid";
+                TestResultText.Foreground = isValid ? Brushes.Green : Brushes.Red;
             }
             catch
             {
@@ -192,54 +151,61 @@ namespace AIRenderer.Views
             }
         }
 
-        private async Task<bool> TestApiKeyAsync(ApiProviderConfig config, string apiKey)
+        private async Task<bool> TestApiKeyAsync(ProviderItem provider, string apiKey)
         {
             try
             {
+                // 优先使用用户在 TestModelComboBox 中选择的模型
+                string selectedTestModel = TestModelComboBox.SelectedItem?.ToString();
+
                 _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-                string model = config.DefaultModel;
-                string url;
+                System.Net.Http.HttpResponseMessage response;
 
-                if (config.Provider == ApiProvider.Gemini)
+                if (provider.ApiFormat == "openai")
                 {
-                    url = $"{config.BaseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
-                    _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+                    // GET /v1/models — 轻量验证，无需发图
+                    string url = $"{provider.BaseUrl.TrimEnd('/')}/v1/models";
+                    response = await _httpClient.GetAsync(url);
                 }
                 else
                 {
-                    url = $"{config.BaseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
-                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+                    // Gemini 格式：POST generateContent
+                    _httpClient.DefaultRequestHeaders.Clear();
+                    string model = selectedTestModel
+                        ?? provider.DefaultModel
+                        ?? (provider.Models.Count > 0 ? provider.Models[0] : "gemini-3.1-flash-image-preview");
+                    string url = $"{provider.BaseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
+
+                    if (provider.AuthType == "goog")
+                        _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+                    else
+                        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                    var payload = new
+                    {
+                        contents = new[] { new { parts = new[] { new { text = "Hi" } } } },
+                        generationConfig = new { responseModalities = new[] { "TEXT" } }
+                    };
+                    var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+                    response = await _httpClient.PostAsync(url, content);
                 }
 
-                // Send minimal request to test API key
-                var payload = new
-                {
-                    contents = new[] { new { parts = new[] { new { text = "Hi" } } } },
-                    generationConfig = new { responseModalities = new[] { "TEXT" } }
-                };
-
-                var content = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync(url, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return true;
-                }
+                if (response.IsSuccessStatusCode) return true;
 
                 var errorContent = await response.Content.ReadAsStringAsync();
                 RhinoApp.WriteLine($"API Test Error: {errorContent}");
 
-                // Check for common error indicating invalid key
                 if (errorContent.Contains("API_KEY_INVALID") ||
                     errorContent.Contains("PERMISSION_DENIED") ||
-                    errorContent.Contains("unauthorized"))
-                {
+                    errorContent.Contains("unauthorized") ||
+                    errorContent.Contains("Unauthorized") ||
+                    (int)response.StatusCode == 401 ||
+                    (int)response.StatusCode == 403)
                     return false;
-                }
 
-                // Some APIs return success even with minimal request
-                return response.IsSuccessStatusCode;
+                return false;
             }
             catch (System.Exception ex)
             {
@@ -248,13 +214,81 @@ namespace AIRenderer.Views
             }
         }
 
+        private void EditProviderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedProvider == null) return;
+
+            var existing = new AIRenderer.Models.CustomProviderConfig
+            {
+                Id = _selectedProvider.Id,
+                DisplayName = _selectedProvider.DisplayName,
+                BaseUrl = _selectedProvider.BaseUrl,
+                AuthType = _selectedProvider.AuthType,
+                ApiFormat = _selectedProvider.ApiFormat,
+                Models = new System.Collections.Generic.List<string>(_selectedProvider.Models),
+                DefaultModel = _selectedProvider.DefaultModel
+            };
+
+            var dialog = new AddProviderDialog(existing) { Owner = this };
+            if (dialog.ShowDialog() == true && dialog.Result != null)
+            {
+                if (_selectedProvider.IsCustom)
+                    SettingsService.SaveCustomProvider(dialog.Result);
+                else
+                    SettingsService.SaveBuiltInOverride(_selectedProvider.Id, dialog.Result);
+
+                _allProviders = SettingsService.GetAllProviders();
+                OnPropertyChanged(nameof(AvailableProviders));
+
+                var updated = _allProviders.Find(p => p.Id == _selectedProvider.Id);
+                if (updated != null)
+                    ProviderComboBox.SelectedItem = updated;
+            }
+        }
+
+        private void AddProviderButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new AddProviderDialog { Owner = this };
+            if (dialog.ShowDialog() == true && dialog.Result != null)
+            {
+                SettingsService.SaveCustomProvider(dialog.Result);
+                _allProviders = SettingsService.GetAllProviders();
+                OnPropertyChanged(nameof(AvailableProviders));
+
+                var newItem = _allProviders.Find(p => p.Id == dialog.Result.Id);
+                if (newItem != null)
+                    ProviderComboBox.SelectedItem = newItem;
+            }
+        }
+
+        private void DeleteProviderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedProvider?.IsCustom != true) return;
+
+            var result = MessageBox.Show(
+                $"Delete provider \"{_selectedProvider.DisplayName}\"?",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                SettingsService.DeleteCustomProvider(_selectedProvider.Id);
+                _allProviders = SettingsService.GetAllProviders();
+                _selectedProvider = _allProviders.Count > 0 ? _allProviders[0] : null;
+                OnPropertyChanged(nameof(AvailableProviders));
+                OnPropertyChanged(nameof(SelectedProviderConfig));
+                if (_selectedProvider != null)
+                    ProviderComboBox.SelectedItem = _selectedProvider;
+            }
+        }
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Save settings - only saves current provider's API key
             SettingsService.SaveSettings(
                 ApiKeyBox.Password,
-                _selectedModel ?? _selectedProviderConfig?.DefaultModel,
-                _selectedProviderConfig?.Provider ?? ApiProvider.BltAI);
+                _selectedModel ?? _selectedProvider?.DefaultModel,
+                _selectedProvider);
 
             DialogResult = true;
             Close();

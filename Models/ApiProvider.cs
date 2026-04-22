@@ -3,12 +3,82 @@ using System.Collections.Generic;
 namespace AIRenderer.Models
 {
     /// <summary>
-    /// API 服务商枚举
+    /// API 服务商枚举（内置服务商）
     /// </summary>
     public enum ApiProvider
     {
         Gemini,
         BltAI
+    }
+
+    /// <summary>
+    /// 用户自定义服务商配置
+    /// </summary>
+    public class CustomProviderConfig
+    {
+        public string Id { get; set; }
+        public string DisplayName { get; set; } = "";
+        public string BaseUrl { get; set; } = "";
+        /// <summary>"bearer" = Authorization: Bearer，"goog" = x-goog-api-key</summary>
+        public string AuthType { get; set; } = "bearer";
+        /// <summary>"gemini" = Gemini generateContent 格式，"openai" = OpenAI Images API 格式</summary>
+        public string ApiFormat { get; set; } = "gemini";
+        public List<string> Models { get; set; } = new List<string>();
+        public string DefaultModel { get; set; } = "";
+    }
+
+    /// <summary>
+    /// 统一的服务商条目，内置和自定义服务商均使用此类型
+    /// </summary>
+    public class ProviderItem
+    {
+        public string Id { get; set; }
+        public string DisplayName { get; set; }
+        public string BaseUrl { get; set; }
+        public List<string> Models { get; set; } = new List<string>();
+        public string DefaultModel { get; set; }
+        public bool IsCustom { get; set; }
+        public string AuthType { get; set; } = "bearer";
+        /// <summary>"gemini" = Gemini generateContent 格式，"openai" = OpenAI Images API 格式</summary>
+        public string ApiFormat { get; set; } = "gemini";
+        public string ApiKeyUrl { get; set; }
+        public ApiProvider? BuiltInProvider { get; set; }
+
+        public static ProviderItem FromBuiltIn(ApiProviderConfig config)
+        {
+            return new ProviderItem
+            {
+                Id = config.Provider.ToString(),
+                DisplayName = config.DisplayName,
+                BaseUrl = config.BaseUrl,
+                Models = config.Models ?? new List<string>(),
+                DefaultModel = config.DefaultModel,
+                IsCustom = false,
+                AuthType = config.Provider == ApiProvider.Gemini ? "goog" : "bearer",
+                ApiKeyUrl = config.ApiKeyUrl,
+                BuiltInProvider = config.Provider
+            };
+        }
+
+        public static ProviderItem FromCustom(CustomProviderConfig config)
+        {
+            var models = config.Models ?? new List<string>();
+            return new ProviderItem
+            {
+                Id = config.Id,
+                DisplayName = config.DisplayName,
+                BaseUrl = config.BaseUrl,
+                Models = models,
+                DefaultModel = !string.IsNullOrEmpty(config.DefaultModel)
+                    ? config.DefaultModel
+                    : (models.Count > 0 ? models[0] : ""),
+                IsCustom = true,
+                AuthType = config.AuthType ?? "bearer",
+                ApiFormat = config.ApiFormat ?? "gemini",
+                ApiKeyUrl = null,
+                BuiltInProvider = null
+            };
+        }
     }
 
     /// <summary>
@@ -79,6 +149,15 @@ namespace AIRenderer.Models
             {
                 GetConfig(ApiProvider.Gemini),
                 GetConfig(ApiProvider.BltAI)
+            };
+        }
+
+        public static List<ProviderItem> GetAllProviderItems()
+        {
+            return new List<ProviderItem>
+            {
+                ProviderItem.FromBuiltIn(GetConfig(ApiProvider.Gemini)),
+                ProviderItem.FromBuiltIn(GetConfig(ApiProvider.BltAI))
             };
         }
     }

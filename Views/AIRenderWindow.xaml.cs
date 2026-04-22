@@ -16,10 +16,7 @@ namespace AIRenderer.Views
         {
             InitializeComponent();
 
-            // Load settings first
-            var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettings();
-
-            // Create ViewModel
+            var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettingsWithProvider();
             _viewModel = new AIRenderViewModel(apiKey, selectedModel, selectedProvider);
             DataContext = _viewModel;
         }
@@ -36,19 +33,14 @@ namespace AIRenderer.Views
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            var settingsWindow = new SettingsWindow
-            {
-                Owner = this
-            };
+            var settingsWindow = new SettingsWindow { Owner = this };
 
             if (settingsWindow.ShowDialog() == true)
             {
-                // Settings were saved, reload them
-                var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettings();
-
+                var (apiKey, selectedModel, selectedProvider) = SettingsService.LoadSettingsWithProvider();
                 _viewModel.Settings.ApiKey = apiKey;
                 _viewModel.Settings.SelectedModel = selectedModel;
-                _viewModel.Settings.SelectedProvider = selectedProvider;
+                _viewModel.Settings.SelectedProviderItem = selectedProvider;
             }
         }
     }

@@ -25,6 +25,41 @@ namespace AIRenderer.Services
         }
 
         /// <summary>
+        /// 生成图片（ProviderItem 版，支持内置和自定义服务商）
+        /// </summary>
+        public async Task<Bitmap> GenerateImageAsync(
+            ProviderItem provider,
+            string apiKey,
+            string prompt,
+            Bitmap sourceImage,
+            RenderSettings settings)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                RhinoApp.WriteLine("API key is required.");
+                return null;
+            }
+            if (sourceImage == null)
+            {
+                RhinoApp.WriteLine("Source image is required.");
+                return null;
+            }
+
+            // 只有未被覆盖的内置 Gemini 格式服务商走枚举路由
+            if (!provider.IsCustom && provider.BuiltInProvider.HasValue && provider.ApiFormat == "gemini")
+                return await GenerateImageAsync(provider.BuiltInProvider.Value, apiKey, prompt, sourceImage, settings);
+
+            string fullPrompt = prompt;
+            if (!string.IsNullOrWhiteSpace(settings.SystemPrompt))
+                fullPrompt = $"{settings.SystemPrompt}\n\n{prompt}";
+
+            if (provider.ApiFormat == "openai")
+                return await GenerateOpenAIAsync(provider, apiKey, fullPrompt, sourceImage, settings);
+
+            return await GenerateCustomAsync(provider, apiKey, fullPrompt, sourceImage, settings);
+        }
+
+        /// <summary>
         /// 生成图片（根据不同服务商使用不同请求格式）
         /// </summary>
         public async Task<Bitmap> GenerateImageAsync(
@@ -388,6 +423,162 @@ namespace AIRenderer.Services
             catch (Exception ex)
             {
                 RhinoApp.WriteLine($"Failed to load image from URL: {ex.Message}");
+                return null;
+            }
+        }
+        #endregion
+
+        #region OpenAI Images API (gpt-image-2)
+        private async Task<Bitmap> GenerateOpenAIAsync(
+            ProviderItem provider, string apiKey, string prompt,
+            Bitmap sourceImage, RenderSettings settings)
+        {
+            try
+            {
+                byte[] imageBytes;
+                using (var ms = new MemoryStream())
+                {
+                    sourceImage.Save(ms, ImageFormat.Png);
+                    imageBytes = ms.ToArray();
+                }
+
+                string model = settings.SelectedModel ?? provider.DefaultModel;
+                string fullUrl = $"{provider.BaseUrl.TrimEnd('/')}/v1/images/edits";
+
+                var imageContent = new ByteArrayContent(imageBytes);
+                imageContent.Headers.ContentType =
+                    new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+
+                using (var formData = new MultipartFormDataContent())
+                {
+                    formData.Add(imageContent, "image[]", "image.png");
+                    formData.Add(new StringContent(prompt), "prompt");
+                    formData.Add(new StringContent(model), "model");
+                    formData.Add(new StringContent("1"), "n");
+
+                    _httpClient.DefaultRequestHeaders.Clear();
+                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                    RhinoApp.WriteLine($"Calling OpenAI Images API ({provider.DisplayName}): {fullUrl}");
+                    RhinoApp.WriteLine($"Model: {model}");
+
+                    var response = await _httpClient.PostAsync(fullUrl, formData);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        RhinoApp.WriteLine($"API Error ({response.StatusCode}): {errorContent}");
+                        return null;
+                    }
+
+                    return ParseOpenAIResponse(await response.Content.ReadAsStringAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                RhinoApp.WriteLine($"OpenAI API Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        private Bitmap ParseOpenAIResponse(string responseContent)
+        {
+            try
+            {
+                var json = JObject.Parse(responseContent);
+                var data = json["data"];
+                if (data == null || !data.HasValues)
+                {
+                    RhinoApp.WriteLine($"No data in OpenAI response: {responseContent.Substring(0, Math.Min(300, responseContent.Length))}");
+                    return null;
+                }
+
+                var b64 = data[0]?["b64_json"]?.ToString();
+                if (!string.IsNullOrEmpty(b64))
+                {
+                    byte[] imageBytes = Convert.FromBase64String(b64);
+                    var ms = new MemoryStream(imageBytes);
+                    var result = new Bitmap(ms);
+                    ms.Dispose();
+                    return result;
+                }
+
+                var url = data[0]?["url"]?.ToString();
+                if (!string.IsNullOrEmpty(url))
+                    return LoadImageFromUrl(url);
+
+                RhinoApp.WriteLine("No image found in OpenAI response.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                RhinoApp.WriteLine($"Parse Error: {ex.Message}");
+                return null;
+            }
+        }
+        #endregion
+
+        #region Custom Provider (Gemini-compatible)
+        private async Task<Bitmap> GenerateCustomAsync(
+            ProviderItem provider, string apiKey, string prompt,
+            Bitmap sourceImage, RenderSettings settings)
+        {
+            try
+            {
+                string imageBase64 = ScreenCapture.ToBase64(sourceImage, ImageFormat.Png);
+                string model = settings.SelectedModel ?? provider.DefaultModel;
+                string fullUrl = $"{provider.BaseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
+
+                string aspectRatio = settings.SelectedAspectRatio?.Ratio ?? "";
+                string imageSize = settings.SelectedImageSize ?? "1K";
+                string jsonImageConfig = string.IsNullOrEmpty(aspectRatio)
+                    ? $"{{\"imageSize\":\"{imageSize}\"}}"
+                    : $"{{\"aspectRatio\":\"{aspectRatio}\",\"imageSize\":\"{imageSize}\"}}";
+
+                var payload = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            parts = new object[]
+                            {
+                                new { text = prompt },
+                                new { inline_data = new { mime_type = "image/png", data = imageBase64 } }
+                            }
+                        }
+                    },
+                    tools = new[] { new { google_search = new object() } },
+                    generationConfig = new
+                    {
+                        responseModalities = new[] { "TEXT", "IMAGE" },
+                        imageConfig = JsonConvert.DeserializeObject(jsonImageConfig)
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+                _httpClient.DefaultRequestHeaders.Clear();
+
+                if (provider.AuthType == "goog")
+                    _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+                else
+                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                RhinoApp.WriteLine($"Calling Custom API ({provider.DisplayName}): {fullUrl}");
+                var response = await _httpClient.PostAsync(fullUrl, content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    RhinoApp.WriteLine($"API Error ({response.StatusCode}): {errorContent}");
+                    return null;
+                }
+
+                return ParseGeminiResponse(await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                RhinoApp.WriteLine($"Custom API Error: {ex.Message}");
                 return null;
             }
         }

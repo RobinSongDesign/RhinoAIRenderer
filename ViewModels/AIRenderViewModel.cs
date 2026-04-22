@@ -25,25 +25,21 @@ namespace AIRenderer.ViewModels
         private bool _hasSourceImage;
         private bool _hasResultImage;
 
-        public AIRenderViewModel() : this("", "gemini-3.1-flash-image-preview", ApiProvider.Gemini)
+        public AIRenderViewModel() : this("", "gemini-3.1-flash-image-preview",
+            ProviderItem.FromBuiltIn(ApiProviderConfig.GetConfig(ApiProvider.BltAI)))
         {
         }
 
-        public AIRenderViewModel(string apiKey, string selectedModel, ApiProvider selectedProvider)
+        public AIRenderViewModel(string apiKey, string selectedModel, ProviderItem selectedProvider)
         {
             _apiService = new AIRenderService();
             _settings = new RenderSettings();
 
-            // Apply pre-loaded settings
             if (!string.IsNullOrEmpty(apiKey))
-            {
                 Settings.ApiKey = apiKey;
-            }
             if (!string.IsNullOrEmpty(selectedModel))
-            {
                 Settings.SelectedModel = selectedModel;
-            }
-            Settings.SelectedProvider = selectedProvider;
+            Settings.SelectedProviderItem = selectedProvider;
 
             // Initialize commands
             CaptureCommand = new RelayCommand(CaptureScreen, () => !IsGenerating);
@@ -55,7 +51,9 @@ namespace AIRenderer.ViewModels
 
         private void SaveSettings()
         {
-            SettingsService.SaveSettings(Settings.ApiKey, Settings.SelectedModel, Settings.SelectedProvider);
+            var provider = Settings.SelectedProviderItem
+                ?? ProviderItem.FromBuiltIn(ApiProviderConfig.GetConfig(Settings.SelectedProvider));
+            SettingsService.SaveSettings(Settings.ApiKey, Settings.SelectedModel, provider);
         }
 
         public RenderSettings Settings
@@ -204,8 +202,10 @@ namespace AIRenderer.ViewModels
                 // Convert BitmapSource back to Bitmap for API
                 var sourceBitmap = ScreenCapture.BitmapSourceToBitmap(SourceImage);
 
+                var provider = Settings.SelectedProviderItem
+                    ?? ProviderItem.FromBuiltIn(ApiProviderConfig.GetConfig(Settings.SelectedProvider));
                 var resultBitmap = await _apiService.GenerateImageAsync(
-                    Settings.SelectedProvider,
+                    provider,
                     Settings.ApiKey,
                     Settings.Prompt,
                     sourceBitmap,

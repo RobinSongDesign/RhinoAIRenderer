@@ -1,0 +1,61 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'   # 推送 v1.0.0 这样的 tag 时触发
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Build (net48 — Rhino 7/8)
+        run: dotnet build -c Release -f net48
+
+      - name: Build (net7.0-windows — Rhino 8)
+        run: dotnet build -c Release -f net7.0-windows
+
+      - name: Package net48
+        run: |
+          mkdir -p dist/AIRenderer-Rhino7-${{ github.ref_name }}
+          cp bin/Release/net48/AIRenderer.rhp dist/AIRenderer-Rhino7-${{ github.ref_name }}/
+          cp bin/Release/net48/*.dll           dist/AIRenderer-Rhino7-${{ github.ref_name }}/
+          cd dist
+          Compress-Archive -Path AIRenderer-Rhino7-${{ github.ref_name }} -DestinationPath AIRenderer-Rhino7-${{ github.ref_name }}.zip
+        shell: pwsh
+
+      - name: Package net7.0-windows
+        run: |
+          mkdir -p dist/AIRenderer-Rhino8-${{ github.ref_name }}
+          cp bin/Release/net7.0-windows/AIRenderer.rhp          dist/AIRenderer-Rhino8-${{ github.ref_name }}/
+          cp bin/Release/net7.0-windows/*.dll                   dist/AIRenderer-Rhino8-${{ github.ref_name }}/
+          cp bin/Release/net7.0-windows/*.json                  dist/AIRenderer-Rhino8-${{ github.ref_name }}/
+          cp -r bin/Release/net7.0-windows/runtimes             dist/AIRenderer-Rhino8-${{ github.ref_name }}/
+          cd dist
+          Compress-Archive -Path AIRenderer-Rhino8-${{ github.ref_name }} -DestinationPath AIRenderer-Rhino8-${{ github.ref_name }}.zip
+        shell: pwsh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: AIRenderer ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/AIRenderer-Rhino7-${{ github.ref_name }}.zip
+            dist/AIRenderer-Rhino8-${{ github.ref_name }}.zip
+          body: |
+            ## AIRenderer ${{ github.ref_name }}
+
+            ### 安装方法
+            - **Rhino 7 / 8 (net48)**：下载 `AIRenderer-Rhino7-*.zip`，解压后将 `.rhp` 文件拖入 Rhino 窗口
+            - **Rhino 8 (net7.0)**：下载 `AIRenderer-Rhino8-*.zip`，解压后将 `.rhp` 文件拖入 Rhino 窗口

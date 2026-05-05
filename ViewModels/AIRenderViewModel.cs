@@ -24,6 +24,8 @@ namespace AIRenderer.ViewModels
         private bool _isGenerating;
         private bool _hasSourceImage;
         private bool _hasResultImage;
+        private bool _isBatchMode;
+        private BatchRenderViewModel _batchVM;
 
         public AIRenderViewModel() : this("", "gemini-3.1-flash-image-preview",
             ProviderItem.FromBuiltIn(ApiProviderConfig.GetConfig(ApiProvider.BltAI)))
@@ -129,6 +131,18 @@ namespace AIRenderer.ViewModels
                 OnPropertyChanged();
                 CommandManager.InvalidateRequerySuggested();
             }
+        }
+
+        public bool IsBatchMode
+        {
+            get => _isBatchMode;
+            set { _isBatchMode = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsSingleMode)); }
+        }
+        public bool IsSingleMode => !_isBatchMode;
+
+        public BatchRenderViewModel BatchVM
+        {
+            get { return _batchVM ?? (_batchVM = new BatchRenderViewModel(_settings)); }
         }
 
         public string[] AvailableViewports => ScreenCapture.GetAvailableViewports();

@@ -3,6 +3,7 @@ using Rhino.DocObjects;
 using Rhino.Display;
 using Rhino.Geometry;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -91,6 +92,68 @@ namespace AIRenderer.Services
             }
 
             return CaptureView(view);
+        }
+
+        /// <summary>
+        /// Returns all named view names in the active document
+        /// </summary>
+        public static List<string> GetNamedViewNames()
+        {
+            var doc = RhinoDoc.ActiveDoc;
+            if (doc == null) return new List<string>();
+            var names = new List<string>();
+            for (int i = 0; i < doc.NamedViews.Count; i++)
+                names.Add(doc.NamedViews[i].Name);
+            return names;
+        }
+
+        /// <summary>
+        /// Restores a named view into the active viewport, captures it, then restores the original camera.
+        /// </summary>
+        public static Bitmap CaptureNamedView(string viewName)
+        {
+            var doc = RhinoDoc.ActiveDoc;
+            if (doc == null) return null;
+
+            int idx = doc.NamedViews.FindByName(viewName);
+            if (idx < 0)
+            {
+                RhinoApp.WriteLine($"Named view '{viewName}' not found.");
+                return null;
+            }
+
+            var view = doc.Views.ActiveView;
+            if (view == null) return null;
+
+            // Save current camera state
+            var savedTarget   = view.ActiveViewport.CameraTarget;
+            var savedLocation = view.ActiveViewport.CameraLocation;
+            var savedUp       = view.ActiveViewport.CameraUp;
+            double savedLens  = view.ActiveViewport.Camera35mmLensLength;
+            bool savedParallel = view.ActiveViewport.IsParallelProjection;
+
+            try
+            {
+                view.ActiveViewport.SetViewProjection(doc.NamedViews[idx].Viewport, true);
+                view.Redraw();
+
+                int w = view.ActiveViewport.Size.Width;
+                int h = view.ActiveViewport.Size.Height;
+                var capture = new ViewCapture { Width = w, Height = h, TransparentBackground = false };
+                return capture.CaptureToBitmap(view);
+            }
+            finally
+            {
+                // Restore original camera
+                if (savedParallel)
+                    view.ActiveViewport.ChangeToParallelProjection(true);
+                else
+                    view.ActiveViewport.ChangeToPerspectiveProjection(true, savedLens);
+
+                view.ActiveViewport.SetCameraLocations(savedTarget, savedLocation);
+                view.ActiveViewport.CameraUp = savedUp;
+                view.Redraw();
+            }
         }
 
         /// <summary>

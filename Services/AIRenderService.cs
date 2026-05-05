@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,7 +33,8 @@ namespace AIRenderer.Services
             string apiKey,
             string prompt,
             Bitmap sourceImage,
-            RenderSettings settings)
+            RenderSettings settings,
+            Bitmap referenceImage = null)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -45,8 +47,9 @@ namespace AIRenderer.Services
                 return null;
             }
 
-            // 只有未被覆盖的内置 Gemini 格式服务商走枚举路由
-            if (!provider.IsCustom && provider.BuiltInProvider.HasValue && provider.ApiFormat == "gemini")
+            // 只有未被覆盖的内置 Gemini 格式、且无参考图时走枚举路由
+            if (!provider.IsCustom && provider.BuiltInProvider.HasValue &&
+                provider.ApiFormat == "gemini" && referenceImage == null)
                 return await GenerateImageAsync(provider.BuiltInProvider.Value, apiKey, prompt, sourceImage, settings);
 
             string fullPrompt = prompt;
@@ -56,7 +59,7 @@ namespace AIRenderer.Services
             if (provider.ApiFormat == "openai")
                 return await GenerateOpenAIAsync(provider, apiKey, fullPrompt, sourceImage, settings);
 
-            return await GenerateCustomAsync(provider, apiKey, fullPrompt, sourceImage, settings);
+            return await GenerateCustomAsync(provider, apiKey, fullPrompt, sourceImage, settings, referenceImage);
         }
 
         /// <summary>
@@ -162,6 +165,8 @@ namespace AIRenderer.Services
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
                 _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true, NoStore = true };
+                _httpClient.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
                 _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
 
                 RhinoApp.WriteLine($"Calling Gemini API: {fullUrl}");
@@ -182,6 +187,21 @@ namespace AIRenderer.Services
             {
                 RhinoApp.WriteLine($"Gemini API Error: {ex.Message}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 从字节数组解码 Bitmap，返回不依赖任何 Stream 的独立拷贝，
+        /// 避免 GDI+ "A generic error occurred" 问题。
+        /// </summary>
+        private static Bitmap BitmapFromBytes(byte[] bytes)
+        {
+            using (var ms = new MemoryStream(bytes))
+            using (var tmp = new Bitmap(ms))
+            {
+                return tmp.Clone(
+                    new System.Drawing.Rectangle(0, 0, tmp.Width, tmp.Height),
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             }
         }
 
@@ -217,11 +237,7 @@ namespace AIRenderer.Services
                     return null;
                 }
 
-                byte[] imageBytes = Convert.FromBase64String(base64Image);
-                MemoryStream ms = new MemoryStream(imageBytes);
-                Bitmap result = new Bitmap(ms);
-                ms.Dispose();
-                return result;
+                return BitmapFromBytes(Convert.FromBase64String(base64Image));
             }
             catch (Exception ex)
             {
@@ -288,6 +304,8 @@ namespace AIRenderer.Services
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
                 _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true, NoStore = true };
+                _httpClient.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
                 RhinoApp.WriteLine($"Calling BltAI API: {fullUrl}");
@@ -360,6 +378,8 @@ namespace AIRenderer.Services
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
                 _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true, NoStore = true };
+                _httpClient.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
                 RhinoApp.WriteLine($"Calling BltAI (Generations API): {fullUrl}");
@@ -414,15 +434,95 @@ namespace AIRenderer.Services
         {
             try
             {
-                var imageBytes = _httpClient.GetByteArrayAsync(url).Result;
-                MemoryStream ms = new MemoryStream(imageBytes);
-                Bitmap bmp = new Bitmap(ms);
-                ms.Dispose();
-                return bmp;
+                return BitmapFromBytes(_httpClient.GetByteArrayAsync(url).Result);
             }
             catch (Exception ex)
             {
                 RhinoApp.WriteLine($"Failed to load image from URL: {ex.Message}");
+                return null;
+            }
+        }
+        #endregion
+
+        #region Chained Batch (Gemini-compatible)
+        /// <summary>
+        /// 链式生成：第 N 张请求时携带前 N-1 张结果作为一致性参考，
+        /// 要求模型保持光照、材质、人物位置等不变，只改变相机角度。
+        /// </summary>
+        public async Task<Bitmap> GenerateChainedAsync(
+            ProviderItem provider,
+            string apiKey,
+            string prompt,
+            Bitmap currentView,
+            List<Bitmap> previousResults,
+            RenderSettings settings,
+            Bitmap referenceImage = null)
+        {
+            try
+            {
+                string fullPrompt = prompt;
+                if (!string.IsNullOrWhiteSpace(settings.SystemPrompt))
+                    fullPrompt = $"{settings.SystemPrompt}\n\n{prompt}";
+
+                // 一致性指令（英文）
+                fullPrompt +=
+                    "\n\nUsing the provided reference rendered image(s) as a strict style guide: " +
+                    "maintain identical lighting direction, shadow angles, material textures, " +
+                    "color palette, atmospheric mood, and positions of any people or objects. " +
+                    "Only change the camera position and angle to match the new architectural viewport shown. " +
+                    "The scene contents, lighting setup, and visual style must remain completely consistent across all views.";
+
+                string model = settings.SelectedModel ?? provider.DefaultModel;
+                string fullUrl = $"{provider.BaseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
+
+                string aspectRatio = settings.SelectedAspectRatio?.Ratio ?? "";
+                string imageSize = settings.SelectedImageSize ?? "1K";
+                string jsonImageConfig = string.IsNullOrEmpty(aspectRatio)
+                    ? $"{{\"imageSize\":\"{imageSize}\"}}"
+                    : $"{{\"aspectRatio\":\"{aspectRatio}\",\"imageSize\":\"{imageSize}\"}}";
+
+                // parts：提示词 + 当前待渲染视角 + 前序结果（一致性参考）+ 样式参考图（若有）
+                var parts = new List<object> { new { text = fullPrompt } };
+                parts.Add(new { inline_data = new { mime_type = "image/png", data = ScreenCapture.ToBase64(currentView, ImageFormat.Png) } });
+                foreach (var prev in previousResults)
+                    parts.Add(new { inline_data = new { mime_type = "image/png", data = ScreenCapture.ToBase64(prev, ImageFormat.Png) } });
+                if (referenceImage != null)
+                    parts.Add(new { inline_data = new { mime_type = "image/png", data = ScreenCapture.ToBase64(referenceImage, ImageFormat.Png) } });
+
+                var payload = new
+                {
+                    contents = new[] { new { parts = parts.ToArray() } },
+                    tools = new[] { new { google_search = new object() } },
+                    generationConfig = new
+                    {
+                        responseModalities = new[] { "TEXT", "IMAGE" },
+                        imageConfig = JsonConvert.DeserializeObject(jsonImageConfig)
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+                _httpClient.DefaultRequestHeaders.Clear();
+                _httpClient.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true, NoStore = true };
+                _httpClient.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
+                if (provider.AuthType == "goog")
+                    _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+                else
+                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                RhinoApp.WriteLine($"Chained API: {fullUrl} (new view + {previousResults.Count} reference(s))");
+                var response = await _httpClient.PostAsync(fullUrl, content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    RhinoApp.WriteLine($"Chained API Error ({response.StatusCode}): {await response.Content.ReadAsStringAsync()}");
+                    return null;
+                }
+
+                return ParseGeminiResponse(await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                RhinoApp.WriteLine($"Chained API Error: {ex.Message}");
                 return null;
             }
         }
@@ -496,11 +596,7 @@ namespace AIRenderer.Services
                 var b64 = data[0]?["b64_json"]?.ToString();
                 if (!string.IsNullOrEmpty(b64))
                 {
-                    byte[] imageBytes = Convert.FromBase64String(b64);
-                    var ms = new MemoryStream(imageBytes);
-                    var result = new Bitmap(ms);
-                    ms.Dispose();
-                    return result;
+                    return BitmapFromBytes(Convert.FromBase64String(b64));
                 }
 
                 var url = data[0]?["url"]?.ToString();
@@ -521,11 +617,11 @@ namespace AIRenderer.Services
         #region Custom Provider (Gemini-compatible)
         private async Task<Bitmap> GenerateCustomAsync(
             ProviderItem provider, string apiKey, string prompt,
-            Bitmap sourceImage, RenderSettings settings)
+            Bitmap sourceImage, RenderSettings settings,
+            Bitmap referenceImage = null)
         {
             try
             {
-                string imageBase64 = ScreenCapture.ToBase64(sourceImage, ImageFormat.Png);
                 string model = settings.SelectedModel ?? provider.DefaultModel;
                 string fullUrl = $"{provider.BaseUrl.TrimEnd('/')}/v1beta/models/{model}:generateContent";
 
@@ -535,19 +631,19 @@ namespace AIRenderer.Services
                     ? $"{{\"imageSize\":\"{imageSize}\"}}"
                     : $"{{\"aspectRatio\":\"{aspectRatio}\",\"imageSize\":\"{imageSize}\"}}";
 
+                // parts: text → source view → reference image (if any)
+                var parts = new List<object>();
+                string textPrompt = referenceImage != null
+                    ? prompt + "\n\nA style reference image is also provided — match its lighting, atmosphere, and visual style."
+                    : prompt;
+                parts.Add(new { text = textPrompt });
+                parts.Add(new { inline_data = new { mime_type = "image/png", data = ScreenCapture.ToBase64(sourceImage, ImageFormat.Png) } });
+                if (referenceImage != null)
+                    parts.Add(new { inline_data = new { mime_type = "image/png", data = ScreenCapture.ToBase64(referenceImage, ImageFormat.Png) } });
+
                 var payload = new
                 {
-                    contents = new[]
-                    {
-                        new
-                        {
-                            parts = new object[]
-                            {
-                                new { text = prompt },
-                                new { inline_data = new { mime_type = "image/png", data = imageBase64 } }
-                            }
-                        }
-                    },
+                    contents = new[] { new { parts = parts.ToArray() } },
                     tools = new[] { new { google_search = new object() } },
                     generationConfig = new
                     {
@@ -558,7 +654,8 @@ namespace AIRenderer.Services
 
                 var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
                 _httpClient.DefaultRequestHeaders.Clear();
-
+                _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true, NoStore = true };
+                _httpClient.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
                 if (provider.AuthType == "goog")
                     _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
                 else

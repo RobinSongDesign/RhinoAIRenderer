@@ -11,7 +11,7 @@ namespace AIRenderer.Models
         private string _apiKey = "";
         private string _apiUrl = "";
         private string _prompt = "";
-        private string _systemPrompt = "这是一张渲染图，不要更改相机位置、fov，保持图中物体结构和透视的一致性。";
+        private string _systemPrompt = "This is a render image. Do not change the camera position or FOV. Maintain the structural integrity and perspective consistency of all objects in the scene.";
         private string _selectedModel = "gemini-3.1-flash-image-preview";
 
         private int _width = 512;

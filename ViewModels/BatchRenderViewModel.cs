@@ -21,7 +21,7 @@ namespace AIRenderer.ViewModels
         private readonly AIRenderService _renderService;
         private ObservableCollection<ViewRenderItem> _items = new ObservableCollection<ViewRenderItem>();
         private bool _isRunning;
-        private string _statusMessage = "点击「加载并捕获」开始";
+        private string _statusMessage = Loc.Get("msg.click_to_load");
         private int _doneCount;
         private int _totalCount;
         private CancellationTokenSource _cts;
@@ -115,21 +115,21 @@ namespace AIRenderer.ViewModels
 
             if (names.Count == 0)
             {
-                StatusMessage = "当前文档中没有已保存的命名视图";
+                StatusMessage = Loc.Get("msg.no_named_views");
                 return;
             }
 
             foreach (var name in names)
-                Items.Add(new ViewRenderItem { ViewName = name });
+                Items.Add(new ViewRenderItem { ViewName = name, Status = Loc.Get("status.waiting") });
 
-            StatusMessage = $"已加载 {names.Count} 个视图，捕获中...";
+            StatusMessage = string.Format(Loc.Get("msg.loading"), names.Count);
             CommandManager.InvalidateRequerySuggested();
 
             // 立即捕获全部预览
             foreach (var item in Items)
                 CaptureItem(item);
 
-            StatusMessage = $"已加载并捕获 {Items.Count(i => i.HasSourceImage)}/{Items.Count} 个视图";
+            StatusMessage = string.Format(Loc.Get("msg.loaded"), Items.Count(i => i.HasSourceImage), Items.Count);
         }
 
         // ── Capture helpers (called from code-behind) ─────────────────────────
@@ -138,16 +138,16 @@ namespace AIRenderer.ViewModels
         {
             try
             {
-                item.Status = "捕获中...";
+                item.Status = Loc.Get("status.capturing");
                 var bitmap = ScreenCapture.CaptureNamedView(item.ViewName);
                 if (bitmap != null)
                 {
                     item.SourceImage = ScreenCapture.BitmapToBitmapSource(bitmap);
-                    item.Status = "就绪";
+                    item.Status = Loc.Get("status.ready");
                 }
                 else
                 {
-                    item.Status = "捕获失败";
+                    item.Status = Loc.Get("status.capture_failed");
                 }
             }
             catch (Exception ex)
@@ -186,8 +186,8 @@ namespace AIRenderer.ViewModels
 
             item.IsGenerating = true;
             item.Status = references.Count > 0
-                ? $"重新生成（参考其他 {references.Count} 张）..."
-                : "重新生成...";
+                ? string.Format(Loc.Get("msg.regen_ref"), references.Count)
+                : Loc.Get("status.regenerating");
 
             try
             {
@@ -208,16 +208,16 @@ namespace AIRenderer.ViewModels
                 if (result != null)
                 {
                     item.ResultImage = ScreenCapture.BitmapToBitmapSource(result);
-                    item.Status = "完成 ✓";
+                    item.Status = Loc.Get("status.done");
                 }
                 else
                 {
-                    item.Status = "失败 ✗";
+                    item.Status = Loc.Get("status.failed");
                 }
             }
             catch (Exception ex)
             {
-                item.Status = "错误";
+                item.Status = Loc.Get("status.error");
                 RhinoApp.WriteLine($"Regenerate error '{item.ViewName}': {ex.Message}");
             }
             finally
@@ -260,9 +260,9 @@ namespace AIRenderer.ViewModels
                 var item = selected[i];
                 item.IsGenerating = true;
                 item.Status = previousResults.Count == 0
-                    ? "生成中..."
-                    : $"生成中（参考前 {previousResults.Count} 张）...";
-                StatusMessage = $"第 {i + 1}/{TotalCount} 张: {item.ViewName}";
+                    ? Loc.Get("status.generating")
+                    : string.Format(Loc.Get("msg.generating_ref"), previousResults.Count);
+                StatusMessage = string.Format(Loc.Get("msg.generating_item"), i + 1, TotalCount, item.ViewName);
 
                 // 合并共用 prompt + 当前视图的独立 addon prompt
                 string itemPrompt = _settings.Prompt;
@@ -288,18 +288,18 @@ namespace AIRenderer.ViewModels
                     if (result != null)
                     {
                         item.ResultImage = ScreenCapture.BitmapToBitmapSource(result);
-                        item.Status = "完成 ✓";
+                        item.Status = Loc.Get("status.done");
                         previousResults.Add(result); // 加入参考链
                     }
                     else
                     {
-                        item.Status = "失败 ✗";
+                        item.Status = Loc.Get("status.failed");
                         // 失败时不加入链，避免污染后续参考
                     }
                 }
                 catch (Exception ex)
                 {
-                    item.Status = "错误";
+                    item.Status = Loc.Get("status.error");
                     RhinoApp.WriteLine($"Chain render error '{item.ViewName}': {ex.Message}");
                 }
                 finally
@@ -311,8 +311,8 @@ namespace AIRenderer.ViewModels
 
             IsRunning = false;
             StatusMessage = _cts.IsCancellationRequested
-                ? $"已取消，完成 {DoneCount}/{TotalCount}"
-                : $"全部完成！共渲染 {DoneCount} 张";
+                ? string.Format(Loc.Get("msg.cancelled"), DoneCount, TotalCount)
+                : string.Format(Loc.Get("msg.all_done"), DoneCount);
             CommandManager.InvalidateRequerySuggested();
         }
 

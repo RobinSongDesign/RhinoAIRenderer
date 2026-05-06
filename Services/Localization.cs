@@ -113,7 +113,30 @@ namespace AIRenderer.Services
             { "API Key is valid!",      new Dictionary<Language, string> { { Language.Chinese, "API 密钥有效！" },    { Language.English, "API Key is valid!" } } },
             { "API Key is invalid",     new Dictionary<Language, string> { { Language.Chinese, "API 密钥无效" },      { Language.English, "API Key is invalid" } } },
             { "Connection failed",      new Dictionary<Language, string> { { Language.Chinese, "连接失败" },           { Language.English, "Connection failed" } } },
-            { "completed suffix",       new Dictionary<Language, string> { { Language.Chinese, " 已完成" }, { Language.English, " done" } } },
+            { "completed suffix",       new Dictionary<Language, string> { { Language.Chinese, " 已完成" },         { Language.English, " done" } } },
+
+            // ── ViewRenderItem status strings ──────────────────────────────
+            { "status.waiting",         new Dictionary<Language, string> { { Language.Chinese, "等待捕获" },          { Language.English, "Waiting" } } },
+            { "status.capturing",       new Dictionary<Language, string> { { Language.Chinese, "捕获中..." },         { Language.English, "Capturing..." } } },
+            { "status.ready",           new Dictionary<Language, string> { { Language.Chinese, "就绪" },              { Language.English, "Ready" } } },
+            { "status.capture_failed",  new Dictionary<Language, string> { { Language.Chinese, "捕获失败" },          { Language.English, "Capture failed" } } },
+            { "status.queued",          new Dictionary<Language, string> { { Language.Chinese, "等待生成..." },        { Language.English, "Queued..." } } },
+            { "status.generating",      new Dictionary<Language, string> { { Language.Chinese, "生成中..." },          { Language.English, "Generating..." } } },
+            { "status.done",            new Dictionary<Language, string> { { Language.Chinese, "完成 ✓" },            { Language.English, "Done ✓" } } },
+            { "status.failed",          new Dictionary<Language, string> { { Language.Chinese, "失败 ✗" },            { Language.English, "Failed ✗" } } },
+            { "status.error",           new Dictionary<Language, string> { { Language.Chinese, "错误" },              { Language.English, "Error" } } },
+            { "status.regenerating",    new Dictionary<Language, string> { { Language.Chinese, "重新生成..." },        { Language.English, "Regenerating..." } } },
+
+            // ── BatchRenderViewModel status messages ───────────────────────
+            { "msg.click_to_load",      new Dictionary<Language, string> { { Language.Chinese, "点击「加载并捕获」开始" },           { Language.English, "Click 'Load & Capture Named Views' to begin" } } },
+            { "msg.no_named_views",     new Dictionary<Language, string> { { Language.Chinese, "当前文档中没有已保存的命名视图" },    { Language.English, "No named views found in this document" } } },
+            { "msg.loading",            new Dictionary<Language, string> { { Language.Chinese, "已加载 {0} 个视图，捕获中..." },     { Language.English, "Loaded {0} views, capturing..." } } },
+            { "msg.loaded",             new Dictionary<Language, string> { { Language.Chinese, "已加载并捕获 {0}/{1} 个视图" },      { Language.English, "Loaded and captured {0}/{1} views" } } },
+            { "msg.generating_item",    new Dictionary<Language, string> { { Language.Chinese, "第 {0}/{1} 张: {2}" },              { Language.English, "Rendering {0}/{1}: {2}" } } },
+            { "msg.generating_ref",     new Dictionary<Language, string> { { Language.Chinese, "生成中（参考前 {0} 张）..." },       { Language.English, "Generating (with {0} reference(s))..." } } },
+            { "msg.regen_ref",          new Dictionary<Language, string> { { Language.Chinese, "重新生成（参考其他 {0} 张）..." },   { Language.English, "Regenerating (with {0} reference(s))..." } } },
+            { "msg.cancelled",          new Dictionary<Language, string> { { Language.Chinese, "已取消，完成 {0}/{1}" },             { Language.English, "Cancelled — {0}/{1} completed" } } },
+            { "msg.all_done",           new Dictionary<Language, string> { { Language.Chinese, "全部完成！共渲染 {0} 张" },           { Language.English, "All done! {0} image(s) rendered" } } },
             { "Source Image",           new Dictionary<Language, string> { { Language.Chinese, "源图" },              { Language.English, "Source Image" } } },
             { "Generated Result",       new Dictionary<Language, string> { { Language.Chinese, "生成结果" },           { Language.English, "Generated Result" } } },
         };

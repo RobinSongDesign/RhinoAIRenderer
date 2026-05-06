@@ -28,3 +28,7 @@ obj/
 # OS
 Thumbs.db
 .DS_Store
+
+# Tool-specific configs (not shared)
+.claude/
+.vscode/

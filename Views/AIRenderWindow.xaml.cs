@@ -62,6 +62,12 @@ namespace AIRenderer.Views
                 _viewModel.BatchVM.SaveItem(item);
         }
 
+        private async void BatchRegenerateOne_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.Tag is ViewRenderItem item)
+                await _viewModel.BatchVM.RegenerateItemAsync(item);
+        }
+
         // ── Reference image ───────────────────────────────────────────────
 
         private void ReferenceZone_DragEnter(object sender, DragEventArgs e)

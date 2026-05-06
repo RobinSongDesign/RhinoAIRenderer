@@ -16,10 +16,11 @@
   
   <PropertyGroup>
     <!-- Specifies information for Assembly and Yak -->
-    <Version>1.0</Version>
-    <Title>AIRenderer</Title>
-    <Company>AIRenderer Authors</Company>
-    <Description>Description of AIRenderer</Description>
+    <Version>1.0.0</Version>
+    <AssemblyName>Chameleon</AssemblyName>
+    <Title>Chameleon</Title>
+    <Company>Robin Song Design</Company>
+    <Description>Chameleon AI Renderer — AI-powered architectural rendering for Rhino</Description>
   </PropertyGroup>
   
   <ItemGroup>

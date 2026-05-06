@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'   # 推送 v1.0.0 这样的 tag 时触发
+      - 'v*'
 
 permissions:
   contents: write
@@ -29,40 +29,39 @@ jobs:
 
       - name: Package net48
         run: |
-          mkdir -p dist/AIRenderer-Rhino7-${{ github.ref_name }}
-          cp bin/Release/net48/AIRenderer.rhp dist/AIRenderer-Rhino7-${{ github.ref_name }}/
-          cp bin/Release/net48/*.dll           dist/AIRenderer-Rhino7-${{ github.ref_name }}/
+          mkdir -p dist/Chameleon-Rhino7-${{ github.ref_name }}
+          cp bin/Release/net48/Chameleon.rhp dist/Chameleon-Rhino7-${{ github.ref_name }}/
+          cp bin/Release/net48/*.dll          dist/Chameleon-Rhino7-${{ github.ref_name }}/
           cd dist
-          Compress-Archive -Path AIRenderer-Rhino7-${{ github.ref_name }} -DestinationPath AIRenderer-Rhino7-${{ github.ref_name }}.zip
+          Compress-Archive -Path Chameleon-Rhino7-${{ github.ref_name }} -DestinationPath Chameleon-Rhino7-${{ github.ref_name }}.zip
         shell: pwsh
 
       - name: Package net7.0-windows
         run: |
-          mkdir -p dist/AIRenderer-Rhino8-${{ github.ref_name }}
-          cp bin/Release/net7.0-windows/AIRenderer.rhp          dist/AIRenderer-Rhino8-${{ github.ref_name }}/
-          cp bin/Release/net7.0-windows/*.dll                   dist/AIRenderer-Rhino8-${{ github.ref_name }}/
-          cp bin/Release/net7.0-windows/*.json                  dist/AIRenderer-Rhino8-${{ github.ref_name }}/
-          cp -r bin/Release/net7.0-windows/runtimes             dist/AIRenderer-Rhino8-${{ github.ref_name }}/
+          mkdir -p dist/Chameleon-Rhino8-${{ github.ref_name }}
+          cp bin/Release/net7.0-windows/Chameleon.rhp         dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp bin/Release/net7.0-windows/*.dll                  dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp bin/Release/net7.0-windows/*.json                 dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp -r bin/Release/net7.0-windows/runtimes            dist/Chameleon-Rhino8-${{ github.ref_name }}/
           cd dist
-          Compress-Archive -Path AIRenderer-Rhino8-${{ github.ref_name }} -DestinationPath AIRenderer-Rhino8-${{ github.ref_name }}.zip
-          # 单独复制 .rhp 供直接下载
-          cp AIRenderer-Rhino8-${{ github.ref_name }}/AIRenderer.rhp AIRenderer-net7-${{ github.ref_name }}.rhp
+          Compress-Archive -Path Chameleon-Rhino8-${{ github.ref_name }} -DestinationPath Chameleon-Rhino8-${{ github.ref_name }}.zip
+          cp Chameleon-Rhino8-${{ github.ref_name }}/Chameleon.rhp Chameleon-net7-${{ github.ref_name }}.rhp
         shell: pwsh
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: AIRenderer ${{ github.ref_name }}
+          name: Chameleon ${{ github.ref_name }}
           draft: false
           prerelease: false
           files: |
-            dist/AIRenderer-Rhino7-${{ github.ref_name }}.zip
-            dist/AIRenderer-Rhino8-${{ github.ref_name }}.zip
-            dist/AIRenderer-net7-${{ github.ref_name }}.rhp
+            dist/Chameleon-Rhino7-${{ github.ref_name }}.zip
+            dist/Chameleon-Rhino8-${{ github.ref_name }}.zip
+            dist/Chameleon-net7-${{ github.ref_name }}.rhp
           body: |
-            ## AIRenderer ${{ github.ref_name }}
+            ## Chameleon AI Renderer ${{ github.ref_name }}
 
             ### 安装方法
-            - **Rhino 8 (推荐)**：下载 `AIRenderer-net7-*.rhp`，直接拖入 Rhino 8 窗口即可
-            - **完整包 Rhino 7/8 (net48)**：下载 `AIRenderer-Rhino7-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口
-            - **完整包 Rhino 8 (net7.0)**：下载 `AIRenderer-Rhino8-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口
+            - **Rhino 8 (推荐)**：下载 `Chameleon-net7-*.rhp`，直接拖入 Rhino 8 窗口即可
+            - **完整包 Rhino 7/8 (net48)**：下载 `Chameleon-Rhino7-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口
+            - **完整包 Rhino 8 (net7.0)**：下载 `Chameleon-Rhino8-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口

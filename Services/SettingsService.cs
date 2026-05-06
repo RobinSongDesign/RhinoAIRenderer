@@ -268,7 +268,12 @@ namespace AIRenderer.Services
             {
                 RhinoApp.WriteLine($"Error loading settings: {ex.Message}");
             }
-            return new AppSettings();
+
+            // 首次启动：根据系统语言自动选择
+            var defaults = new AppSettings();
+            var culture = System.Globalization.CultureInfo.CurrentUICulture;
+            defaults.LanguageIndex = culture.Name.StartsWith("zh") ? 0 : 1;
+            return defaults;
         }
     }
 }

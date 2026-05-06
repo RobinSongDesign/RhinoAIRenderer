@@ -4,12 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIRenderer.Views"
+        xmlns:svc="clr-namespace:AIRenderer.Services"
         mc:Ignorable="d"
-        Title="API Settings" Height="560" Width="450"
+        Title="{Binding L[API Settings]}" Height="600" Width="450"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F5F5F5">
     <Window.Resources>
+        <svc:LocalizationManager x:Key="L"/>
         <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
         <local:BoolToVisibilityConverter x:Key="BoolToVis"/>
 
@@ -91,7 +93,7 @@
             <TextBlock x:Name="TitleText" Text="API Settings" FontSize="18" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,15"/>
 
             <!-- Provider row: Add / Edit / Delete -->
-            <TextBlock Text="Service Provider" Style="{StaticResource LabelStyle}"/>
+            <TextBlock Text="{Binding [Service Provider], Source={StaticResource L}}" Style="{StaticResource LabelStyle}"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -128,7 +130,7 @@
             </Grid>
 
             <!-- API Key -->
-            <TextBlock Text="API Key" Style="{StaticResource LabelStyle}"/>
+            <TextBlock Text="{Binding [API Key], Source={StaticResource L}}" Style="{StaticResource LabelStyle}"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -161,7 +163,7 @@
             </Grid>
 
             <!-- Test model selection -->
-            <TextBlock Text="Test with model" Style="{StaticResource LabelStyle}"/>
+            <TextBlock Text="{Binding [Test with model], Source={StaticResource L}}" Style="{StaticResource LabelStyle}"/>
             <ComboBox x:Name="TestModelComboBox"
                       ItemsSource="{Binding SelectedProviderConfig.Models}"
                       Style="{StaticResource InputStyle}"/>
@@ -177,8 +179,16 @@
             </TextBlock>
             <TextBlock x:Name="TestResultText" Margin="0,6,0,0" FontSize="11"/>
 
+            <!-- Language -->
+            <TextBlock Text="{Binding [Language], Source={StaticResource L}}" Style="{StaticResource LabelStyle}"/>
+            <ComboBox x:Name="LanguageComboBox"
+                      ItemsSource="{Binding LanguageOptions}"
+                      SelectedIndex="{Binding SelectedLanguageIndex}"
+                      Style="{StaticResource InputStyle}"
+                      SelectionChanged="LanguageComboBox_SelectionChanged"/>
+
             <!-- API URL -->
-            <TextBlock Text="API URL" Style="{StaticResource LabelStyle}"/>
+            <TextBlock Text="{Binding [API URL], Source={StaticResource L}}" Style="{StaticResource LabelStyle}"/>
             <TextBox x:Name="ApiUrlBox"
                      Text="{Binding SelectedProviderConfig.BaseUrl}"
                      Padding="8,6"
@@ -191,7 +201,7 @@
 
         <!-- Buttons -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-            <Button Content="Cancel" Click="CancelButton_Click"
+            <Button Content="{Binding [Cancel], Source={StaticResource L}}" Click="CancelButton_Click"
                     Padding="20,8" Margin="0,0,10,0"
                     Background="#E0E0E0" Foreground="#333" BorderThickness="0" Cursor="Hand">
                 <Button.Template>
@@ -202,7 +212,7 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <Button Content="Save" Click="SaveButton_Click"
+            <Button Content="{Binding [Save], Source={StaticResource L}}" Click="SaveButton_Click"
                     Style="{StaticResource ButtonPrimary}"/>
         </StackPanel>
     </Grid>

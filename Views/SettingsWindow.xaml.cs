@@ -81,6 +81,24 @@ namespace AIRenderer.Views
 
         public string ApiKey => ApiKeyBox.Password;
 
+        public string[] LanguageOptions => Loc.LanguageOptions;
+
+        private int _selectedLanguageIndex = SettingsService.LoadLanguageIndex();
+        public int SelectedLanguageIndex
+        {
+            get => _selectedLanguageIndex;
+            set { _selectedLanguageIndex = value; OnPropertyChanged(); }
+        }
+
+        private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LanguageComboBox.SelectedIndex < 0) return;
+            int idx = LanguageComboBox.SelectedIndex;
+            Loc.CurrentLanguage = Loc.GetLanguageFromIndex(idx);
+            SettingsService.SaveLanguage(idx);
+            SelectedLanguageIndex = idx;
+        }
+
         private void LoadApiKeyForProvider(string providerId)
         {
             ApiKeyBox.Password = SettingsService.GetApiKey(providerId) ?? "";

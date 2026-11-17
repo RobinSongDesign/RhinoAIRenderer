@@ -17,7 +17,7 @@ test('lists the backends offered by the host', async ({ page }) => {
 
   const state = await rpc<{ backends: { id: string }[] }>(page, 'app.getState');
 
-  expect(state.backends.map((b) => b.id)).toEqual(['direct:Gemini', 'direct:BltAI', 'fake']);
+  expect(state.backends.map((b) => b.id)).toEqual(['direct:Gemini', 'direct:BltAI', 'cloud', 'fake']);
 });
 
 test('switches language immediately and keeps it after a reload', async ({ page }) => {

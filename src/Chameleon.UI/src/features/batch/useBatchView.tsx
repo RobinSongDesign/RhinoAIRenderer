@@ -4,6 +4,8 @@ import { ImageView } from '../../components/ImageView';
 import { TextArea } from '../../components/TextArea';
 import type { MessageKey } from '../../i18n';
 import { useAppStore, useBatchStore, useJobsStore, useServices, useT } from '../../state/services';
+import { CostHint } from '../account/CostHint';
+import { useCostEstimate } from '../account/useCostEstimate';
 import { BackendSection } from '../params/BackendSection';
 import { ParametersSection } from '../params/ParametersSection';
 import { ReferenceSection } from '../params/ReferenceSection';
@@ -178,10 +180,13 @@ function BatchFooter() {
   const items = useBatchStore((s) => s.items);
   const saving = useBatchStore((s) => s.saving);
   const running = useJobsStore((jobs) => isRunning(items, jobs.jobs));
-  const canRender = items.some((i) => i.selected && i.source);
+  const renderCount = items.filter((i) => i.selected && i.source).length;
+  const cost = useCostEstimate(renderCount);
+  const canRender = renderCount > 0 && cost?.short !== true;
 
   return (
     <>
+      <CostHint estimate={cost} />
       {running ? (
         <Button
           block

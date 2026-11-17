@@ -38,6 +38,9 @@ namespace Chameleon.App.Bridge.Dto
         /// <summary>Catalog data.</summary>
         public CatalogDto Catalog { get; set; } = new CatalogDto();
 
+        /// <summary>Account mode state; <see cref="AccountInfoDto.Available"/> is false when no gateway is configured.</summary>
+        public AccountInfoDto Account { get; set; } = new AccountInfoDto();
+
         /// <summary>User settings.</summary>
         public UiSettingsDto Settings { get; set; } = new UiSettingsDto();
     }

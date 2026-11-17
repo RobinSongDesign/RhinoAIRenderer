@@ -29,7 +29,7 @@ export default defineConfig({
   webServer: {
     command:
       `dotnet run --project ../../tools/Chameleon.DevHost/Chameleon.DevHost.csproj -c Release -- ` +
-      `--ui dist --port ${port} --token ${token} --delay 300 --fake-providers --out e2e/.out`,
+      `--ui dist --port ${port} --token ${token} --delay 300 --fake-providers --fake-cloud --approve-after 500 --out e2e/.out`,
     url: `http://127.0.0.1:${port}/${token}/`,
     reuseExistingServer: false,
     timeout: 180_000,

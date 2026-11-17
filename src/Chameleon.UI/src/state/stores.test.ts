@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Bridge } from '../bridge/Bridge';
+import { BridgeError } from '../bridge/BridgeError';
 import { FakeTransport, flush } from '../test/fakeTransport';
 import { appState, job } from '../test/fixtures';
 import { createAppStore, selectActiveModel, selectAspectRatios, selectImageSizes } from './appStore';
@@ -73,6 +74,76 @@ describe('appStore', () => {
     await pending;
 
     expect(transport.callsOf('backend.select')).toEqual([{ backendId: 'direct:BltAI', modelId: 'model-b' }]);
+  });
+
+  it('returns to the host selection when selecting a backend fails', async () => {
+    const transport = new FakeTransport()
+      .handle('app.getState', () => appState())
+      .handle('backend.select', () => {
+        throw new BridgeError('not_found', 'gone');
+      });
+    const store = createAppStore(new Bridge(transport), 'en');
+    await store.getState().load();
+
+    await expect(store.getState().selectBackend('direct:Gemini')).rejects.toThrow();
+    await flush();
+
+    expect(store.getState().activeBackendId).toBe('direct:BltAI');
+  });
+
+  it('fetches the catalog again when switching into or out of account mode', async () => {
+    let active = 'direct:BltAI';
+    const transport = new FakeTransport()
+      .handle('app.getState', () =>
+        appState({
+          activeBackendId: active,
+          catalog: { ...appState().catalog, defaultSystemPrompt: active === 'cloud' ? 'gateway' : 'local' },
+        }),
+      )
+      .handle('backend.select', (p) => {
+        active = (p as { backendId: string }).backendId;
+        return { backends: appState().backends, activeBackendId: active, activeModelId: 'm' };
+      });
+    const store = createAppStore(new Bridge(transport), 'en');
+    await store.getState().load();
+
+    await store.getState().selectBackend('direct:Gemini');
+    await flush();
+    expect(transport.callsOf('app.getState')).toHaveLength(1);
+
+    await store.getState().selectBackend('cloud');
+    await flush();
+    expect(store.getState().catalog?.defaultSystemPrompt).toBe('gateway');
+
+    await store.getState().selectBackend('direct:BltAI');
+    await flush();
+    expect(store.getState().catalog?.defaultSystemPrompt).toBe('local');
+  });
+
+  it('keeps the newest catalog when refreshes overlap', async () => {
+    const answers: ((value: unknown) => void)[] = [];
+    const transport = new FakeTransport()
+      .handle('app.getState', () => appState())
+      .handle('backend.select', () => ({ backends: appState().backends, activeBackendId: 'cloud', activeModelId: 'm' }));
+    const store = createAppStore(new Bridge(transport), 'en');
+    await store.getState().load();
+    transport.handle('app.getState', () => new Promise((resolve) => answers.push(resolve)));
+    const catalog = (prompt: string) => appState({ catalog: { ...appState().catalog, defaultSystemPrompt: prompt } });
+
+    // Signing in while the account backend is already selected refreshes once...
+    store.setState({ activeBackendId: 'cloud' });
+    transport.emit('account.changed', { available: true, signedIn: true, credits: 1 });
+    // ...and the host's answer to the switch refreshes again.
+    await store.getState().selectBackend('cloud');
+    await flush();
+    expect(answers).toHaveLength(2);
+
+    answers[1](catalog('newest'));
+    await flush();
+    answers[0](catalog('stale'));
+    await flush();
+
+    expect(store.getState().catalog?.defaultSystemPrompt).toBe('newest');
   });
 
   it('reloads everything after the connection comes back', async () => {

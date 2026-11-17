@@ -92,7 +92,20 @@ namespace Chameleon.App
             HttpClient httpClient = DirectBackendFactory.CreateSharedHttpClient(options.HttpMessageHandler);
             var settings = new SettingsEditor(settingsStore);
             var factory = new DirectBackendFactory(AdapterRegistry.CreateDefault(), httpClient, new PromptComposer(), options.RetryPolicy);
-            var backends = new BackendRegistry(catalog, settings, secrets, factory, options.ExtraBackends);
+            CloudServices? cloud = CloudServices.TryCreate(
+                settingsStore.Load().Cloud.BaseUrl,
+                options.CloudBaseUrl,
+                httpClient,
+                secrets,
+                paths.CacheDirectory,
+                () => settings.Read().Language);
+            var extraBackends = new System.Collections.Generic.List<Core.Generation.IRenderBackend>(options.ExtraBackends);
+            if (cloud != null)
+            {
+                extraBackends.Insert(0, cloud.Backend);
+            }
+
+            var backends = new BackendRegistry(catalog, settings, secrets, factory, extraBackends);
             var queue = new GenerationQueue(backends.Find);
 
             var assets = new DiskAssetStore(Path.Combine(paths.CacheDirectory, "assets"));
@@ -102,11 +115,19 @@ namespace Chameleon.App
             var router = new RpcRouter(host.Log);
 
             var backendService = new BackendService(backends, settings, events);
-            new AppStateService(host, paths, catalog, settings, backends, events).Register(router);
+            var accountService = new AccountRpcService(host, cloud, events, backendService, queue);
+            new AppStateService(host, paths, catalog, settings, backends, events, accountService, cloud?.Catalog).Register(router);
             backendService.Register(router);
+            accountService.Register(router);
             new ProviderService(catalog, settings, secrets, backends, backendService, factory).Register(router);
             new CaptureService(host, assets).Register(router);
             new JobService(queue, backends, assets, settings, catalog, events).Register(router);
+
+            if (cloud != null && cloud.Session.IsSignedIn)
+            {
+                // Refresh models, prices and the balance in the background; the cached copies serve meanwhile.
+                _ = RefreshAccountAsync(cloud, host);
+            }
             new FileService(host, assets).Register(router);
 
             var server = new LocalServer(new LocalServerOptions(options.StaticFiles, router, events, assets)
@@ -119,6 +140,19 @@ namespace Chameleon.App
             server.Start();
 
             return new ChameleonApp(server, queue, httpClient, router, events, assets, settingsStore, secrets);
+        }
+
+        private static async System.Threading.Tasks.Task RefreshAccountAsync(CloudServices cloud, IRhinoHost host)
+        {
+            try
+            {
+                await cloud.Catalog.RefreshAsync(System.Threading.CancellationToken.None).ConfigureAwait(false);
+                await cloud.Account.GetMeAsync(System.Threading.CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Core.Generation.RenderException ex)
+            {
+                host.Log("Refreshing the account failed: " + ex.Message);
+            }
         }
 
         /// <summary>Stops the server, cancels running jobs and releases network resources.</summary>

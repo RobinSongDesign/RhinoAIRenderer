@@ -37,7 +37,8 @@ namespace Chameleon.DevHost
                 Port = options.Port,
                 Token = options.Token,
                 AllowedDevOrigin = options.AllowedOrigin,
-                HttpMessageHandler = options.FakeProviders ? new FakeProviderHandler(samples, options.Delay) : null
+                HttpMessageHandler = CreateHttpHandler(options, samples),
+                CloudBaseUrl = options.FakeCloud ? FakeCloudGateway.BaseUrl.ToString() : null
             };
             appOptions.ExtraBackends.Add(new FakeBackend(samples, options.Delay));
 
@@ -59,6 +60,20 @@ namespace Chameleon.DevHost
             }
 
             return 0;
+        }
+
+        private static System.Net.Http.HttpMessageHandler? CreateHttpHandler(DevHostOptions options, SampleImages samples)
+        {
+            System.Net.Http.HttpMessageHandler providers = options.FakeProviders
+                ? new FakeProviderHandler(samples, options.Delay)
+                : new System.Net.Http.HttpClientHandler();
+            if (!options.FakeCloud)
+            {
+                return options.FakeProviders ? providers : null;
+            }
+
+            var gateway = new FakeCloudGateway(samples, options.Delay, options.ApprovalDelay);
+            return new RoutingHandler(FakeCloudGateway.BaseUrl.Host, gateway, providers);
         }
     }
 }

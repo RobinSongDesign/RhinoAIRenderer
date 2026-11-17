@@ -7,6 +7,7 @@ import { Select } from '../../components/Select';
 import { TextArea } from '../../components/TextArea';
 import type { BatchMode } from '../../bridge/types';
 import { useAppStore, useServices, useSettingsStore, useT, useUiStore } from '../../state/services';
+import { CLOUD_BACKEND_ID } from '../../bridge/types';
 import { LanguageSelect } from '../shell/LanguageSelect';
 import { ProviderDetails } from './ProviderDetails';
 import { ProviderForm } from './ProviderForm';
@@ -53,6 +54,66 @@ function ProvidersGroup() {
           )
         )}
       </div>
+    </section>
+  );
+}
+
+type AccessMode = 'account' | 'ownKey';
+
+/** Switches between account mode (cloud backend) and bring-your-own-key mode (direct backends). */
+function AccessGroup() {
+  const t = useT();
+  const { app, account } = useServices();
+  const info = useAppStore((s) => s.account);
+  const backends = useAppStore((s) => s.backends);
+  const mode: AccessMode = useAppStore((s) => (s.activeBackendId === CLOUD_BACKEND_ID ? 'account' : 'ownKey'));
+
+  const choose = (next: AccessMode) => {
+    if (next === mode) {
+      return;
+    }
+    if (next === 'account') {
+      void app.getState().selectBackend(CLOUD_BACKEND_ID);
+      return;
+    }
+    // Prefer a provider that already has a key.
+    const direct = backends.filter((b) => b.kind === 'direct');
+    const target = direct.find((b) => b.ready) ?? direct[0];
+    if (target) {
+      void app.getState().selectBackend(target.id);
+    }
+  };
+
+  return (
+    <section className={styles.group}>
+      <h2>{t('settings.access')}</h2>
+      <Field label={t('settings.accessMode')}>
+        <Select<AccessMode>
+          data-testid="access-mode"
+          value={mode}
+          options={[
+            { value: 'account', label: t('settings.access.account') },
+            { value: 'ownKey', label: t('settings.access.ownKey') },
+          ]}
+          onChange={choose}
+        />
+      </Field>
+      {mode === 'account' && (
+        <div className={styles.actions}>
+          <span className={styles.grow} data-testid="settings-account-status">
+            {info.signedIn
+              ? `${t('account.signedInAs', { email: info.email ?? '' })} · ${t('account.credits', { credits: info.credits ?? 0 })}`
+              : t('account.notSignedIn')}
+          </span>
+          {info.signedIn ? (
+            <Button onClick={() => void account.getState().signOut()}>{t('account.signOut')}</Button>
+          ) : (
+            <Button variant="primary" onClick={() => void account.getState().startLogin()}>
+              {t('account.signIn')}
+            </Button>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -155,6 +216,8 @@ export function SettingsDialog() {
   const { ui, settings } = useServices();
   const open = useUiStore((s) => s.settingsOpen);
   const activeBackendId = useAppStore((s) => s.activeBackendId);
+  const accountAvailable = useAppStore((s) => s.account.available);
+  const accountMode = activeBackendId === CLOUD_BACKEND_ID;
 
   useEffect(() => {
     if (open) {
@@ -182,7 +245,8 @@ export function SettingsDialog() {
       }
     >
       <div className={styles.body}>
-        <ProvidersGroup />
+        {accountAvailable && <AccessGroup />}
+        {!accountMode && <ProvidersGroup />}
         <section className={styles.group}>
           <h2>{t('settings.general')}</h2>
           <Field label={t('label.language')}>

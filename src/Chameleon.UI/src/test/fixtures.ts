@@ -49,6 +49,7 @@ export function appState(overrides: Partial<AppState> = {}): AppState {
       defaultImageSize: '1K',
     },
     settings: { language: 'en', systemPrompt: null, batch: { mode: 'serial', maxConsistencyRefs: 3 } },
+    account: { available: false, signedIn: false },
     ...overrides,
   };
 }

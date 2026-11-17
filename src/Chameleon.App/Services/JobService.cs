@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Chameleon.App.Assets;
 using Chameleon.App.Bridge;
 using Chameleon.App.Bridge.Dto;
+using Chameleon.Core.Backends;
 using Chameleon.Core.Catalog;
 using Chameleon.Core.Generation;
 using Chameleon.Core.Imaging;
@@ -204,7 +205,9 @@ namespace Chameleon.App.Services
                 ModelId = parameters.ModelId ?? string.Empty,
                 Prompt = parameters.Prompt ?? string.Empty,
                 // An explicit value wins, then the user's own system prompt, then the catalog default.
-                SystemPrompt = parameters.SystemPrompt ?? settings.SystemPrompt ?? _catalog.DefaultSystemPrompt,
+                // The gateway applies its own default, so account requests only carry the user's.
+                SystemPrompt = parameters.SystemPrompt ?? settings.SystemPrompt
+                               ?? (parameters.BackendId == BackendIds.Cloud ? null : _catalog.DefaultSystemPrompt),
                 AspectRatio = parameters.AspectRatio,
                 ImageSize = string.IsNullOrEmpty(parameters.ImageSize) ? _catalog.DefaultImageSize : parameters.ImageSize!
             };

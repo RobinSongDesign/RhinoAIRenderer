@@ -10,6 +10,7 @@ import { createParamsStore, type ParamsStoreState } from '../features/params/par
 import { createSingleStore, type SingleStoreState } from '../features/single/singleStore';
 import { createBatchStore, type BatchStoreState } from '../features/batch/batchStore';
 import { createSettingsStore, type SettingsStoreState } from '../features/settings/settingsStore';
+import { createAccountStore, type AccountStoreState } from '../features/account/accountStore';
 
 /** Everything components may use. Created once at start-up and handed down through context. */
 export interface Services {
@@ -21,6 +22,7 @@ export interface Services {
   single: StoreApi<SingleStoreState>;
   batch: StoreApi<BatchStoreState>;
   settings: StoreApi<SettingsStoreState>;
+  account: StoreApi<AccountStoreState>;
 }
 
 /** Builds every store on top of a bridge. Feature stores live next to their features. */
@@ -28,15 +30,18 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
   const app = createAppStore(bridge, initialLanguage);
   const jobs = createJobsStore(bridge);
   const params = createParamsStore(bridge);
+  const single = createSingleStore({ bridge, app, jobs, params });
+  const batch = createBatchStore({ bridge, app, jobs, params });
   return {
     bridge,
     app,
     jobs,
     ui: createUiStore(),
     params,
-    single: createSingleStore({ bridge, app, jobs, params }),
-    batch: createBatchStore({ bridge, app, jobs, params }),
+    single,
+    batch,
     settings: createSettingsStore(bridge),
+    account: createAccountStore({ bridge, app, statusSources: [single, batch] }),
   };
 }
 
@@ -84,6 +89,10 @@ export function useBatchStore<T>(selector: (state: BatchStoreState) => T): T {
 
 export function useSettingsStore<T>(selector: (state: SettingsStoreState) => T): T {
   return useStore(useServices().settings, selector);
+}
+
+export function useAccountStore<T>(selector: (state: AccountStoreState) => T): T {
+  return useStore(useServices().account, selector);
 }
 
 /** Translator for the current UI language; re-renders the caller when the language changes. */

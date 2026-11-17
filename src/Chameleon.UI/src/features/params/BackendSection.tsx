@@ -9,7 +9,7 @@ import { Section } from '../shell/Section';
 /** Which backend and model generate the image; warns when the backend still needs a key. */
 export function BackendSection() {
   const t = useT();
-  const { app, ui } = useServices();
+  const { app, ui, account } = useServices();
   const backends = useAppStore((s) => s.backends);
   const activeBackendId = useAppStore((s) => s.activeBackendId);
   const activeModelId = useAppStore((s) => s.activeModelId);
@@ -27,10 +27,21 @@ export function BackendSection() {
       </Field>
       {backend && !backend.ready && (
         <div className={componentStyles.banner} data-testid="backend-not-ready">
-          {t('backend.notReady', { name: backend.displayName })}{' '}
-          <Button size="small" onClick={() => ui.getState().openSettings()}>
-            {t('action.openSettings')}
-          </Button>
+          {backend.kind === 'cloud' ? (
+            <>
+              {t('backend.signInRequired')}{' '}
+              <Button size="small" onClick={() => void account.getState().startLogin()}>
+                {t('account.signIn')}
+              </Button>
+            </>
+          ) : (
+            <>
+              {t('backend.notReady', { name: backend.displayName })}{' '}
+              <Button size="small" onClick={() => ui.getState().openSettings()}>
+                {t('action.openSettings')}
+              </Button>
+            </>
+          )}
         </div>
       )}
       <Field label={t('label.model')}>

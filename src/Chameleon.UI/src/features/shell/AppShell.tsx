@@ -6,6 +6,7 @@ import { StatusBar } from '../../components/StatusBar';
 import type { StatusMessage } from '../../state/status';
 import type { Mode } from '../../state/uiStore';
 import { useAppStore, useServices, useT, useUiStore } from '../../state/services';
+import { AccountMenu } from '../account/AccountMenu';
 import { LanguageSelect } from './LanguageSelect';
 import styles from './shell.module.css';
 
@@ -72,6 +73,7 @@ export function AppShell({ views, dialogs }: { views: Record<Mode, ModeView>; di
             {tab('batch', t('mode.batch'))}
           </div>
           <LanguageSelect compact />
+          <AccountMenu />
           <Button
             variant="ghost"
             aria-label={t('action.settings')}

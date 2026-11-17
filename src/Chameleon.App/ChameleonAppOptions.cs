@@ -41,6 +41,12 @@ namespace Chameleon.App
         /// <summary>Retry behavior for provider calls; null uses the default.</summary>
         public RetryPolicy? RetryPolicy { get; set; }
 
+        /// <summary>
+        /// Gateway address for account mode when the user's settings do not set one; defaults to
+        /// the build's address (none yet). Null with no setting means account mode is not offered.
+        /// </summary>
+        public string? CloudBaseUrl { get; set; } = Core.Cloud.CloudEndpoint.DefaultBaseUrl;
+
         /// <summary>Backends offered in addition to the configured providers.</summary>
         public IList<IRenderBackend> ExtraBackends { get; } = new List<IRenderBackend>();
 

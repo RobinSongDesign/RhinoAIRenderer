@@ -9,6 +9,9 @@ namespace Chameleon.App.Services
         /// <summary>The backend list, readiness or selection changed.</summary>
         public const string BackendsChanged = "backends.changed";
 
+        /// <summary>Sign-in state or balance changed.</summary>
+        public const string AccountChanged = "account.changed";
+
         /// <summary>User settings changed.</summary>
         public const string SettingsChanged = "settings.changed";
     }

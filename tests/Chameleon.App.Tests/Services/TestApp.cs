@@ -106,13 +106,29 @@ namespace Chameleon.App.Tests.Services
         /// <summary>Waits for the next event with the given name, skipping others.</summary>
         public async Task<JToken> WaitForEventAsync(string name, Func<JToken, bool>? predicate = null)
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            return await TryWaitForEventAsync(name, predicate, TimeSpan.FromSeconds(10))
+                ?? throw new TimeoutException("Event '" + name + "' did not arrive.");
+        }
+
+        /// <summary>Like <see cref="WaitForEventAsync"/>, but returns null when nothing matching arrives in time.</summary>
+        public async Task<JToken?> TryWaitForEventAsync(string name, Func<JToken, bool>? predicate, TimeSpan wait)
+        {
+            using var timeout = new CancellationTokenSource(wait);
             while (true)
             {
-                BridgeEvent? next = await _subscription.ReadAsync(TimeSpan.FromSeconds(10), timeout.Token);
+                BridgeEvent? next;
+                try
+                {
+                    next = await _subscription.ReadAsync(wait, timeout.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+
                 if (next == null)
                 {
-                    throw new TimeoutException("Event '" + name + "' did not arrive.");
+                    return null;
                 }
 
                 if (next.Name == name)

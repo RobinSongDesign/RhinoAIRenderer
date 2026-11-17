@@ -45,6 +45,12 @@ namespace Chameleon.App.Bridge
         /// <summary>An asset, job or node does not exist.</summary>
         public const string NotFound = "not_found";
 
+        /// <summary>The request conflicts with the current state (e.g. a redeem code that was already used).</summary>
+        public const string Conflict = "conflict";
+
+        /// <summary>The item no longer exists (e.g. an expired or revoked redeem code).</summary>
+        public const string Gone = "gone";
+
         /// <summary>Unexpected failure inside the host.</summary>
         public const string Internal = "internal";
     }

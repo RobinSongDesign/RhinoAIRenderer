@@ -23,6 +23,8 @@ export type ErrorCode =
   | 'rhino_error'
   | 'not_found'
   | 'internal'
+  | 'conflict'
+  | 'gone'
   | 'disconnected';
 
 export interface RpcError {
@@ -58,6 +60,9 @@ export interface ModelInfo {
 }
 
 export type BackendKind = 'direct' | 'cloud' | 'dev';
+
+/** Id of the account-mode backend (bridge-protocol.md §4.7). */
+export const CLOUD_BACKEND_ID = 'cloud';
 
 export interface BackendInfo {
   id: string;
@@ -101,6 +106,33 @@ export interface UiSettings {
   batch: { mode: BatchMode; maxConsistencyRefs: number };
 }
 
+export interface LoginState {
+  state: 'pending' | 'failed';
+  userCode: string;
+  verificationUrl: string;
+  expiresIn: number;
+  error?: RpcError;
+}
+
+/** Account mode state; never carries tokens. */
+export interface AccountInfo {
+  /** A gateway is configured, so account mode can be used. */
+  available: boolean;
+  signedIn: boolean;
+  email?: string;
+  credits?: number;
+  login?: LoginState;
+}
+
+export interface LedgerItem {
+  id: number;
+  delta: number;
+  balanceAfter: number;
+  type: 'redeem' | 'reserve' | 'refund' | 'admin_adjust';
+  note?: string;
+  createdAt: string;
+}
+
 export interface AppState {
   protocolVersion: number;
   appVersion: string;
@@ -113,6 +145,7 @@ export interface AppState {
   activeBackendId: string;
   activeModelId: string;
   catalog: Catalog;
+  account: AccountInfo;
   settings: UiSettings;
 }
 
@@ -216,6 +249,13 @@ export interface RpcMethods {
     result: { folder: string; saved: number } | null;
   };
   'files.pickImages': { params: { multiple: boolean }; result: AssetRef[] };
+  'auth.startLogin': { params: void; result: LoginState };
+  'auth.cancelLogin': { params: void; result: null };
+  'auth.logout': { params: void; result: null };
+  'account.get': { params: { refresh?: boolean } | void; result: AccountInfo };
+  'account.redeem': { params: { code: string }; result: { creditsAdded: number; credits: number } };
+  'account.ledger': { params: { cursor?: string } | void; result: { items: LedgerItem[]; nextCursor?: string | null } };
+  'account.estimate': { params: { modelId: string; imageSize: string; count?: number }; result: { credits: number | null } };
 }
 
 export type RpcMethod = keyof RpcMethods;
@@ -227,6 +267,7 @@ export interface BridgeEvents {
   'job.updated': JobInfo;
   'backends.changed': BackendSelection;
   'settings.changed': UiSettings;
+  'account.changed': AccountInfo;
 }
 
 export type BridgeEventName = keyof BridgeEvents;

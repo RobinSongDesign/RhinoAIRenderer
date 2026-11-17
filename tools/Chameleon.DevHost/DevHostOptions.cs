@@ -31,6 +31,12 @@ namespace Chameleon.DevHost
         /// <summary>True to answer provider HTTP calls locally instead of using the network.</summary>
         public bool FakeProviders { get; private set; }
 
+        /// <summary>True to offer account mode against an in-process fake gateway.</summary>
+        public bool FakeCloud { get; private set; }
+
+        /// <summary>How long the fake gateway waits before approving a sign-in.</summary>
+        public TimeSpan ApprovalDelay { get; private set; } = TimeSpan.FromSeconds(2);
+
         /// <summary>Usage text.</summary>
         public const string Usage =
             "Usage: Chameleon.DevHost [options]\n" +
@@ -41,7 +47,10 @@ namespace Chameleon.DevHost
             "  --out <dir>           Folder the fake save dialogs write into (default: <data>/out).\n" +
             "  --allow-origin <url>  Extra browser origin allowed to call the bridge (Vite dev server).\n" +
             "  --delay <ms>          Duration of a fake generation (default 800).\n" +
-            "  --fake-providers      Answer provider HTTP calls locally; the accepted key is \"dev-good-key\".\n";
+            "  --fake-providers      Answer provider HTTP calls locally; the accepted key is \"dev-good-key\".\n" +
+            "  --fake-cloud          Offer account mode against an in-process fake gateway\n" +
+            "                        (sign-in is approved automatically; redeem code TEST-TEST-TEST-TEST).\n" +
+            "  --approve-after <ms>  Delay before the fake gateway approves a sign-in (default 2000).\n";
 
         /// <summary>Parses the command line.</summary>
         /// <exception cref="ArgumentException">An option is unknown or malformed.</exception>
@@ -54,6 +63,12 @@ namespace Chameleon.DevHost
                 if (name == "--fake-providers")
                 {
                     options.FakeProviders = true;
+                    continue;
+                }
+
+                if (name == "--fake-cloud")
+                {
+                    options.FakeCloud = true;
                     continue;
                 }
 
@@ -85,6 +100,9 @@ namespace Chameleon.DevHost
                         break;
                     case "--delay":
                         options.Delay = TimeSpan.FromMilliseconds(int.Parse(value));
+                        break;
+                    case "--approve-after":
+                        options.ApprovalDelay = TimeSpan.FromMilliseconds(int.Parse(value));
                         break;
                     default:
                         throw new ArgumentException("Unknown option '" + name + "'.");

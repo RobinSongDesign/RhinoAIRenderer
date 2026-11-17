@@ -78,6 +78,27 @@ namespace Chameleon.App.Tests.Services
         // ── backend.select ─────────────────────────────────────────────────────
 
         [Fact]
+        public async Task BackendSelect_WhileAnotherAnnouncementIsResolving_AnnouncesTheNewestSelectionLast()
+        {
+            var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task held = _app.Backend.HoldNextModelList(release.Task);
+            Task<JToken> first = _app.CallAsync("backend.select", new { backendId = "scripted" });
+            await held;
+
+            // The second selection must not overtake the first, still waiting for the model list.
+            Task<JToken> second = _app.CallAsync("backend.select", new { backendId = "direct:Gemini" });
+            await Task.Delay(200);
+            release.SetResult(true);
+            await Task.WhenAll(first, second);
+
+            JToken announcedFirst = await _app.WaitForEventAsync("backends.changed");
+            JToken announcedLast = await _app.WaitForEventAsync("backends.changed");
+            Assert.Equal("scripted", (string)announcedFirst["activeBackendId"]!);
+            Assert.Equal("direct:Gemini", (string)announcedLast["activeBackendId"]!);
+            Assert.Equal("direct:Gemini", (string)(await _app.CallAsync("app.getState"))["activeBackendId"]!);
+        }
+
+        [Fact]
         public async Task BackendSelect_PersistsBackendAndModel_AndNotifies()
         {
             JToken selection = await _app.CallAsync("backend.select", new { backendId = "scripted", modelId = "scripted-b" });

@@ -14,6 +14,11 @@ namespace Chameleon.App.Services
         private readonly SettingsEditor _settings;
         private readonly EventBus _events;
 
+        // Resolving the selection awaits the backends (model lists), so two announcements can
+        // overlap, e.g. a sign-in finishing while the UI selects a backend. Serializing them keeps
+        // the last published selection the newest one; otherwise a stale list could arrive last.
+        private readonly SemaphoreSlim _publishGate = new SemaphoreSlim(1, 1);
+
         /// <summary>Creates the service.</summary>
         public BackendService(BackendRegistry backends, SettingsEditor settings, EventBus events)
         {
@@ -51,10 +56,18 @@ namespace Chameleon.App.Services
         /// <summary>Rebuilds the backend list and tells the UI about it.</summary>
         public async Task<BackendSelectionDto> PublishChangedAsync(CancellationToken cancellationToken)
         {
-            _backends.Invalidate();
-            BackendSelectionDto selection = await _backends.ResolveSelectionAsync(cancellationToken).ConfigureAwait(false);
-            _events.Publish(BridgeEvents.BackendsChanged, selection);
-            return selection;
+            await _publishGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                _backends.Invalidate();
+                BackendSelectionDto selection = await _backends.ResolveSelectionAsync(cancellationToken).ConfigureAwait(false);
+                _events.Publish(BridgeEvents.BackendsChanged, selection);
+                return selection;
+            }
+            finally
+            {
+                _publishGate.Release();
+            }
         }
     }
 }

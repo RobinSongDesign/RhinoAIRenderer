@@ -4,6 +4,9 @@ import { ImageView } from '../../components/ImageView';
 import { Select } from '../../components/Select';
 import type { OutputFormat } from '../../imaging/imaging';
 import { useServices, useSingleStore, useT } from '../../state/services';
+import { CostHint } from '../account/CostHint';
+import { useCostEstimate } from '../account/useCostEstimate';
+import { WelcomeCard } from '../account/WelcomeCard';
 import { BackendSection } from '../params/BackendSection';
 import { ParametersSection } from '../params/ParametersSection';
 import { ReferenceSection } from '../params/ReferenceSection';
@@ -48,6 +51,7 @@ function SinglePanel() {
 
   return (
     <>
+      <WelcomeCard />
       <Section title={t('section.capture')}>
         <Button
           variant="primary"
@@ -75,9 +79,11 @@ function SingleFooter() {
   const result = useSingleStore((s) => s.result);
   const generating = useSingleStore((s) => s.activeJobId !== null);
   const saving = useSingleStore((s) => s.saving);
+  const cost = useCostEstimate(1);
 
   return (
     <>
+      <CostHint estimate={cost} />
       {generating ? (
         <Button
           block
@@ -92,7 +98,7 @@ function SingleFooter() {
           block
           variant="primary"
           data-testid="generate-button"
-          disabled={!source}
+          disabled={!source || cost?.short === true}
           onClick={() => void single.getState().generate()}
         >
           {t('action.generate')}

@@ -216,17 +216,39 @@ Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI�
 
 ### 4.7 账号（P4）
 
+只有配置了网关地址（设置中的 `cloud.baseUrl`，或版本内置的默认地址）时才提供账号模式；否则 `AccountInfo.available` 为 `false`，下列方法返回 `not_ready`。
+
+```ts
+interface AccountInfo {
+  available: boolean;        // a gateway is configured
+  signedIn: boolean;
+  email?: string;
+  credits?: number;          // last known balance
+  login?: LoginState;        // sign-in in progress, or its failure
+}
+
+interface LoginState {
+  state: 'pending' | 'failed';
+  userCode: string;          // shown to the user, e.g. WDJB-MJHT
+  verificationUrl: string;   // opened in the system browser
+  expiresIn: number;
+  error?: RpcError;          // when failed
+}
+```
+
 | 方法 | 参数 | 返回 |
 |---|---|---|
-| `auth.startLogin` | — | `{ userCode, verificationUrl, expiresIn }`（同时用系统浏览器打开验证页面） |
+| `auth.startLogin` | — | `LoginState`（同时用系统浏览器打开验证页面；之后在后台等待确认） |
 | `auth.cancelLogin` | — | — |
 | `auth.logout` | — | — |
-| `account.get` | `{ refresh?: boolean }` | `AccountInfo`（`{ signedIn, email?, credits?, plan? }`） |
-| `account.redeem` | `{ code }` | `{ creditsAdded, credits }` |
+| `account.get` | `{ refresh?: boolean }` | `AccountInfo`（`refresh` 为真时先向网关查询余额） |
+| `account.redeem` | `{ code }` | `{ creditsAdded, credits }`；兑换码不存在 `not_found`、已使用 `conflict`、已过期或作废 `gone` |
 | `account.ledger` | `{ cursor? }` | `{ items: LedgerItem[], nextCursor? }` |
-| `account.estimate` | `GenerateParams` | `{ credits: number }` |
+| `account.estimate` | `{ modelId, imageSize, count? }` | `{ credits: number \| null }`（按缓存的价格表计算，不访问网络；未定价为 `null`） |
 
-登录结果通过 `account.changed` 事件通知，UI 不轮询。
+`app.getState` 的结果包含 `account: AccountInfo`。登录结果、余额变化都通过 `account.changed` 事件通知，UI 不轮询。登录或退出同时会发出 `backends.changed`（账号后端的 `ready` 随之变化）。设备码登录完成时，宿主先拉取网关目录，再发出 `signedIn: true` 的 `account.changed`，保证 UI 此时调用 `app.getState` 能拿到网关下发的模板。目录只随 `app.getState` 返回：UI 在切入或切出账号后端、以及账号后端下登录状态变化时重新调用它。
+
+账号模式下（当前后端为 `cloud`）：`app.getState` 返回的风格模板与默认系统提示词取自网关目录；提交的任务只携带用户自己设置的系统提示词，默认提示词由网关追加。
 
 ## 5. 错误码
 
@@ -246,6 +268,8 @@ Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI�
 | `cancelled` | 已取消 | `OperationCanceledException` |
 | `rhino_error` | 截图失败、没有活动文档、命名视图不存在等 | `IRhinoHost` |
 | `not_found` | 资源、任务、节点不存在 | 宿主 |
+| `conflict` | 与当前状态冲突（如兑换码已被使用） | 宿主 |
+| `gone` | 已失效（如兑换码已过期或作废） | 宿主 |
 | `internal` | 未预期的异常 | 宿主 |
 
 ## 6. 事件

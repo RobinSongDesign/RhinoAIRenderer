@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Chameleon.App.Bridge;
 using Chameleon.App.Bridge.Dto;
 using Chameleon.App.Hosting;
+using Chameleon.Core.Backends;
 using Chameleon.Core.Catalog;
+using Chameleon.Core.Cloud;
 using Chameleon.Core.Settings;
 using Newtonsoft.Json.Linq;
 
@@ -19,10 +21,22 @@ namespace Chameleon.App.Services
         private readonly SettingsEditor _settings;
         private readonly BackendRegistry _backends;
         private readonly EventBus _events;
+        private readonly AccountRpcService? _account;
+        private readonly CloudCatalogCache? _cloudCatalog;
 
         /// <summary>Creates the service.</summary>
-        public AppStateService(IRhinoHost host, IAppPaths paths, ChameleonCatalog catalog, SettingsEditor settings, BackendRegistry backends, EventBus events)
+        public AppStateService(
+            IRhinoHost host,
+            IAppPaths paths,
+            ChameleonCatalog catalog,
+            SettingsEditor settings,
+            BackendRegistry backends,
+            EventBus events,
+            AccountRpcService? account = null,
+            CloudCatalogCache? cloudCatalog = null)
         {
+            _account = account;
+            _cloudCatalog = cloudCatalog;
             _host = host ?? throw new ArgumentNullException(nameof(host));
             _paths = paths ?? throw new ArgumentNullException(nameof(paths));
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
@@ -64,7 +78,8 @@ namespace Chameleon.App.Services
                 Backends = selection.Backends,
                 ActiveBackendId = selection.ActiveBackendId,
                 ActiveModelId = selection.ActiveModelId,
-                Catalog = CatalogDto.From(_catalog),
+                Catalog = CatalogFor(selection.ActiveBackendId),
+                Account = _account?.Describe() ?? new AccountInfoDto(),
                 Settings = UiSettingsDto.From(settings)
             };
         }
@@ -118,6 +133,27 @@ namespace Chameleon.App.Services
             {
                 // Built-in provider names are localized, so the backend list depends on the language.
                 _backends.Invalidate();
+            }
+
+            return dto;
+        }
+
+        // In account mode the gateway's templates and system prompt apply, so they can change without a new plug-in.
+        private CatalogDto CatalogFor(string activeBackendId)
+        {
+            CatalogDto dto = CatalogDto.From(_catalog);
+            CloudCatalog? cloud = activeBackendId == BackendIds.Cloud ? _cloudCatalog?.Current : null;
+            if (cloud != null)
+            {
+                if (cloud.StyleTemplates.Count > 0)
+                {
+                    dto.StyleTemplates = cloud.StyleTemplates;
+                }
+
+                if (!string.IsNullOrEmpty(cloud.DefaultSystemPrompt))
+                {
+                    dto.DefaultSystemPrompt = cloud.DefaultSystemPrompt;
+                }
             }
 
             return dto;

@@ -16,6 +16,7 @@ namespace Chameleon.App.Tests.Services
     internal sealed class ScriptedBackend : IRenderBackend, IBackendStatus
     {
         private readonly List<GenerationRequest> _requests = new List<GenerationRequest>();
+        private (Task Release, TaskCompletionSource<bool> Held)? _modelListHold;
 
         public string Id => "scripted";
 
@@ -46,13 +47,38 @@ namespace Chameleon.App.Tests.Services
 
         public BackendCapabilities GetCapabilities(string modelId) => Capabilities;
 
-        public Task<IReadOnlyList<ModelInfo>> ListModelsAsync(CancellationToken cancellationToken)
+        /// <summary>Makes the next model listing wait for <paramref name="release"/>; returns a task that completes once it is waiting.</summary>
+        public Task HoldNextModelList(Task release)
         {
-            return Task.FromResult<IReadOnlyList<ModelInfo>>(new[]
+            var held = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            lock (_requests)
+            {
+                _modelListHold = (release, held);
+            }
+
+            return held.Task;
+        }
+
+        public async Task<IReadOnlyList<ModelInfo>> ListModelsAsync(CancellationToken cancellationToken)
+        {
+            (Task Release, TaskCompletionSource<bool> Held)? hold;
+            lock (_requests)
+            {
+                hold = _modelListHold;
+                _modelListHold = null;
+            }
+
+            if (hold != null)
+            {
+                hold.Value.Held.SetResult(true);
+                await hold.Value.Release;
+            }
+
+            return new[]
             {
                 new ModelInfo { Id = "scripted-a", DisplayName = "Scripted A", Capabilities = Capabilities },
                 new ModelInfo { Id = "scripted-b", DisplayName = "Scripted B", Capabilities = Capabilities }
-            });
+            };
         }
 
         public Task ValidateAsync(string modelId, CancellationToken cancellationToken) => Task.CompletedTask;

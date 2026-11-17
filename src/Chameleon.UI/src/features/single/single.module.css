@@ -1,0 +1,17 @@
+.workspace {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 6px;
+  height: 100%;
+}
+.footerRow {
+  display: flex;
+  gap: 8px;
+}
+.footerRow > * {
+  flex: 1;
+  min-width: 0;
+}
+.formatSelect {
+  flex: 0 0 76px !important;
+}

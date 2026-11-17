@@ -6,6 +6,8 @@ import { createTranslator, type Translate } from '../i18n';
 import { createAppStore, type AppStoreState } from './appStore';
 import { createJobsStore, type JobsStoreState } from './jobsStore';
 import { createUiStore, type UiStoreState } from './uiStore';
+import { createParamsStore, type ParamsStoreState } from '../features/params/paramsStore';
+import { createSingleStore, type SingleStoreState } from '../features/single/singleStore';
 
 /** Everything components may use. Created once at start-up and handed down through context. */
 export interface Services {
@@ -13,15 +15,22 @@ export interface Services {
   app: StoreApi<AppStoreState>;
   jobs: StoreApi<JobsStoreState>;
   ui: StoreApi<UiStoreState>;
+  params: StoreApi<ParamsStoreState>;
+  single: StoreApi<SingleStoreState>;
 }
 
-/** Builds the core services on top of a bridge; feature stores are created next to their features. */
+/** Builds every store on top of a bridge. Feature stores live next to their features. */
 export function createServices(bridge: Bridge, initialLanguage: Language): Services {
+  const app = createAppStore(bridge, initialLanguage);
+  const jobs = createJobsStore(bridge);
+  const params = createParamsStore(bridge);
   return {
     bridge,
-    app: createAppStore(bridge, initialLanguage),
-    jobs: createJobsStore(bridge),
+    app,
+    jobs,
     ui: createUiStore(),
+    params,
+    single: createSingleStore({ bridge, app, jobs, params }),
   };
 }
 
@@ -53,6 +62,14 @@ export function useJobsStore<T>(selector: (state: JobsStoreState) => T): T {
 
 export function useUiStore<T>(selector: (state: UiStoreState) => T): T {
   return useStore(useServices().ui, selector);
+}
+
+export function useParamsStore<T>(selector: (state: ParamsStoreState) => T): T {
+  return useStore(useServices().params, selector);
+}
+
+export function useSingleStore<T>(selector: (state: SingleStoreState) => T): T {
+  return useStore(useServices().single, selector);
 }
 
 /** Translator for the current UI language; re-renders the caller when the language changes. */

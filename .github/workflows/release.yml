@@ -1,67 +1,105 @@
-name: Build and Release
+name: Release
 
+# Builds the cross-platform plug-in, packages it for Rhino's package manager (Yak) and publishes
+# a GitHub release. Tags v2.0.0 and later; a tag with a suffix (v2.0.0-beta.1) is a pre-release.
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[2-9]*'
 
 permissions:
   contents: write
 
-jobs:
-  build-and-release:
-    runs-on: windows-latest
+env:
+  # Standalone Yak CLI for Linux build machines (the .NET 8 build), pinned for reproducible releases.
+  YAK_URL: https://files.mcneel.com/yak/tools/0.15.1/linux-x64/yak
 
+jobs:
+  release:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: '8.0.x'
 
-      - name: Build (net48 — Rhino 7/8)
-        run: dotnet build legacy/AIRenderer.csproj -c Release -f net48
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
 
-      - name: Build (net7.0-windows — Rhino 8)
-        run: dotnet build legacy/AIRenderer.csproj -c Release -f net7.0-windows
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: src/Chameleon.UI/pnpm-lock.yaml
 
-      - name: Package net48
+      - name: Set version from tag
+        id: version
         run: |
-          mkdir -p dist/Chameleon-Rhino7-${{ github.ref_name }}
-          cp legacy/bin/Release/net48/Chameleon.rhp dist/Chameleon-Rhino7-${{ github.ref_name }}/
-          cp legacy/bin/Release/net48/*.dll          dist/Chameleon-Rhino7-${{ github.ref_name }}/
-          cd dist
-          Compress-Archive -Path Chameleon-Rhino7-${{ github.ref_name }} -DestinationPath Chameleon-Rhino7-${{ github.ref_name }}.zip
-        shell: pwsh
+          python3 tools/scripts/set_version.py "${GITHUB_REF_NAME}"
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
 
-      - name: Package net7.0-windows
+      - name: Test
+        run: dotnet test Chameleon.sln -c Release -p:SkipUi=true
+
+      - name: Build front end
         run: |
-          mkdir -p dist/Chameleon-Rhino8-${{ github.ref_name }}
-          cp legacy/bin/Release/net7.0-windows/Chameleon.rhp         dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cp legacy/bin/Release/net7.0-windows/*.dll                  dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cp legacy/bin/Release/net7.0-windows/*.json                 dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cp -r legacy/bin/Release/net7.0-windows/runtimes            dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cd dist
-          Compress-Archive -Path Chameleon-Rhino8-${{ github.ref_name }} -DestinationPath Chameleon-Rhino8-${{ github.ref_name }}.zip
-          cp Chameleon-Rhino8-${{ github.ref_name }}/Chameleon.rhp Chameleon-net7-${{ github.ref_name }}.rhp
-        shell: pwsh
+          pnpm --dir src/Chameleon.UI install --frozen-lockfile
+          pnpm --dir src/Chameleon.UI build
 
-      - name: Create GitHub Release
+      - name: Build plug-in
+        run: dotnet build src/Chameleon.Rhino/Chameleon.Rhino.csproj -c Release
+
+      - name: Assemble package
+        run: python3 tools/scripts/assemble_package.py src/Chameleon.Rhino/bin/Release dist/package
+
+      - name: Build Yak package
+        run: |
+          curl -fsSL "$YAK_URL" -o yak
+          chmod +x yak
+          (cd dist/package && ../../yak build --platform any)
+          mv dist/package/*.yak dist/
+          ls -l dist
+
+      - name: Zip framework folders
+        run: |
+          cd dist/package
+          zip -r "../Chameleon-${{ steps.version.outputs.version }}-net7.0.zip" net7.0
+          zip -r "../Chameleon-${{ steps.version.outputs.version }}-net48.zip" net48
+
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          name: Chameleon ${{ github.ref_name }}
-          draft: false
-          prerelease: false
+          name: Chameleon ${{ steps.version.outputs.version }}
+          prerelease: ${{ steps.version.outputs.prerelease }}
           files: |
-            dist/Chameleon-Rhino7-${{ github.ref_name }}.zip
-            dist/Chameleon-Rhino8-${{ github.ref_name }}.zip
-            dist/Chameleon-net7-${{ github.ref_name }}.rhp
+            dist/*.yak
+            dist/*.zip
           body: |
-            ## Chameleon AI Renderer ${{ github.ref_name }}
+            ## Chameleon ${{ steps.version.outputs.version }}
 
-            ### 安装方法
-            - **Rhino 8 (推荐)**：下载 `Chameleon-net7-*.rhp`，直接拖入 Rhino 8 窗口即可
-            - **完整包 Rhino 7/8 (net48)**：下载 `Chameleon-Rhino7-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口
-            - **完整包 Rhino 8 (net7.0)**：下载 `Chameleon-Rhino8-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口
+            需要 Rhino 8.19 或更高版本（含 Rhino 9），Windows 与 macOS 通用。
+
+            ### 安装
+            - **包管理器（推荐）**：在 Rhino 中执行 `PackageManager`，搜索 Chameleon 安装。
+            - **离线安装**：下载 `.yak` 文件，拖入 Rhino 窗口。
+            - **手动安装**：下载对应的 zip 并解压，把其中的 `Chameleon.rhp` 拖入 Rhino 窗口。
+              - `net7.0`：Rhino 8 / 9（Windows、macOS）
+              - `net48`：Windows 上以 `/netfx` 方式启动的 Rhino 8
+
+            安装后执行命令 `Chameleon`（旧命令 `AIRender` 仍可用）。
+
+      - name: Publish to the Yak server
+        env:
+          YAK_TOKEN: ${{ secrets.YAK_TOKEN }}
+        run: |
+          if [ -z "$YAK_TOKEN" ]; then
+            echo "YAK_TOKEN is not configured; skipping 'yak push'. The package is attached to the GitHub release."
+            exit 0
+          fi
+          ./yak push dist/*.yak

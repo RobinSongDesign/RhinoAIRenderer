@@ -1,0 +1,17 @@
+# Yak package manifest. "version" is rewritten from the release tag by tools/scripts/set_version.py.
+name: chameleon
+version: 2.0.0
+authors:
+- Robin Song Design
+description: >
+  Chameleon turns Rhino viewport captures into AI renderings and lets you edit them.
+  Use your own API key (Google Gemini, OpenAI-compatible or relay providers) or a Chameleon account.
+  Supports single views and consistent batch renders of named views.
+url: https://github.com/RobinSongDesign/RhinoAIRenderer
+keywords:
+- rendering
+- ai
+- visualization
+- architecture
+- image
+icon: icon.png

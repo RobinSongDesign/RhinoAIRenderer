@@ -336,6 +336,12 @@ src/Chameleon.UI/
 
 **依赖**：P2-T09　**执行者**：agent 编写，人完成首次发布
 
+> **当前状态（doing）**：agent 部分已完成，产物如下，尚未实际发布过。
+> - `packaging/manifest.yml`、`packaging/icon.png`；`tools/scripts/assemble_package.py` 组装 `net7.0/`、`net48/` 两个子目录加清单的包目录（本地验证过）。
+> - `tools/scripts/set_version.py`：从标签同步版本号，CI 中用 `--check` 校验三处一致（本地验证过）。
+> - `.github/workflows/release.yml`：`v2.*` 及以上标签触发；旧的 WPF 发布改名为 `release-legacy.yml`，只响应 `v1.*` 标签。
+> - 未验证的假设：Yak 命令行取自 `https://files.mcneel.com/yak/tools/0.15.1/linux-x64/yak`（McNeel CLI 参考页列出的 .NET 8 版本；开发环境访问不到该站点，未能试运行），`yak build --platform any` 在包目录内执行，`yak push` 通过环境变量 `YAK_TOKEN` 鉴权。首次推送预发布标签时请核对这三点，按实际情况修正工作流。
+
 ### 目标
 
 产出可在 Rhino 包管理器中安装的包，并替换旧的发布工作流。

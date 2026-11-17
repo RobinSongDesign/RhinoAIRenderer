@@ -17,6 +17,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Version is consistent
+        run: python3 tools/scripts/set_version.py --check
+
       - name: Build
         # The plug-in embeds the built front end; that is covered by the "plugin" job.
         run: dotnet build Chameleon.sln -c Release -p:SkipUi=true

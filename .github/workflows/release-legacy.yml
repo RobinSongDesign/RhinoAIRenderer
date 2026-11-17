@@ -1,0 +1,68 @@
+name: Release (legacy WPF plug-in)
+
+# The frozen WPF version keeps releasing from 1.x tags until it is retired (task P2-T12).
+on:
+  push:
+    tags:
+      - 'v1.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Build (net48 — Rhino 7/8)
+        run: dotnet build legacy/AIRenderer.csproj -c Release -f net48
+
+      - name: Build (net7.0-windows — Rhino 8)
+        run: dotnet build legacy/AIRenderer.csproj -c Release -f net7.0-windows
+
+      - name: Package net48
+        run: |
+          mkdir -p dist/Chameleon-Rhino7-${{ github.ref_name }}
+          cp legacy/bin/Release/net48/Chameleon.rhp dist/Chameleon-Rhino7-${{ github.ref_name }}/
+          cp legacy/bin/Release/net48/*.dll          dist/Chameleon-Rhino7-${{ github.ref_name }}/
+          cd dist
+          Compress-Archive -Path Chameleon-Rhino7-${{ github.ref_name }} -DestinationPath Chameleon-Rhino7-${{ github.ref_name }}.zip
+        shell: pwsh
+
+      - name: Package net7.0-windows
+        run: |
+          mkdir -p dist/Chameleon-Rhino8-${{ github.ref_name }}
+          cp legacy/bin/Release/net7.0-windows/Chameleon.rhp         dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp legacy/bin/Release/net7.0-windows/*.dll                  dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp legacy/bin/Release/net7.0-windows/*.json                 dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp -r legacy/bin/Release/net7.0-windows/runtimes            dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cd dist
+          Compress-Archive -Path Chameleon-Rhino8-${{ github.ref_name }} -DestinationPath Chameleon-Rhino8-${{ github.ref_name }}.zip
+          cp Chameleon-Rhino8-${{ github.ref_name }}/Chameleon.rhp Chameleon-net7-${{ github.ref_name }}.rhp
+        shell: pwsh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Chameleon ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/Chameleon-Rhino7-${{ github.ref_name }}.zip
+            dist/Chameleon-Rhino8-${{ github.ref_name }}.zip
+            dist/Chameleon-net7-${{ github.ref_name }}.rhp
+          body: |
+            ## Chameleon AI Renderer ${{ github.ref_name }}
+
+            ### 安装方法
+            - **Rhino 8 (推荐)**：下载 `Chameleon-net7-*.rhp`，直接拖入 Rhino 8 窗口即可
+            - **完整包 Rhino 7/8 (net48)**：下载 `Chameleon-Rhino7-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口
+            - **完整包 Rhino 8 (net7.0)**：下载 `Chameleon-Rhino8-*.zip`，解压后将 `.rhp` 拖入 Rhino 窗口

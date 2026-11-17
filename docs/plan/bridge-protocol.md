@@ -141,7 +141,7 @@ interface JobInfo {
 
 | 方法 | 参数 | 返回 | 阶段 |
 |---|---|---|---|
-| `app.getState` | — | `{ protocolVersion, appVersion, platform: 'win'\|'mac'\|'dev', rhinoVersion, language, backends: BackendInfo[], activeBackendId, activeModelId, catalog: Catalog, settings: UiSettings, account?: AccountInfo }` | P2 |
+| `app.getState` | — | `{ protocolVersion, appVersion, logsDirectory, platform: 'win'\|'mac'\|'dev', rhinoVersion, language, backends: BackendInfo[], activeBackendId, activeModelId, catalog: Catalog, settings: UiSettings, account?: AccountInfo }` | P2 |
 | `settings.update` | `Partial<UiSettings>`（`language`、`systemPrompt`、`batch`） | 更新后的 `UiSettings` | P2 |
 | `backend.select` | `{ backendId, modelId? }` | `{ activeBackendId, activeModelId }` | P2 |
 | `shell.openUrl` | `{ url }`（只允许 `https:`） | — | P2 |

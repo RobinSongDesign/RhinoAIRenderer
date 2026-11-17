@@ -20,6 +20,9 @@ namespace Chameleon.App.Bridge.Dto
         /// <summary>Rhino version; empty in the development host.</summary>
         public string RhinoVersion { get; set; } = string.Empty;
 
+        /// <summary>Folder holding the log files, shown in the About section for support requests.</summary>
+        public string LogsDirectory { get; set; } = string.Empty;
+
         /// <summary>UI language.</summary>
         public string Language { get; set; } = string.Empty;
 

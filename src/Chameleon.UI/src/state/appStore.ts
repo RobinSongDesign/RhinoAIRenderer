@@ -20,6 +20,7 @@ export interface HostInfo {
   platform: Platform;
   rhinoVersion: string;
   protocolVersion: number;
+  logsDirectory: string;
 }
 
 export interface AppStoreState {
@@ -86,6 +87,7 @@ export function createAppStore(bridge: Bridge, initialLanguage: Language): Store
         platform: state.platform,
         rhinoVersion: state.rhinoVersion,
         protocolVersion: state.protocolVersion,
+        logsDirectory: state.logsDirectory,
       },
       language: normalizeLanguage(state.language),
       backends: state.backends,

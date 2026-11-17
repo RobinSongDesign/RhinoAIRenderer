@@ -33,6 +33,7 @@ export function appState(overrides: Partial<AppState> = {}): AppState {
     appVersion: '2.0.0',
     platform: 'dev',
     rhinoVersion: '',
+    logsDirectory: '/data/logs',
     language: 'en',
     backends,
     activeBackendId: 'direct:BltAI',

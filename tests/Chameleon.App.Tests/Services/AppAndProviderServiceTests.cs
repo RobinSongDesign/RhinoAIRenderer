@@ -26,6 +26,7 @@ namespace Chameleon.App.Tests.Services
             Assert.Equal("2.0.0-test", (string)state["appVersion"]!);
             Assert.Equal("dev", (string)state["platform"]!);
             Assert.Equal("8.36", (string)state["rhinoVersion"]!);
+            Assert.EndsWith("logs", (string)state["logsDirectory"]!);
             Assert.Equal("direct:BltAI", (string)state["activeBackendId"]!);
             Assert.Equal("gemini-3.1-flash-image-preview", (string)state["activeModelId"]!);
             Assert.Equal(new[] { "direct:Gemini", "direct:BltAI", "scripted" }, state["backends"]!.Select(b => (string)b["id"]!).ToArray());

@@ -106,6 +106,8 @@ export interface AppState {
   appVersion: string;
   platform: Platform;
   rhinoVersion: string;
+  /** Folder of the host's log files. */
+  logsDirectory: string;
   language: Language;
   backends: BackendInfo[];
   activeBackendId: string;

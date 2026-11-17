@@ -14,15 +14,17 @@ namespace Chameleon.App.Services
     public sealed class AppStateService
     {
         private readonly IRhinoHost _host;
+        private readonly IAppPaths _paths;
         private readonly ChameleonCatalog _catalog;
         private readonly SettingsEditor _settings;
         private readonly BackendRegistry _backends;
         private readonly EventBus _events;
 
         /// <summary>Creates the service.</summary>
-        public AppStateService(IRhinoHost host, ChameleonCatalog catalog, SettingsEditor settings, BackendRegistry backends, EventBus events)
+        public AppStateService(IRhinoHost host, IAppPaths paths, ChameleonCatalog catalog, SettingsEditor settings, BackendRegistry backends, EventBus events)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
+            _paths = paths ?? throw new ArgumentNullException(nameof(paths));
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _backends = backends ?? throw new ArgumentNullException(nameof(backends));
@@ -57,6 +59,7 @@ namespace Chameleon.App.Services
                 AppVersion = _host.Info.AppVersion,
                 Platform = PlatformCode(_host.Info.Platform),
                 RhinoVersion = _host.Info.RhinoVersion,
+                LogsDirectory = _paths.LogsDirectory,
                 Language = settings.Language,
                 Backends = selection.Backends,
                 ActiveBackendId = selection.ActiveBackendId,

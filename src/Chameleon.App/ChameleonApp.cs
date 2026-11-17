@@ -102,7 +102,7 @@ namespace Chameleon.App
             var router = new RpcRouter(host.Log);
 
             var backendService = new BackendService(backends, settings, events);
-            new AppStateService(host, catalog, settings, backends, events).Register(router);
+            new AppStateService(host, paths, catalog, settings, backends, events).Register(router);
             backendService.Register(router);
             new ProviderService(catalog, settings, secrets, backends, backendService, factory).Register(router);
             new CaptureService(host, assets).Register(router);

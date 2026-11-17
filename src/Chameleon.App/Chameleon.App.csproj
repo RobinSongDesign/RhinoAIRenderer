@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Windows DPAPI; throws PlatformNotSupportedException elsewhere, where it is never called. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Chameleon.Core\Chameleon.Core.csproj" />
   </ItemGroup>
 

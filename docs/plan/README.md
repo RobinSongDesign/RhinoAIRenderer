@@ -72,7 +72,7 @@
 | P1-T04 | 服务商配置与内置目录 | P1-T03 | agent | done |
 | P1-T05 | 提示词组合器 | P1-T03 | agent | done |
 | P1-T06 | Gemini 适配器 | P1-T04、P1-T05 | agent | done |
-| P1-T07 | OpenAI Images 适配器 | P1-T04、P1-T05 | agent | todo |
+| P1-T07 | OpenAI Images 适配器 | P1-T04、P1-T05 | agent | done |
 | P1-T08 | `DirectBackend` 与 HTTP 管线 | P1-T06、P1-T07 | agent | todo |
 | P1-T09 | 设置存储与旧配置迁移 | P1-T04 | agent | todo |
 | P1-T10 | 密钥存储的平台实现 | P1-T09 | agent | todo |

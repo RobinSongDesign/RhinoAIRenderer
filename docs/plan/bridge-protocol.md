@@ -87,7 +87,7 @@ interface Capabilities {
 
 interface BackendInfo {
   id: string;                      // "direct:{profileId}" | "cloud"
-  kind: 'direct' | 'cloud';
+  kind: 'direct' | 'cloud' | 'dev';   // 'dev' only exists in the development host
   displayName: string;
   ready: boolean;                  // direct: key is set; cloud: signed in
   models: ModelInfo[];
@@ -98,7 +98,8 @@ interface GenerateParams {
   backendId: string;
   modelId: string;
   prompt: string;
-  systemPrompt?: string | null;    // null = catalog default
+  addonPrompt?: string;            // appended to prompt after a blank line (per-view prompt in batches)
+  systemPrompt?: string | null;    // null/omitted = the user's setting, else the catalog default
   sourceAssetId?: string;
   maskAssetId?: string;
   references?: { assetId: string; role: 'style' | 'material' | 'object' | 'consistency'; note?: string }[];
@@ -193,9 +194,9 @@ Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI�
 
 | 方法 | 参数 | 返回 | 阶段 |
 |---|---|---|---|
-| `files.saveImage` | `{ assetId, suggestedName, format?: 'png'\|'jpg' }`（弹出系统保存对话框） | `{ path }` 或 `null`（用户取消） | P2 |
+| `files.saveImage` | `{ assetId, suggestedName? }`（弹出系统保存对话框；扩展名取自图片的实际格式） | `{ path }` 或 `null`（用户取消） | P2 |
 | `files.saveMany` | `{ items: { assetId, fileName }[] }`（弹出文件夹选择对话框） | `{ folder, saved: number }` 或 `null` | P2 |
-| `files.pickImages` | `{ multiple: boolean }` | `AssetRef[]` | P2 |
+| `files.pickImages` | `{ multiple: boolean }` | `AssetRef[]`（非 PNG/JPEG/WebP 的文件被跳过） | P2 |
 | `clipboard.copyImage` | `{ assetId }` | — | P3 |
 
 格式转换（PNG ↔ JPEG）由 UI 在 Canvas 中完成后上传为新资源，再调用保存；宿主只负责把字节写到磁盘。

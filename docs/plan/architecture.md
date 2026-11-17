@@ -345,7 +345,8 @@ namespace Chameleon.App.Hosting
         void OpenUrl(string url);
         void Log(string message);
 
-        // Added in P3
+        // Added in P3 (not declared yet: netstandard2.0 has no default interface members,
+        // so they are added together with their implementations)
         DocumentInfo? GetActiveDocument();
         string? GetDocumentString(string key);
         void SetDocumentString(string key, string value);

@@ -81,12 +81,13 @@
 ### 实现要点
 
 - `IAssetStore` / `DiskAssetStore`（`src/Chameleon.App/Assets/`）：按内容寻址存到缓存目录 `{sha256}.{ext}`；`Put(ImageData) → AssetRef`、`TryGet(assetId) → ImageData?`、`OpenRead(assetId)`；相同内容只存一份；启动时清理超过 7 天未访问的缓存文件（P3 的项目资源存在别处，不受影响）。
-- `IRhinoHost`、`HostInfo`、`CaptureOptions`、`SaveFileRequest`、`OpenFilesRequest`、`RhinoHostException`（`src/Chameleon.App/Hosting/`），签名见 `architecture.md` 5.6 节。P3 才用到的成员先声明，默认实现可抛 `NotSupportedException`。
-- `AppBootstrapper`（`src/Chameleon.App/`）：唯一的组合根。输入 `IRhinoHost`、`IAppPaths`、`IStaticFileProvider`、可选的额外后端；创建设置存储、密钥存储、目录、服务商注册表、后端工厂、队列、资源库、路由、事件总线、服务器；返回可释放的 `ChameleonApp`，暴露 `BaseUrl`。
+- `IRhinoHost`、`HostInfo`、`CaptureOptions`、`SaveFileRequest`、`OpenFilesRequest`、`RhinoHostException`（`src/Chameleon.App/Hosting/`），签名见 `architecture.md` 5.6 节。P3 才用到的成员到 P3 再加入接口。
+- `ChameleonApp.Start(ChameleonAppOptions)`（`src/Chameleon.App/`）：唯一的组合根。输入 `IRhinoHost`、`IAppPaths`、`IStaticFileProvider`、可选的额外后端；创建设置存储、密钥存储、目录、服务商注册表、后端工厂、队列、资源库、路由、事件总线、服务器；返回可释放的 `ChameleonApp`，暴露 `BaseUrl`。
 - `tools/Chameleon.DevHost`（`net8.0` 控制台）：
   - `FakeRhinoHost`：截图返回 `samples/` 目录下的样例图（活动视口一张，命名视图 `Exterior`、`Interior`、`Aerial` 各一张）；文件对话框把结果写到 `--out` 目录并返回路径；`OpenUrl` 只打印。
   - `FakeBackend : IRenderBackend`（id 为 `fake`）：延迟 `--delay` 毫秒后返回 `samples/results/` 下的样例结果图（按请求序号轮换）。提示词中出现 `#fail:{错误码}` 时抛对应的 `RenderException`，出现 `#slow` 时延迟 10 秒，用于测试错误展示与取消。
   - 参数：`--port`、`--token`、`--ui {dist 目录}`、`--data {数据目录，默认临时目录}`、`--allow-origin`、`--delay`。启动后打印完整地址。
+  - `--fake-providers`：在本地应答服务商的 HTTP 请求（唯一被接受的 Key 是 `dev-good-key`），让自带 Key 的流程（设置 Key、测试 Key、经服务商生成）可以离线跑通，供端到端测试使用。
   - 同时注册真实的 `DirectBackend`，这样在本机设置 Key 后可以用开发宿主做真实接口调试。
 - 样例图片提交到 `tools/Chameleon.DevHost/samples/`，尺寸不超过 1280×720，每张不超过 200 KB。
 

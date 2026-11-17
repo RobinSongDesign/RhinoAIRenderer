@@ -91,7 +91,7 @@
 | P2-T06 | UI：单图流程 | P2-T04、P2-T05 | agent | done |
 | P2-T07 | UI：批量流程 | P2-T06 | agent | done |
 | P2-T08 | UI：设置与服务商管理 | P2-T06 | agent | done |
-| P2-T09 | Rhino 宿主插件 | P2-T04、P0-T3、P1-T10 | agent+human | todo |
+| P2-T09 | Rhino 宿主插件 | P2-T04、P0-T3、P1-T10 | agent+human | doing |
 | P2-T10 | Yak 打包与发布流程 | P2-T09 | agent+human | todo |
 | P2-T11 | 双平台人工验收 | P2-T07、P2-T08、P2-T10 | human | todo |
 | P2-T12 | 删除旧 WPF 代码 | P2-T11 | agent | todo |

@@ -12,7 +12,8 @@ Chameleon 是一个 Rhino 插件：截取视口画面，调用图像生成模型
 > 执行 P1-T01、P2-T12 等改变仓库结构的任务时，更新这一节。
 
 - 旧的 WPF 单体插件已原样移入 `legacy/`，处于冻结状态，只能在 Windows 上构建（CI 的 `legacy` 作业负责验证）。不要修改它的代码。
-- 新代码位于 `src/`（`Chameleon.Core`、`Chameleon.App`）、`tests/`、`tools/`，解决方案为 `Chameleon.sln`。
+- 新代码位于 `src/`（`Chameleon.Core`、`Chameleon.App`、`Chameleon.UI` 前端、`Chameleon.Rhino` 插件）、`tests/`、`tools/`（`Chameleon.Cli`、`Chameleon.DevHost`），解决方案为 `Chameleon.sln`。
+- `spikes/ChameleonSpike` 是阶段 0 的验证插件，等待在真实 Rhino 中运行（P0-T2）。
 - 各任务的完成情况见 `docs/plan/README.md` 的任务表。
 
 ## 环境与命令
@@ -26,9 +27,14 @@ apt-get update && apt-get install -y dotnet-sdk-8.0
 常用命令：
 
 ```bash
-# .NET: build and test everything except the legacy WPF project
-dotnet build Chameleon.sln -c Release
-dotnet test  Chameleon.sln -c Release
+# .NET: build and test everything except the legacy WPF project.
+# The plug-in (src/Chameleon.Rhino) embeds the built front end: build the UI first,
+# or pass -p:SkipUi=true to embed a placeholder page instead.
+dotnet build Chameleon.sln -c Release -p:SkipUi=true
+dotnet test  Chameleon.sln -c Release -p:SkipUi=true
+
+# Plug-in with the real UI; output in src/Chameleon.Rhino/bin/Release/{net7.0,net48}/Chameleon.rhp
+pnpm --dir src/Chameleon.UI build && dotnet build src/Chameleon.Rhino -c Release
 
 # Front end (available after P2-T05)
 pnpm --dir src/Chameleon.UI install

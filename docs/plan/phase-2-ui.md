@@ -289,6 +289,8 @@ src/Chameleon.UI/
 
 **依赖**：P2-T04、P0-T3、P1-T10　**执行者**：agent 编写，人在 Rhino 中验证
 
+> **当前状态（doing）**：代码已按默认方案（ADR-02 回环 HTTP）写完，两个目标框架都能编译，嵌入资源名已核对。尚未在 Rhino 中运行过；P0-T3 的结论出来后可能需要调整（传输方式、macOS 截图编码、键盘焦点）。人工验收通过后再改为 done。
+
 ### 目标
 
 `src/Chameleon.Rhino`：把应用装进 Rhino。

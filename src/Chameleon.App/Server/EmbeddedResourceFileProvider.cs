@@ -25,7 +25,15 @@ namespace Chameleon.App.Server
         /// <inheritdoc />
         public Stream? Open(string relativePath)
         {
-            return string.IsNullOrEmpty(relativePath) ? null : _assembly.GetManifestResourceStream(_prefix + relativePath);
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return null;
+            }
+
+            // MSBuild's %(RecursiveDir) uses the build machine's separator, so a plug-in built on
+            // Windows names nested resources with backslashes.
+            return _assembly.GetManifestResourceStream(_prefix + relativePath)
+                   ?? _assembly.GetManifestResourceStream(_prefix + relativePath.Replace('/', '\\'));
         }
     }
 }

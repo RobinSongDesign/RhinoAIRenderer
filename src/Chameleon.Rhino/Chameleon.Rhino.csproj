@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Rhino plug-in. net7.0 runs in Rhino 8 (Windows and macOS) and Rhino 9; net48 runs in
+    Rhino 8 on Windows when started with /netfx.
+  -->
+  <PropertyGroup>
+    <TargetFrameworks>net7.0;net48</TargetFrameworks>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <TargetExt>.rhp</TargetExt>
+    <AssemblyName>Chameleon</AssemblyName>
+    <RootNamespace>Chameleon.Rhino</RootNamespace>
+    <Title>Chameleon</Title>
+    <Description>Chameleon AI Renderer: AI rendering and image editing for Rhino</Description>
+    <!-- Set to true to embed a placeholder page instead of the built front end (C# compile checks without Node). -->
+    <SkipUi Condition="'$(SkipUi)' == ''">false</SkipUi>
+    <UiDist>$(MSBuildThisFileDirectory)..\Chameleon.UI\dist\</UiDist>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RhinoCommon" Version="8.19.25132.1001" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Chameleon.App\Chameleon.App.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\plugin-utility.ico" LogicalName="Chameleon.EmbeddedResources.plugin-utility.ico" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipUi)' != 'true'">
+    <EmbeddedResource Include="$(UiDist)**\*" LogicalName="ui/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipUi)' == 'true'">
+    <EmbeddedResource Include="UI\placeholder.html" LogicalName="ui/index.html" />
+  </ItemGroup>
+
+  <Target Name="RequireBuiltUi" BeforeTargets="BeforeBuild" Condition="'$(SkipUi)' != 'true' and !Exists('$(UiDist)index.html')">
+    <Error Text="The front end has not been built. Run 'pnpm --dir src/Chameleon.UI install' and 'pnpm --dir src/Chameleon.UI build' first, or build with -p:SkipUi=true." />
+  </Target>
+
+</Project>

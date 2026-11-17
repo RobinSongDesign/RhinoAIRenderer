@@ -18,7 +18,8 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build
-        run: dotnet build Chameleon.sln -c Release
+        # The plug-in embeds the built front end; that is covered by the "plugin" job.
+        run: dotnet build Chameleon.sln -c Release -p:SkipUi=true
 
       - name: Test
         run: dotnet test Chameleon.sln -c Release --no-build
@@ -66,6 +67,59 @@ jobs:
 
       - name: End-to-end tests
         run: pnpm e2e
+
+  plugin:
+    name: Rhino plug-in (net7.0 and net48)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: src/Chameleon.UI/pnpm-lock.yaml
+
+      - name: Build front end
+        run: |
+          pnpm --dir src/Chameleon.UI install --frozen-lockfile
+          pnpm --dir src/Chameleon.UI build
+
+      - name: Build plug-in
+        run: dotnet build src/Chameleon.Rhino/Chameleon.Rhino.csproj -c Release
+
+      - name: Check for Windows-only APIs
+        run: |
+          if grep -rn "System.Windows\|Microsoft.Win32" src/Chameleon.Rhino --include=*.cs --include=*.csproj; then
+            echo "Chameleon.Rhino must not use WPF, WinForms or the Windows registry." && exit 1
+          fi
+
+      - name: Upload net7.0 (Rhino 8/9 on Windows and macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Chameleon-net7.0
+          path: |
+            src/Chameleon.Rhino/bin/Release/net7.0/
+            !src/Chameleon.Rhino/bin/Release/net7.0/*.pdb
+
+      - name: Upload net48 (Rhino 8 on Windows started with /netfx)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Chameleon-net48
+          path: |
+            src/Chameleon.Rhino/bin/Release/net48/
+            !src/Chameleon.Rhino/bin/Release/net48/*.pdb
 
   legacy:
     name: Build legacy WPF plug-in (Windows)

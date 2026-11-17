@@ -32,3 +32,13 @@ Thumbs.db
 # Tool-specific configs (not shared)
 .claude/
 .vscode/
+
+# Front end
+node_modules/
+dist/
+
+# Packaging and test output
+*.yak
+TestResults/
+playwright-report/
+test-results/

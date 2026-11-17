@@ -1,4 +1,7 @@
 # Rhino AIRenderer
+
+> **仓库正在重构中。** 当前可用的 WPF 版本（仅 Windows）已移入 [`legacy/`](legacy/)，仍由 `v*` 标签触发发布。
+> 跨平台的新版本在 `src/` 下开发，计划见 [`docs/plan/`](docs/plan/README.md)，开发约定见 [`AGENTS.md`](AGENTS.md)。
 Rhino 插件：通过截图调用 Gemini Nano Banana API 进行图生图渲染。
 <img width="1737" height="1090" alt="b31e9cdee58ec7bf6f3a84ab4c7589f8" src="https://github.com/user-attachments/assets/1532692d-f689-4a62-8964-c07aaa9a598e" />
 

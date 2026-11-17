@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  core:
+    name: Build and test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        run: dotnet build Chameleon.sln -c Release
+
+      - name: Test
+        run: dotnet test Chameleon.sln -c Release --no-build
+
+  legacy:
+    name: Build legacy WPF plug-in (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            7.0.x
+            8.0.x
+
+      - name: Build net48
+        run: dotnet build legacy/AIRenderer.csproj -c Release -f net48
+
+      - name: Build net7.0-windows
+        run: dotnet build legacy/AIRenderer.csproj -c Release -f net7.0-windows

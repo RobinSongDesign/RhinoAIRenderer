@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Chameleon.App</RootNamespace>
+    <Description>Application layer of Chameleon: local bridge server, RPC services, asset and project storage.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Chameleon.Core\Chameleon.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Chameleon.App.Tests" />
+  </ItemGroup>
+
+</Project>

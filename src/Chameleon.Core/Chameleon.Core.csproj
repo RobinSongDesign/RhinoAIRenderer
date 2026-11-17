@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Chameleon.Core</RootNamespace>
+    <Description>UI- and Rhino-independent core of Chameleon: provider adapters, job queue, settings.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Chameleon.Core.Tests" />
+  </ItemGroup>
+
+</Project>

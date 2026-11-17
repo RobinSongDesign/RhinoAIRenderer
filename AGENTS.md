@@ -11,9 +11,9 @@ Chameleon 是一个 Rhino 插件：截取视口画面，调用图像生成模型
 
 > 执行 P1-T01、P2-T12 等改变仓库结构的任务时，更新这一节。
 
-- 现有代码是一个 WPF 单体插件，位于仓库根目录（`AIRenderer.csproj`、`Models/`、`Services/`、`ViewModels/`、`Views/`）。只能在 Windows 上构建。
-- 计划中的新结构（`src/`、`tests/`、`tools/`、`legacy/`）尚未建立，由任务 P1-T01 创建。
-- 下一步：P0-T1 与 P1-T01，两者互不依赖。
+- 旧的 WPF 单体插件已原样移入 `legacy/`，处于冻结状态，只能在 Windows 上构建（CI 的 `legacy` 作业负责验证）。不要修改它的代码。
+- 新代码位于 `src/`（`Chameleon.Core`、`Chameleon.App`）、`tests/`、`tools/`，解决方案为 `Chameleon.sln`。
+- 各任务的完成情况见 `docs/plan/README.md` 的任务表。
 
 ## 环境与命令
 
@@ -23,7 +23,7 @@ Chameleon 是一个 Rhino 插件：截取视口画面，调用图像生成模型
 apt-get update && apt-get install -y dotnet-sdk-8.0
 ```
 
-常用命令（P1-T01 之后可用）：
+常用命令：
 
 ```bash
 # .NET: build and test everything except the legacy WPF project

@@ -22,16 +22,16 @@ jobs:
           dotnet-version: '7.0.x'
 
       - name: Build (net48 — Rhino 7/8)
-        run: dotnet build -c Release -f net48
+        run: dotnet build legacy/AIRenderer.csproj -c Release -f net48
 
       - name: Build (net7.0-windows — Rhino 8)
-        run: dotnet build -c Release -f net7.0-windows
+        run: dotnet build legacy/AIRenderer.csproj -c Release -f net7.0-windows
 
       - name: Package net48
         run: |
           mkdir -p dist/Chameleon-Rhino7-${{ github.ref_name }}
-          cp bin/Release/net48/Chameleon.rhp dist/Chameleon-Rhino7-${{ github.ref_name }}/
-          cp bin/Release/net48/*.dll          dist/Chameleon-Rhino7-${{ github.ref_name }}/
+          cp legacy/bin/Release/net48/Chameleon.rhp dist/Chameleon-Rhino7-${{ github.ref_name }}/
+          cp legacy/bin/Release/net48/*.dll          dist/Chameleon-Rhino7-${{ github.ref_name }}/
           cd dist
           Compress-Archive -Path Chameleon-Rhino7-${{ github.ref_name }} -DestinationPath Chameleon-Rhino7-${{ github.ref_name }}.zip
         shell: pwsh
@@ -39,10 +39,10 @@ jobs:
       - name: Package net7.0-windows
         run: |
           mkdir -p dist/Chameleon-Rhino8-${{ github.ref_name }}
-          cp bin/Release/net7.0-windows/Chameleon.rhp         dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cp bin/Release/net7.0-windows/*.dll                  dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cp bin/Release/net7.0-windows/*.json                 dist/Chameleon-Rhino8-${{ github.ref_name }}/
-          cp -r bin/Release/net7.0-windows/runtimes            dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp legacy/bin/Release/net7.0-windows/Chameleon.rhp         dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp legacy/bin/Release/net7.0-windows/*.dll                  dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp legacy/bin/Release/net7.0-windows/*.json                 dist/Chameleon-Rhino8-${{ github.ref_name }}/
+          cp -r legacy/bin/Release/net7.0-windows/runtimes            dist/Chameleon-Rhino8-${{ github.ref_name }}/
           cd dist
           Compress-Archive -Path Chameleon-Rhino8-${{ github.ref_name }} -DestinationPath Chameleon-Rhino8-${{ github.ref_name }}.zip
           cp Chameleon-Rhino8-${{ github.ref_name }}/Chameleon.rhp Chameleon-net7-${{ github.ref_name }}.rhp

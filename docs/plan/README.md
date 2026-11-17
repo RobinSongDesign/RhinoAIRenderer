@@ -76,7 +76,7 @@
 | P1-T08 | `DirectBackend` 与 HTTP 管线 | P1-T06、P1-T07 | agent | done |
 | P1-T09 | 设置存储与旧配置迁移 | P1-T04 | agent | done |
 | P1-T10 | 密钥存储的平台实现 | P1-T09 | agent | done |
-| P1-T11 | 任务队列与批量计划 | P1-T03 | agent | todo |
+| P1-T11 | 任务队列与批量计划 | P1-T03 | agent | done |
 | P1-T12 | 命令行冒烟工具 | P1-T08 | agent | todo |
 
 ### P2 宿主与 UI — 见 [`phase-2-ui.md`](phase-2-ui.md)

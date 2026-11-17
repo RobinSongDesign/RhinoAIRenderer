@@ -58,7 +58,7 @@
 
 | ID | 任务 | 依赖 | 执行者 | 状态 |
 |---|---|---|---|---|
-| P0-T1 | 验证插件 `ChameleonSpike` | — | agent | todo |
+| P0-T1 | 验证插件 `ChameleonSpike` | — | agent | done |
 | P0-T2 | 在 Windows 和 macOS 的 Rhino 中运行并提交报告 | P0-T1 | human | todo |
 | P0-T3 | 根据报告更新决策记录 | P0-T2 | agent | todo |
 

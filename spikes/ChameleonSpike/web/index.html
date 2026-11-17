@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chameleon Spike</title>
+<style>
+  :root { color-scheme: light dark; --ok: #1a7f37; --bad: #cf222e; --skip: #9a6700; --line: #8884; }
+  body { font: 14px/1.45 -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 16px 20px 60px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; }
+  .muted { opacity: .7; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.detail { font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-word; }
+  .pass { color: var(--ok); font-weight: 600; }
+  .fail { color: var(--bad); font-weight: 600; }
+  .skip { color: var(--skip); }
+  .manual { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 8px 0; }
+  .manual b { display: inline-block; min-width: 2.4em; }
+  button { font: inherit; padding: 3px 10px; margin: 2px 4px 2px 0; }
+  textarea, input[type=text] { font: inherit; width: 100%; box-sizing: border-box; }
+  #drop { border: 2px dashed var(--line); border-radius: 6px; padding: 18px; text-align: center; }
+  #drop.over { border-color: var(--ok); }
+  .out { font-family: ui-monospace, Consolas, monospace; font-size: 12px; opacity: .8; }
+</style>
+</head>
+<body>
+<h1>Chameleon Spike</h1>
+<div class="muted" id="env"></div>
+
+<h2>Results</h2>
+<table>
+  <thead><tr><th style="width:3em">ID</th><th style="width:5em">Result</th><th style="width:5em">ms</th><th>Detail</th></tr></thead>
+  <tbody id="results"></tbody>
+</table>
+<p>
+  <button id="save">Save report to desktop</button>
+  <span class="out" id="saveOut"></span>
+</p>
+
+<h2>Manual checks</h2>
+<p class="muted">Do each step, then press Pass or Fail. The report is saved again when the window closes.</p>
+
+<div class="manual"><b>D1</b> Type English text here:
+  <textarea id="d1" rows="2" placeholder="type here"></textarea>
+  <span data-verdict="D1"></span></div>
+
+<div class="manual"><b>D2</b> Switch to a Chinese input method and type a few words. The candidate window should appear and the text should be committed correctly:
+  <textarea id="d2" rows="2" placeholder="在这里输入中文"></textarea>
+  <span data-verdict="D2"></span></div>
+
+<div class="manual"><b>D3</b> In the boxes above, try select all, copy and paste (Ctrl/Cmd + A, C, V). They should work and must not trigger Rhino commands.
+  <span data-verdict="D3"></span></div>
+
+<div class="manual"><b>D4</b> Drag an image file from Explorer / Finder onto this area:
+  <div id="drop">drop an image file here</div>
+  <div class="out" id="dropOut"></div>
+  <span data-verdict="D4"></span></div>
+
+<div class="manual"><b>D5</b> Pick an image with the browser file input:
+  <input type="file" id="file" accept="image/*">
+  <div class="out" id="fileOut"></div>
+  <span data-verdict="D5"></span></div>
+
+<div class="manual"><b>D6</b> Click into this box and press Esc, Space and Enter. Rhino's command line must not react (no command is repeated or cancelled):
+  <input type="text" id="d6" placeholder="focus here, then press Esc / Space / Enter">
+  <div class="out" id="d6Out"></div>
+  <span data-verdict="D6"></span></div>
+
+<div class="manual"><b>F1</b> Native dialogs. Each button should open a system dialog and show the chosen path below:
+  <div>
+    <button data-cmd="dialog.save">Save file dialog</button>
+    <button data-cmd="dialog.folder">Select folder dialog</button>
+    <button data-cmd="dialog.open">Open files dialog</button>
+  </div>
+  <div class="out" id="dialogOut"></div>
+  <span data-verdict="F1"></span></div>
+
+<div class="manual"><b>F2</b> <button data-cmd="open.url">Open rhino3d.com in the system browser</button>
+  <div class="out" id="urlOut"></div>
+  <span data-verdict="F2"></span></div>
+
+<div class="manual"><b>G1</b> Object mask. Open <code>chameleon-spike-beauty.png</code> and <code>chameleon-spike-mask.png</code> on the desktop.
+  The selected objects must be white exactly where they are visible in the beauty image, and black where other objects cover them.
+  <span data-verdict="G1"></span></div>
+
+<div class="manual"><b>H3</b> <button id="clip">Copy a test image to the clipboard</button> then paste it into an image editor.
+  <div class="out" id="clipOut"></div>
+  <span data-verdict="H3"></span></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var IDS = ['A1','A2','A3','A4','A5','A6','A7','B1','B2','B3','B4','C1','C2','C3','C4',
+             'D1','D2','D3','D4','D5','D6','E1','E2','F1','F2','G1','H1','H2','H3','H4'];
+  var isHttp = location.protocol === 'http:' || location.protocol === 'https:';
+  var base = isHttp ? new URL('.', location.href).href : '';
+  var hasEto = !!(window.eto && window.eto.postMessage);
+  var results = {};          // id -> {passed, detail, durationMs}
+  var pending = {};          // command id -> resolve
+  var nextCommandId = 1;
+
+  // ── Channel to the host ────────────────────────────────────────────────
+  // Over HTTP when the page was served by the loopback server, otherwise the Eto message channel.
+
+  function command(name, argument) {
+    argument = argument || '';
+    if (isHttp) {
+      return fetch(base + 'rpc', { method: 'POST', body: name + '\n' + argument }).then(function (r) { return r.text(); });
+    }
+    return new Promise(function (resolve) {
+      var id = String(nextCommandId++);
+      pending[id] = resolve;
+      window.eto.postMessage('cmd\n' + id + '\n' + name + '\n' + argument);
+    });
+  }
+
+  function report(id, passed, detail, durationMs) {
+    var entry = { id: id, passed: passed, detail: String(detail == null ? '' : detail), durationMs: Math.round(durationMs || 0) };
+    results[id] = entry;
+    render();
+    var json = JSON.stringify(entry);
+    if (isHttp) {
+      fetch(base + 'report', { method: 'POST', body: json }).catch(function () {});
+    } else if (hasEto) {
+      window.eto.postMessage('report\n' + json);
+    }
+  }
+
+  // Called by the host through ExecuteScriptAsync.
+  window.__spike = {
+    setResults: function (full) {
+      (full.checks || []).forEach(function (c) {
+        if (c.detail !== 'not run' || !results[c.id]) { results[c.id] = c; }
+      });
+      document.getElementById('env').textContent =
+        full.platform + ' · ' + full.os + ' · Rhino ' + full.rhinoVersion + ' · ' + full.runtime +
+        ' · plug-in ' + full.pluginTargetFramework + ' · page via ' + (isHttp ? 'loopback http' : 'LoadHtml');
+      render();
+    },
+    onCommandResult: function (id, value) {
+      if (pending[id]) { pending[id](value); delete pending[id]; }
+    },
+    sendBig: function (size) {
+      window.eto.postMessage('big\n' + new Array(size + 1).join('x'));
+      return size;
+    }
+  };
+
+  // ── Rendering ──────────────────────────────────────────────────────────
+
+  function render() {
+    var body = document.getElementById('results');
+    body.textContent = '';
+    IDS.forEach(function (id) {
+      var r = results[id];
+      var row = document.createElement('tr');
+      var state = !r || r.passed === null || r.passed === undefined ? (r ? 'skipped' : '…') : (r.passed ? 'pass' : 'FAIL');
+      var cls = state === 'pass' ? 'pass' : state === 'FAIL' ? 'fail' : 'skip';
+      [id, state, r && r.durationMs ? r.durationMs : '', r ? r.detail : ''].forEach(function (text, i) {
+        var cell = document.createElement('td');
+        cell.textContent = text;
+        if (i === 1) { cell.className = cls; }
+        if (i === 3) { cell.className = 'detail'; }
+        row.appendChild(cell);
+      });
+      body.appendChild(row);
+    });
+  }
+
+  function timed(id, work) {
+    var start = performance.now();
+    return Promise.resolve().then(work).then(function (out) {
+      report(id, out.passed, out.detail, performance.now() - start);
+    }).catch(function (error) {
+      report(id, false, (error && error.message) || String(error), performance.now() - start);
+    });
+  }
+
+  function withTimeout(promise, ms, what) {
+    return Promise.race([promise, new Promise(function (_, reject) {
+      setTimeout(function () { reject(new Error(what + ' timed out after ' + ms + ' ms')); }, ms);
+    })]);
+  }
+
+  // ── Automatic page-side checks ─────────────────────────────────────────
+
+  function checkRpc() {
+    var payload = 'echo-' + Date.now();
+    return command('echo', payload).then(function (back) {
+      return { passed: back === payload, detail: 'round trip ' + (back === payload ? 'ok' : 'mismatch: ' + back) };
+    });
+  }
+
+  function checkEvents() {
+    return withTimeout(new Promise(function (resolve, reject) {
+      var count = 0;
+      var source = new EventSource(base + 'events');
+      source.addEventListener('tick', function () {
+        count++;
+        if (count === 3) { source.close(); resolve({ passed: true, detail: '3 events received' }); }
+      });
+      source.onerror = function () { if (count < 3) { source.close(); reject(new Error('EventSource error after ' + count + ' events')); } };
+    }), 5000, 'EventSource');
+  }
+
+  function checkBigImage() {
+    return withTimeout(new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        resolve({ passed: img.naturalWidth === 3840 && img.naturalHeight === 2160, detail: img.naturalWidth + 'x' + img.naturalHeight });
+      };
+      img.onerror = function () { reject(new Error('image failed to load')); };
+      img.src = base + 'big.png?' + Date.now();
+    }), 30000, 'image load');
+  }
+
+  function checkUpload() {
+    var size = 20 * 1024 * 1024;
+    var bytes = new Uint8Array(size);
+    for (var i = 0; i < size; i++) { bytes[i] = i % 251; }
+    return fetch(base + 'upload', { method: 'POST', body: bytes }).then(function (r) { return r.text(); }).then(function (text) {
+      return { passed: text === size + '|ok', detail: 'server saw ' + text };
+    });
+  }
+
+  function checkCanvas() {
+    return withTimeout(new Promise(function (resolve, reject) {
+      var canvas = document.createElement('canvas');
+      canvas.width = 4096; canvas.height = 4096;
+      var context = canvas.getContext('2d');
+      if (!context) { reject(new Error('no 2d context')); return; }
+      context.fillStyle = '#336699';
+      context.fillRect(0, 0, 4096, 4096);
+      canvas.toBlob(function (blob) {
+        if (blob && blob.size > 0) { resolve({ passed: true, detail: 'PNG blob ' + blob.size + ' bytes' }); }
+        else { reject(new Error('toBlob returned nothing')); }
+      }, 'image/png');
+    }), 20000, 'canvas.toBlob');
+  }
+
+  function runAutomatic() {
+    var skipped = 'skipped: the page was not loaded over loopback http';
+    var chain = Promise.resolve();
+
+    if (isHttp) {
+      chain = chain
+        .then(function () { return timed('A3', checkRpc); })
+        .then(function () { return timed('A4', checkEvents); })
+        .then(function () { return timed('A5', checkBigImage); })
+        .then(function () { return timed('A6', checkUpload); });
+    } else {
+      ['A3', 'A4', 'A5', 'A6'].forEach(function (id) { report(id, null, skipped); });
+    }
+
+    return chain
+      .then(function () { report('H1', true, navigator.userAgent); })
+      .then(function () { return timed('H2', checkCanvas); })
+      .then(function () {
+        report('H4', true, 'devicePixelRatio ' + window.devicePixelRatio + ', viewport ' + window.innerWidth + 'x' + window.innerHeight);
+      });
+  }
+
+  // ── Manual checks ──────────────────────────────────────────────────────
+
+  function wireVerdicts() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-verdict]'), function (slot) {
+      var id = slot.getAttribute('data-verdict');
+      [['Pass', true], ['Fail', false]].forEach(function (pair) {
+        var button = document.createElement('button');
+        button.textContent = pair[0];
+        button.onclick = function () {
+          var previous = results[id] && results[id].detail && results[id].detail !== 'not run' ? results[id].detail + ' | ' : '';
+          report(id, pair[1], previous + 'manual: ' + pair[0].toLowerCase());
+        };
+        slot.appendChild(button);
+      });
+    });
+  }
+
+  function wireCommands() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-cmd]'), function (button) {
+      button.onclick = function () {
+        var name = button.getAttribute('data-cmd');
+        var out = document.getElementById(name === 'open.url' ? 'urlOut' : 'dialogOut');
+        out.textContent = 'waiting…';
+        command(name).then(function (value) { out.textContent = name + ' → ' + value; });
+      };
+    });
+
+    document.getElementById('save').onclick = function () {
+      command('save.report').then(function (path) { document.getElementById('saveOut').textContent = 'saved to ' + path; });
+    };
+  }
+
+  function describeFile(file) {
+    return new Promise(function (resolve) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(file.name + ', ' + file.type + ', ' + reader.result.byteLength + ' bytes read'); };
+      reader.onerror = function () { resolve(file.name + ': could not be read'); };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  function wireFiles() {
+    var drop = document.getElementById('drop');
+    ['dragenter', 'dragover'].forEach(function (name) {
+      drop.addEventListener(name, function (e) { e.preventDefault(); drop.className = 'over'; });
+    });
+    drop.addEventListener('dragleave', function () { drop.className = ''; });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault();
+      drop.className = '';
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      var out = document.getElementById('dropOut');
+      if (!file) { out.textContent = 'drop event fired but carried no file'; return; }
+      describeFile(file).then(function (text) { out.textContent = text; });
+    });
+    // Without this the WebView would navigate to a dropped file.
+    window.addEventListener('dragover', function (e) { e.preventDefault(); });
+    window.addEventListener('drop', function (e) { e.preventDefault(); });
+
+    document.getElementById('file').onchange = function (e) {
+      var file = e.target.files && e.target.files[0];
+      if (file) { describeFile(file).then(function (text) { document.getElementById('fileOut').textContent = text; }); }
+    };
+
+    document.getElementById('d6').addEventListener('keydown', function (e) {
+      document.getElementById('d6Out').textContent = 'page received key: ' + e.key;
+    });
+  }
+
+  function wireClipboard() {
+    document.getElementById('clip').onclick = function () {
+      var out = document.getElementById('clipOut');
+      if (!navigator.clipboard || !window.ClipboardItem) {
+        out.textContent = 'navigator.clipboard.write / ClipboardItem not available';
+        report('H3', false, 'ClipboardItem API not available');
+        return;
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = 200; canvas.height = 120;
+      var context = canvas.getContext('2d');
+      context.fillStyle = '#d33'; context.fillRect(0, 0, 200, 120);
+      context.fillStyle = '#fff'; context.font = '20px sans-serif'; context.fillText('spike', 70, 66);
+      canvas.toBlob(function (blob) {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function () {
+          out.textContent = 'written; now paste into an image editor and press Pass or Fail';
+        }).catch(function (error) {
+          out.textContent = 'write failed: ' + error.message;
+          report('H3', false, 'clipboard.write failed: ' + error.message);
+        });
+      }, 'image/png');
+    };
+  }
+
+  // ── Start ──────────────────────────────────────────────────────────────
+
+  render();
+  wireVerdicts();
+  wireCommands();
+  wireFiles();
+  wireClipboard();
+
+  if (hasEto) { window.eto.postMessage('b1\nping'); }
+  command('hello', isHttp ? 'http' : 'eto').then(runAutomatic, runAutomatic);
+})();
+</script>
+</body>
+</html>

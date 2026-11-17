@@ -1,0 +1,31 @@
+name: Spike build
+
+# Builds the phase 0 verification plug-in on demand so it can be downloaded and run inside Rhino.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        run: dotnet build spikes/ChameleonSpike/ChameleonSpike.csproj -c Release
+
+      - name: Upload net7.0 (Rhino 8/9, Windows and macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChameleonSpike-net7.0
+          path: spikes/ChameleonSpike/bin/Release/net7.0/
+
+      - name: Upload net48 (Rhino 8 on Windows in .NET Framework mode)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChameleonSpike-net48
+          path: spikes/ChameleonSpike/bin/Release/net48/

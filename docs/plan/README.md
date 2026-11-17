@@ -70,7 +70,7 @@
 | P1-T02 | 图像基础类型与格式探测 | P1-T01 | agent | done |
 | P1-T03 | 生成请求、结果、能力、错误模型、`IRenderBackend` | P1-T02 | agent | done |
 | P1-T04 | 服务商配置与内置目录 | P1-T03 | agent | done |
-| P1-T05 | 提示词组合器 | P1-T03 | agent | todo |
+| P1-T05 | 提示词组合器 | P1-T03 | agent | done |
 | P1-T06 | Gemini 适配器 | P1-T04、P1-T05 | agent | todo |
 | P1-T07 | OpenAI Images 适配器 | P1-T04、P1-T05 | agent | todo |
 | P1-T08 | `DirectBackend` 与 HTTP 管线 | P1-T06、P1-T07 | agent | todo |

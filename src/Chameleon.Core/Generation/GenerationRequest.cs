@@ -41,6 +41,18 @@ namespace Chameleon.Core.Generation
         /// <summary>Number of images sent to the model: the source plus every reference.</summary>
         public int InputImageCount => (Source != null ? 1 : 0) + References.Count;
 
+        /// <summary>
+        /// References in the order they are sent after the source image: consistency references
+        /// first, then the rest in the order they were added. Adapters and the prompt composer both
+        /// rely on this single ordering.
+        /// </summary>
+        public IReadOnlyList<ReferenceImage> GetOrderedReferences()
+        {
+            return References.Where(r => r.Role == ReferenceRole.Consistency)
+                .Concat(References.Where(r => r.Role != ReferenceRole.Consistency))
+                .ToList();
+        }
+
         /// <summary>Returns a copy that shares the (immutable) images but has independent collections.</summary>
         public GenerationRequest Clone()
         {

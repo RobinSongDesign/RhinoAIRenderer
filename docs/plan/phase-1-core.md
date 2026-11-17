@@ -158,10 +158,14 @@ public sealed class PromptComposer
 2. 用户提示词。
 3. 存在 `Style` 角色的参考图时，追加风格参考后缀（原文见 `legacy/Services/AIRenderService.cs:637`）。
 4. 存在 `Consistency` 角色的参考图时，追加一致性指令（原文见 `legacy/Services/AIRenderService.cs:468`–`473`）。
-5. `Material`、`Object` 角色的参考图各有一句说明（P3-T09 时补充，现在留出扩展点：角色到文案的映射表）。
+5. `Material`、`Object` 角色的参考图各有一句说明（已在 `PromptTexts` 中给出初版文案，P3-T09 可调整）。实际追加顺序为：风格、材质、物体、一致性。
 6. 参考图带 `Note` 时，按图片顺序逐条列出。
 
-文案常量集中在 `PromptTexts` 静态类中。组合结果必须与旧代码在相同输入下逐字相同（仅系统提示词 + 用户提示词；带风格参考；带一致性参考；两者都带）。
+文案常量集中在 `PromptTexts` 静态类中。组合结果必须与旧代码在相同输入下逐字相同（仅系统提示词 + 用户提示词；带风格参考；带一致性参考）。
+
+与旧代码的一处有意差异：旧的链式请求在同时带风格参考图时不会追加风格说明（模型收到图却不知道用途）；新实现两句都追加，风格在前、一致性在后。
+
+参考图的发送顺序由 `GenerationRequest.GetOrderedReferences()` 统一给出（一致性参考在前），适配器与备注编号都使用它。
 
 ### 测试
 

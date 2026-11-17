@@ -83,7 +83,7 @@
 
 | ID | 任务 | 依赖 | 执行者 | 状态 |
 |---|---|---|---|---|
-| P2-T01 | 桥接 DTO、RPC 路由、事件总线 | P1-T03 | agent | todo |
+| P2-T01 | 桥接 DTO、RPC 路由、事件总线 | P1-T03 | agent | done |
 | P2-T02 | 本地回环服务器 | P2-T01 | agent | todo |
 | P2-T03 | 资源库、`IRhinoHost`、开发宿主 | P2-T02、P1-T11 | agent | todo |
 | P2-T04 | 应用服务与 RPC 处理器 | P2-T03、P1-T08、P1-T09 | agent | todo |

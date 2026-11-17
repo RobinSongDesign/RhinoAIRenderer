@@ -8,6 +8,7 @@ import { createJobsStore, type JobsStoreState } from './jobsStore';
 import { createUiStore, type UiStoreState } from './uiStore';
 import { createParamsStore, type ParamsStoreState } from '../features/params/paramsStore';
 import { createSingleStore, type SingleStoreState } from '../features/single/singleStore';
+import { createBatchStore, type BatchStoreState } from '../features/batch/batchStore';
 
 /** Everything components may use. Created once at start-up and handed down through context. */
 export interface Services {
@@ -17,6 +18,7 @@ export interface Services {
   ui: StoreApi<UiStoreState>;
   params: StoreApi<ParamsStoreState>;
   single: StoreApi<SingleStoreState>;
+  batch: StoreApi<BatchStoreState>;
 }
 
 /** Builds every store on top of a bridge. Feature stores live next to their features. */
@@ -31,6 +33,7 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
     ui: createUiStore(),
     params,
     single: createSingleStore({ bridge, app, jobs, params }),
+    batch: createBatchStore({ bridge, app, jobs, params }),
   };
 }
 
@@ -70,6 +73,10 @@ export function useParamsStore<T>(selector: (state: ParamsStoreState) => T): T {
 
 export function useSingleStore<T>(selector: (state: SingleStoreState) => T): T {
   return useStore(useServices().single, selector);
+}
+
+export function useBatchStore<T>(selector: (state: BatchStoreState) => T): T {
+  return useStore(useServices().batch, selector);
 }
 
 /** Translator for the current UI language; re-renders the caller when the language changes. */

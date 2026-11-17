@@ -1,0 +1,49 @@
+/* Design tokens. Light by default, dark when the OS (and therefore Rhino, usually) is dark. */
+:root {
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Consolas, monospace;
+  --radius: 4px;
+  --panel-width: 340px;
+
+  --surface: #ffffff;
+  --surface-raised: #f6f7f8;
+  --surface-sunken: #eef0f2;
+  --surface-input: #ffffff;
+  --surface-hover: #e7e9ec;
+  --border: #d5d8dc;
+  --border-strong: #b5bac0;
+  --text: #1d2125;
+  --text-muted: #646b73;
+  --accent: #2563eb;
+  --accent-hover: #1d4fd0;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --focus: rgba(37, 99, 235, 0.55);
+  --success: #15803d;
+  --danger: #c62828;
+  --warning-soft: #fff4d6;
+  --scrim: rgba(255, 255, 255, 0.72);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #1f2226;
+    --surface-raised: #26292e;
+    --surface-sunken: #181a1d;
+    --surface-input: #15171a;
+    --surface-hover: #30343a;
+    --border: #3a3f46;
+    --border-strong: #545a62;
+    --text: #e6e8eb;
+    --text-muted: #9aa1a9;
+    --accent: #4b83f0;
+    --accent-hover: #6694f2;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(75, 131, 240, 0.14);
+    --focus: rgba(75, 131, 240, 0.65);
+    --success: #4ade80;
+    --danger: #f87171;
+    --warning-soft: #4a3b10;
+    --scrim: rgba(24, 26, 29, 0.72);
+  }
+}

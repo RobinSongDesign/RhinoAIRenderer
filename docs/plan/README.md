@@ -87,7 +87,7 @@
 | P2-T02 | 本地回环服务器 | P2-T01 | agent | done |
 | P2-T03 | 资源库、`IRhinoHost`、开发宿主 | P2-T02、P1-T11 | agent | done |
 | P2-T04 | 应用服务与 RPC 处理器 | P2-T03、P1-T08、P1-T09 | agent | done |
-| P2-T05 | UI 工程骨架 | P2-T03 | agent | todo |
+| P2-T05 | UI 工程骨架 | P2-T03 | agent | done |
 | P2-T06 | UI：单图流程 | P2-T04、P2-T05 | agent | todo |
 | P2-T07 | UI：批量流程 | P2-T06 | agent | todo |
 | P2-T08 | UI：设置与服务商管理 | P2-T06 | agent | todo |

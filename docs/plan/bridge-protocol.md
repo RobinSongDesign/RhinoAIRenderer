@@ -122,6 +122,39 @@ interface CameraState {
   signature: string;
 }
 
+// P3: how a node was produced; the source image is the parent node's image
+interface Recipe {
+  backendId: string;
+  modelId: string;
+  prompt: string;
+  systemPrompt?: string;
+  aspectRatio?: string;
+  imageSize: string;
+  maskAssetId?: string;
+  references: { assetId: string; role: 'style' | 'material' | 'object' | 'consistency'; note?: string }[];
+  editKind?: string;               // 'inpaint' | 'quick:{id}' | ...
+}
+
+// P3: one image of the history tree
+interface NodeDto {
+  id: string;
+  parentId?: string;               // omitted for roots
+  kind: 'capture' | 'generation' | 'edit' | 'import';
+  asset: AssetRef;
+  createdAt: string;               // ISO 8601
+  label?: string;
+  starred: boolean;
+  recipe?: Recipe;                 // omitted for captures and imports
+  camera?: CameraState;            // capture nodes
+}
+
+// P3: the current project's history; nodes in the order they were added
+interface SessionDto {
+  projectId: string;               // 'unsaved-…' until the document is bound (P3-T02)
+  currentNodeId?: string;
+  nodes: NodeDto[];
+}
+
 interface JobInfo {
   id: string;
   groupId?: string;
@@ -209,10 +242,13 @@ Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI�
 | `session.addNode` | `{ parentId?, kind, assetId, label?, recipe?, camera? }` | `NodeDto` |
 | `session.updateNode` | `{ id, label?, starred? }` | `NodeDto` |
 | `session.deleteNode` | `{ id, withDescendants: boolean }` | — |
-| `session.setCurrent` | `{ id }` | — |
+| `session.setCurrent` | `{ id }`（`id` 为 `null` 时取消选中） | — |
 | `session.clear` | — | — |
 
-生成任务成功时，宿主自动为每张结果图创建节点（父节点为 `GenerateParams.parentNodeId`），并在 `job.updated` 的 `result.nodeIds` 中返回。
+- `session.addNode` 不改变当前节点；需要选中时 UI 再调用 `session.setCurrent`。节点引用的图片（`assetId`、配方中的蒙版与参考图）会复制进项目目录，所以之后即使缓存被清理也能通过 `/assets/{id}` 取到。未知的 `assetId` 或 `parentId` 返回 `not_found`，未知的 `kind` 返回 `invalid_request`。
+- `session.deleteNode` 在 `withDescendants` 为 `false` 时把子节点改挂到被删节点的父节点；当前节点被删时选中其父节点。不再被任何节点引用的图片随之删除。
+- 生成任务成功时，宿主自动为每张结果图创建节点（父节点为 `GenerateParams.parentNodeId`，该节点已被删除时作为新的根节点；带蒙版的任务记为 `edit`，其余记为 `generation`），并在 `job.updated` 与 `jobs.list` 的 `result.nodeIds` 中返回。节点写入任务**提交时**的当前项目。`deferNode` 为 `true` 时不建节点。
+- 节点增删改、当前节点变化、切换到另一个项目时，宿主发出 `session.changed`（只针对当前项目）。
 
 ### 4.7 账号（P4）
 

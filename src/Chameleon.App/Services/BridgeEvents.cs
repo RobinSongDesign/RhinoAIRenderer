@@ -14,5 +14,8 @@ namespace Chameleon.App.Services
 
         /// <summary>User settings changed.</summary>
         public const string SettingsChanged = "settings.changed";
+
+        /// <summary>The current project's nodes or selection changed, or another project became current.</summary>
+        public const string SessionChanged = "session.changed";
     }
 }

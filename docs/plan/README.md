@@ -100,7 +100,7 @@
 
 | ID | 任务 | 依赖 | 执行者 | 状态 |
 |---|---|---|---|---|
-| P3-T01 | 编辑会话模型与项目存储 | P2-T04 | agent | todo |
+| P3-T01 | 编辑会话模型与项目存储 | P2-T04 | agent | done |
 | P3-T02 | Rhino 文档绑定 | P3-T01、P2-T09 | agent+human | todo |
 | P3-T03 | UI：历史面板与版本树 | P3-T01、P2-T06 | agent | todo |
 | P3-T04 | UI：画布查看器与前后对比 | P2-T06 | agent | todo |

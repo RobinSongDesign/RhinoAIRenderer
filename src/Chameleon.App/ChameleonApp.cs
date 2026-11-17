@@ -5,6 +5,7 @@ using Chameleon.App.Assets;
 using Chameleon.App.Bridge;
 using Chameleon.App.Hosting;
 using Chameleon.App.Platform;
+using Chameleon.App.Projects;
 using Chameleon.App.Server;
 using Chameleon.App.Services;
 using Chameleon.Core.Backends;
@@ -30,6 +31,7 @@ namespace Chameleon.App
             LocalServer server,
             GenerationQueue queue,
             HttpClient httpClient,
+            ProjectService projects,
             RpcRouter router,
             EventBus events,
             IAssetStore assets,
@@ -39,6 +41,7 @@ namespace Chameleon.App
             _server = server;
             _queue = queue;
             _httpClient = httpClient;
+            Projects = projects;
             Router = router;
             Events = events;
             Assets = assets;
@@ -48,6 +51,9 @@ namespace Chameleon.App
 
         /// <summary>Address the WebView must load; contains the secret token.</summary>
         public string BaseUrl => _server.BaseUrl;
+
+        /// <summary>Edit histories; the Rhino host binds documents to projects through it.</summary>
+        public ProjectService Projects { get; }
 
         /// <summary>RPC entry point; hosts may register additional methods before the UI connects.</summary>
         public RpcRouter Router { get; }
@@ -108,8 +114,11 @@ namespace Chameleon.App
             var backends = new BackendRegistry(catalog, settings, secrets, factory, extraBackends);
             var queue = new GenerationQueue(backends.Find);
 
-            var assets = new DiskAssetStore(Path.Combine(paths.CacheDirectory, "assets"));
-            assets.PurgeStale(DiskAssetStore.DefaultMaxAge);
+            var cache = new DiskAssetStore(Path.Combine(paths.CacheDirectory, "assets"));
+            cache.PurgeStale(DiskAssetStore.DefaultMaxAge);
+            var projects = new ProjectService(new DiskProjectStore(paths.ProjectsDirectory, host.Log), cache);
+            projects.PurgeAbandonedTemporaryProjects(TimeSpan.FromDays(1));
+            IAssetStore assets = new ProjectAssetStore(cache, projects);
 
             var events = new EventBus(host.Log);
             var router = new RpcRouter(host.Log);
@@ -121,7 +130,8 @@ namespace Chameleon.App
             accountService.Register(router);
             new ProviderService(catalog, settings, secrets, backends, backendService, factory).Register(router);
             new CaptureService(host, assets).Register(router);
-            new JobService(queue, backends, assets, settings, catalog, events).Register(router);
+            new JobService(queue, backends, assets, settings, catalog, events, projects, host.Log).Register(router);
+            new SessionService(projects, assets, events).Register(router);
 
             if (cloud != null && cloud.Session.IsSignedIn)
             {
@@ -139,7 +149,7 @@ namespace Chameleon.App
             });
             server.Start();
 
-            return new ChameleonApp(server, queue, httpClient, router, events, assets, settingsStore, secrets);
+            return new ChameleonApp(server, queue, httpClient, projects, router, events, assets, settingsStore, secrets);
         }
 
         private static async System.Threading.Tasks.Task RefreshAccountAsync(CloudServices cloud, IRhinoHost host)
@@ -155,11 +165,13 @@ namespace Chameleon.App
             }
         }
 
-        /// <summary>Stops the server, cancels running jobs and releases network resources.</summary>
+        /// <summary>Stops the server, cancels running jobs, saves the histories and releases network resources.</summary>
         public void Dispose()
         {
             _server.Dispose();
             _queue.Dispose();
+            // After the queue, so nothing adds nodes while pending saves are written.
+            Projects.Dispose();
             _httpClient.Dispose();
         }
     }

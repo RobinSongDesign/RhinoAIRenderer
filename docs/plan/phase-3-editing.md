@@ -29,8 +29,8 @@
 ### 涉及文件
 
 - `src/Chameleon.Core/Sessions/`：`ImageNode`、`NodeKind`、`Recipe`、`RecipeReference`、`EditSession`（见 `architecture.md` 6.3 节）。
-- `src/Chameleon.App/Projects/`：`IProjectStore`、`DiskProjectStore`、`ProjectService`。
-- `src/Chameleon.App/Bridge/`：`session.*` 处理器与 `session.changed` 事件。
+- `src/Chameleon.App/Projects/`：`IProjectStore`、`DiskProjectStore`、`ProjectService`、`ProjectAssetStore`（先查项目再查缓存的资源视图）、`IProjectHistory`（`JobService` 依赖的窄接口）。
+- `src/Chameleon.App/Services/SessionService.cs`：`session.*` 处理器与 `session.changed` 事件（与其他服务一致，放在 `Services/`）。
 
 ### 实现要点
 

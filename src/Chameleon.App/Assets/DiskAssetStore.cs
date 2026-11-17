@@ -91,6 +91,36 @@ namespace Chameleon.App.Assets
             return null;
         }
 
+        /// <summary>True when an image with this id is stored.</summary>
+        public bool Contains(string assetId)
+        {
+            return AssetIds.IsValid(assetId) && Array.Exists(Extensions, e => File.Exists(PathFor(assetId, e)));
+        }
+
+        /// <summary>Deletes an image; unknown ids are ignored.</summary>
+        public void Delete(string assetId)
+        {
+            if (!AssetIds.IsValid(assetId))
+            {
+                return;
+            }
+
+            foreach (string extension in Extensions)
+            {
+                try
+                {
+                    File.Delete(PathFor(assetId, extension));
+                }
+                catch (IOException)
+                {
+                    // In use; an unreferenced file left behind is harmless.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+            }
+        }
+
         /// <summary>Deletes files that have not been used for longer than <paramref name="maxAge"/>.</summary>
         /// <returns>Number of files removed.</returns>
         public int PurgeStale(TimeSpan maxAge)

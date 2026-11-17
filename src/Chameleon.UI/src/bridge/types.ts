@@ -193,6 +193,52 @@ export interface GenerateParams {
   deferNode?: boolean;
 }
 
+/** Camera of a viewport at capture time (P3); `signature` identifies it. */
+export interface CameraState {
+  location: [number, number, number];
+  target: [number, number, number];
+  up: [number, number, number];
+  lensLength: number;
+  parallel: boolean;
+  signature: string;
+}
+
+/** How a history node was produced; the source image is the parent node's image. */
+export interface Recipe {
+  backendId: string;
+  modelId: string;
+  prompt: string;
+  systemPrompt?: string;
+  aspectRatio?: string;
+  imageSize: string;
+  maskAssetId?: string;
+  references: { assetId: string; role: ReferenceRole; note?: string }[];
+  /** 'inpaint' | 'quick:{id}' | … */
+  editKind?: string;
+}
+
+export type NodeKind = 'capture' | 'generation' | 'edit' | 'import';
+
+/** One image of the history tree. */
+export interface NodeInfo {
+  id: string;
+  parentId?: string;
+  kind: NodeKind;
+  asset: AssetRef;
+  createdAt: string;
+  label?: string;
+  starred: boolean;
+  recipe?: Recipe;
+  camera?: CameraState;
+}
+
+/** The current project's history, nodes in the order they were added. */
+export interface SessionInfo {
+  projectId: string;
+  currentNodeId?: string;
+  nodes: NodeInfo[];
+}
+
 export type JobStateName = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 
 export interface JobResult {
@@ -249,6 +295,15 @@ export interface RpcMethods {
     result: { folder: string; saved: number } | null;
   };
   'files.pickImages': { params: { multiple: boolean }; result: AssetRef[] };
+  'session.get': { params: void; result: SessionInfo };
+  'session.addNode': {
+    params: { parentId?: string; kind: NodeKind; assetId: string; label?: string; recipe?: Recipe; camera?: CameraState };
+    result: NodeInfo;
+  };
+  'session.updateNode': { params: { id: string; label?: string; starred?: boolean }; result: NodeInfo };
+  'session.deleteNode': { params: { id: string; withDescendants: boolean }; result: null };
+  'session.setCurrent': { params: { id: string | null }; result: null };
+  'session.clear': { params: void; result: null };
   'auth.startLogin': { params: void; result: LoginState };
   'auth.cancelLogin': { params: void; result: null };
   'auth.logout': { params: void; result: null };
@@ -268,6 +323,7 @@ export interface BridgeEvents {
   'backends.changed': BackendSelection;
   'settings.changed': UiSettings;
   'account.changed': AccountInfo;
+  'session.changed': SessionInfo;
 }
 
 export type BridgeEventName = keyof BridgeEvents;

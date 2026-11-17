@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using Chameleon.App.Assets;
 using Chameleon.App.Bridge;
 using Chameleon.App.Bridge.Dto;
+using Chameleon.App.Projects;
 using Chameleon.Core.Backends;
 using Chameleon.Core.Catalog;
 using Chameleon.Core.Generation;
 using Chameleon.Core.Imaging;
 using Chameleon.Core.Jobs;
+using Chameleon.Core.Sessions;
 using Chameleon.Core.Settings;
 
 namespace Chameleon.App.Services
@@ -28,12 +30,21 @@ namespace Chameleon.App.Services
         /// <summary>Job tag set when the UI creates the history node itself.</summary>
         public const string DeferNodeTag = "deferNode";
 
+        /// <summary>Job tag naming the project that was current at submission; results go there.</summary>
+        public const string ProjectTag = "projectId";
+
         private readonly IGenerationQueue _queue;
         private readonly BackendRegistry _backends;
         private readonly IAssetStore _assets;
         private readonly SettingsEditor _settings;
         private readonly ChameleonCatalog _catalog;
         private readonly EventBus _events;
+        private readonly IProjectHistory? _history;
+        private readonly Action<string> _log;
+
+        // History nodes created per job, in the order of its result images.
+        private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _resultNodes =
+            new ConcurrentDictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
 
         // Result images are stored once per job; later snapshots reuse the references.
         private readonly ConcurrentDictionary<string, IReadOnlyList<AssetRef>> _resultAssets =
@@ -46,7 +57,9 @@ namespace Chameleon.App.Services
             IAssetStore assets,
             SettingsEditor settings,
             ChameleonCatalog catalog,
-            EventBus events)
+            EventBus events,
+            IProjectHistory? history = null,
+            Action<string>? log = null)
         {
             _queue = queue ?? throw new ArgumentNullException(nameof(queue));
             _backends = backends ?? throw new ArgumentNullException(nameof(backends));
@@ -54,8 +67,19 @@ namespace Chameleon.App.Services
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _events = events ?? throw new ArgumentNullException(nameof(events));
+            _history = history;
+            _log = log ?? (_ => { });
 
-            _queue.JobChanged += (sender, e) => _events.Publish(BridgeEvents.JobUpdated, ToDto(e.Job));
+            _queue.JobChanged += (sender, e) =>
+            {
+                // Nodes first, so the announcement of the finished job can carry their ids.
+                if (e.Job.State == JobState.Succeeded)
+                {
+                    RecordNodes(e.Job);
+                }
+
+                _events.Publish(BridgeEvents.JobUpdated, ToDto(e.Job));
+            };
         }
 
         /// <summary>Registers this service's RPC methods.</summary>
@@ -91,6 +115,7 @@ namespace Chameleon.App.Services
             }
 
             CopyTags(parameters, options.Tags);
+            TagProject(options.Tags);
             return ToDto(_queue.Enqueue(backend.Id, request, options));
         }
 
@@ -120,6 +145,7 @@ namespace Chameleon.App.Services
             for (int i = 0; i < plan.Count; i++)
             {
                 CopyTags(parameters.Items[i], plan[i].Tags);
+                TagProject(plan[i].Tags);
             }
 
             string groupId = Guid.NewGuid().ToString("N");
@@ -169,7 +195,8 @@ namespace Chameleon.App.Services
                 {
                     Assets = _resultAssets.GetOrAdd(job.Id, _ => result.Images.Select(_assets.Put).ToList()),
                     Text = result.Text,
-                    CreditsCharged = result.Usage?.CreditsCharged
+                    CreditsCharged = result.Usage?.CreditsCharged,
+                    NodeIds = _resultNodes.TryGetValue(job.Id, out IReadOnlyList<string>? nodeIds) ? nodeIds : null
                 };
             }
             else if (job.State == JobState.Failed && job.Error != null)
@@ -238,6 +265,82 @@ namespace Chameleon.App.Services
         private ImageData RequireAsset(string assetId)
         {
             return _assets.TryGet(assetId) ?? throw BridgeException.NotFound("Unknown asset '" + assetId + "'.");
+        }
+
+        /// <summary>Adds the results of a finished job to the history of the project it was submitted from.</summary>
+        private void RecordNodes(GenerationJob job)
+        {
+            if (_history == null || job.Result == null
+                || job.Tags.ContainsKey(DeferNodeTag)
+                || !job.Tags.TryGetValue(ProjectTag, out string? projectId)
+                || _resultNodes.ContainsKey(job.Id))
+            {
+                return;
+            }
+
+            try
+            {
+                IReadOnlyList<AssetRef> assets = _resultAssets.GetOrAdd(job.Id, _ => job.Result.Images.Select(_assets.Put).ToList());
+                GenerationRequest request = job.Request;
+                // The parent may have been deleted while the job ran; the result then starts a new root.
+                string? parentId = job.Tags.TryGetValue(ParentNodeTag, out string? parent) && _history.Contains(projectId, parent) ? parent : null;
+                var supplied = new List<ImageData>(job.Result.Images);
+                supplied.AddRange(request.References.Select(r => r.Image));
+                if (request.Mask != null)
+                {
+                    supplied.Add(request.Mask);
+                }
+
+                var nodeIds = new List<string>();
+                foreach (AssetRef asset in assets)
+                {
+                    nodeIds.Add(_history.AddNode(projectId, new NodeSpec
+                    {
+                        ParentId = parentId,
+                        Kind = request.Mask != null ? NodeKind.Edit : NodeKind.Generation,
+                        AssetId = asset.AssetId,
+                        Label = job.Label,
+                        Recipe = RecipeOf(job)
+                    }, supplied).Id);
+                }
+
+                _resultNodes.TryAdd(job.Id, nodeIds);
+            }
+            catch (Exception ex) when (ex is BridgeException || ex is System.IO.IOException || ex is UnauthorizedAccessException)
+            {
+                // The image is still delivered; only its place in the history is lost.
+                _log("Adding the result of job " + job.Id + " to the history failed: " + ex.Message);
+            }
+        }
+
+        private static Recipe RecipeOf(GenerationJob job)
+        {
+            GenerationRequest request = job.Request;
+            var recipe = new Recipe
+            {
+                BackendId = job.BackendId,
+                ModelId = request.ModelId,
+                Prompt = request.Prompt,
+                SystemPrompt = request.SystemPrompt,
+                AspectRatio = request.AspectRatio,
+                ImageSize = request.ImageSize,
+                MaskAssetId = request.Mask?.Sha256Hex,
+                EditKind = request.Mask != null ? "inpaint" : null
+            };
+            foreach (ReferenceImage reference in request.References)
+            {
+                recipe.References.Add(new RecipeReference { AssetId = reference.Image.Sha256Hex, Role = reference.Role, Note = reference.Note });
+            }
+
+            return recipe;
+        }
+
+        private void TagProject(IDictionary<string, string> tags)
+        {
+            if (_history != null)
+            {
+                tags[ProjectTag] = _history.CurrentProjectId;
+            }
         }
 
         private static void CopyTags(GenerateParamsDto parameters, IDictionary<string, string> tags)

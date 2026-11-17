@@ -403,6 +403,7 @@ public sealed class ImageNode
     public DateTimeOffset CreatedAt { get; set; }
     public Recipe? Recipe { get; set; }       // how this node was produced; null for Capture/Import
     public string? Label { get; set; }        // e.g. named view name
+    public bool Starred { get; set; }         // user favourite
     public CameraState? Camera { get; set; }  // Capture nodes only; used to align Rhino object masks
 }
 

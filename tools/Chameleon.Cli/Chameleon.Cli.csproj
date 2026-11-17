@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Chameleon.Cli</RootNamespace>
+    <AssemblyName>chameleon-cli</AssemblyName>
+    <Description>Smoke-test tool: calls real provider endpoints through Chameleon.Core without Rhino or the UI.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Chameleon.Core\Chameleon.Core.csproj" />
+  </ItemGroup>
+
+</Project>

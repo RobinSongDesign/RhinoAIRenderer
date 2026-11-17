@@ -236,9 +236,19 @@ namespace Chameleon.Core.Tests.Jobs
                 deps.Add(queue.Enqueue("limited", Request("dep" + i)).Id);
             }
 
-            for (int i = 0; i < 3; i++)
+            // The three run in parallel and may reach the backend in any order: match results by job.
+            await limited.WaitForCallAsync(3);
+            foreach (ControllableBackend.Call dependencyCall in limited.Calls)
             {
-                (await limited.WaitForCallAsync(i + 1)).Succeed(i == 2 ? TestImages.Webp() : TestImages.Jpeg());
+                dependencyCall.Succeed(dependencyCall.Request.Prompt == "dep2" ? TestImages.Webp() : TestImages.Jpeg());
+            }
+
+            foreach (string id in deps)
+            {
+                while (queue.Find(id)!.State != JobState.Succeeded)
+                {
+                    await Task.Delay(5);
+                }
             }
 
             GenerationRequest request = Request("final");

@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Catalog\catalog.json" LogicalName="Chameleon.Core.Catalog.catalog.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Chameleon.Core.Tests" />
   </ItemGroup>
 

@@ -1,30 +1,28 @@
 .workspace {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 6px;
   height: 100%;
 }
-.thumbnails {
-  display: flex;
-  gap: 8px;
-}
-.thumbnail {
+.recipe {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  width: 128px;
-  height: 104px;
-  margin: 0;
-  font-size: 11px;
-  color: var(--text-muted);
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  font-size: 12px;
 }
-.thumbnail > :first-child {
-  flex: 1;
-  min-height: 0;
+.recipeTitle { font-weight: 600; }
+.recipePrompt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.thumbnail img {
-  cursor: pointer;
-}
+.recipeMeta { color: var(--text-muted); font-size: 11px; }
 .footerRow {
   display: flex;
   gap: 8px;

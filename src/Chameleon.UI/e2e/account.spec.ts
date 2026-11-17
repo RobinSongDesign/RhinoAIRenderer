@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openApp, rpc } from './helpers';
+import { expectCaptured, expectGenerated, openApp, rpc } from './helpers';
 
 /**
  * Account mode against the development host's fake gateway (--fake-cloud): the user starts with
@@ -10,11 +10,11 @@ import { openApp, rpc } from './helpers';
 
 async function generate(page: Page): Promise<void> {
   await page.getByTestId('capture-button').click();
-  await expect(page.getByTestId('source-view').locator('img')).toBeVisible();
+  await expectCaptured(page);
   await page.getByTestId('prompt-input').fill('cloud render');
   await page.getByTestId('generate-button').click();
   await expect(page.getByTestId('cancel-button')).toBeHidden();
-  await expect(page.getByTestId('result-view').locator('img')).toBeVisible();
+  await expectGenerated(page);
 }
 
 test('signs in, spends and redeems credits, then signs out and returns to own keys', async ({ page }) => {

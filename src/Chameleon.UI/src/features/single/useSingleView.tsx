@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Button } from '../../components/Button';
-import { ImageView } from '../../components/ImageView';
 import { Select } from '../../components/Select';
 import type { OutputFormat } from '../../imaging/imaging';
-import { useServices, useSingleStore, useT } from '../../state/services';
+import { useServices, useSessionStore, useSingleStore, useT } from '../../state/services';
 import { CostHint } from '../account/CostHint';
 import { useCostEstimate } from '../account/useCostEstimate';
 import { WelcomeCard } from '../account/WelcomeCard';
 import { CanvasView } from '../canvas/CanvasView';
+import { HistoryPanel } from '../history/HistoryPanel';
+import { selectCurrentNode, selectParentNode } from '../history/sessionStore';
 import { BackendSection } from '../params/BackendSection';
 import { ParametersSection } from '../params/ParametersSection';
 import { ReferenceSection } from '../params/ReferenceSection';
@@ -15,57 +16,49 @@ import { Section } from '../shell/Section';
 import type { ModeView } from '../shell/AppShell';
 import styles from './single.module.css';
 
-/** The canvas plus the source/result thumbnails that choose what it shows. */
-function SingleCanvas() {
+/** History on the left, the selected image on the canvas, compared with its parent. */
+function SingleWorkspace() {
   const t = useT();
-  const source = useSingleStore((s) => s.source);
-  const result = useSingleStore((s) => s.result);
+  const current = useSessionStore(selectCurrentNode);
+  const parent = useSessionStore(selectParentNode);
   const capturing = useSingleStore((s) => s.capturing);
   const generating = useSingleStore((s) => s.activeJobId !== null);
-  // Remounted per result (see SingleWorkspace), so a new result is always shown first.
-  const [showSource, setShowSource] = useState(false);
-  const shown = showSource || !result ? source : result;
 
   return (
     <div className={styles.workspace}>
+      <HistoryPanel />
       <CanvasView
         testId="canvas-view"
-        image={shown}
-        compareWith={shown === result ? source : null}
+        image={current?.asset ?? null}
+        compareWith={parent?.asset ?? null}
         placeholder={t('placeholder.source')}
         busyText={capturing ? t('status.capturing') : generating ? t('status.generating') : null}
       />
-      <div className={styles.thumbnails}>
-        <figure className={styles.thumbnail}>
-          <ImageView
-            testId="source-view"
-            asset={source}
-            alt={t('panel.source')}
-            placeholder="—"
-            selected={source !== null && shown === source}
-            onSelect={() => setShowSource(true)}
-          />
-          <figcaption>{t('panel.source')}</figcaption>
-        </figure>
-        <figure className={styles.thumbnail}>
-          <ImageView
-            testId="result-view"
-            asset={result}
-            alt={t('panel.result')}
-            placeholder="—"
-            selected={result !== null && shown === result}
-            onSelect={() => setShowSource(false)}
-          />
-          <figcaption>{t('panel.result')}</figcaption>
-        </figure>
-      </div>
     </div>
   );
 }
 
-function SingleWorkspace() {
-  const resultId = useSingleStore((s) => s.result?.assetId ?? '');
-  return <SingleCanvas key={resultId} />;
+/** How the selected image was made, with a shortcut to reuse its settings. */
+function RecipeCard() {
+  const t = useT();
+  const { single } = useServices();
+  const current = useSessionStore(selectCurrentNode);
+  if (!current?.recipe) {
+    return null;
+  }
+  return (
+    <div className={styles.recipe} data-testid="recipe-card">
+      <span className={styles.recipeTitle}>{t('history.recipe')}</span>
+      <span className={styles.recipePrompt}>{current.recipe.prompt || '—'}</span>
+      <span className={styles.recipeMeta}>
+        {current.recipe.modelId} · {current.recipe.imageSize}
+        {current.recipe.aspectRatio ? ` · ${current.recipe.aspectRatio}` : ''}
+      </span>
+      <Button size="small" data-testid="recipe-apply" onClick={() => void single.getState().applyRecipe(current.id)}>
+        {t('history.applyRecipe')}
+      </Button>
+    </div>
+  );
 }
 
 function SinglePanel() {
@@ -89,6 +82,7 @@ function SinglePanel() {
           {t('action.captureActiveView')}
         </Button>
       </Section>
+      <RecipeCard />
       <BackendSection />
       <ParametersSection promptLabel="label.prompt" />
       <ReferenceSection onStatus={(message) => single.getState().setStatus(message)} />
@@ -100,8 +94,7 @@ function SingleFooter() {
   const t = useT();
   const { single } = useServices();
   const [format, setFormat] = useState<OutputFormat>('png');
-  const source = useSingleStore((s) => s.source);
-  const result = useSingleStore((s) => s.result);
+  const current = useSessionStore(selectCurrentNode);
   const generating = useSingleStore((s) => s.activeJobId !== null);
   const saving = useSingleStore((s) => s.saving);
   const cost = useCostEstimate(1);
@@ -123,7 +116,7 @@ function SingleFooter() {
           block
           variant="primary"
           data-testid="generate-button"
-          disabled={!source || cost?.short === true}
+          disabled={!current || cost?.short === true}
           onClick={() => void single.getState().generate()}
         >
           {t('action.generate')}
@@ -132,11 +125,11 @@ function SingleFooter() {
       <div className={styles.footerRow}>
         <Button
           data-testid="save-button"
-          disabled={!result}
+          disabled={!current}
           busy={saving}
           onClick={() => void single.getState().save(format)}
         >
-          {t('action.saveResult')}
+          {t('action.saveImage')}
         </Button>
         <Select<OutputFormat>
           className={styles.formatSelect}
@@ -149,18 +142,6 @@ function SingleFooter() {
           ]}
           onChange={setFormat}
         />
-      </div>
-      <div className={styles.footerRow}>
-        <Button
-          data-testid="use-as-source-button"
-          disabled={!result || generating}
-          onClick={() => single.getState().useResultAsSource()}
-        >
-          {t('action.useAsSource')}
-        </Button>
-        <Button data-testid="clear-button" disabled={generating} onClick={() => single.getState().clear()}>
-          {t('action.clearAll')}
-        </Button>
       </div>
     </>
   );

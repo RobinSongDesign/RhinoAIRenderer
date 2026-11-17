@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openApp } from './helpers';
+import { currentNode, expectCaptured, expectGenerated, openApp, resetHistory } from './helpers';
 
 const canvas = (page: Page) => page.getByTestId('canvas-view');
 const panes = (page: Page) => page.getByTestId('canvas-view-panes');
@@ -10,23 +10,23 @@ async function zoom(page: Page): Promise<number> {
 
 async function captureAndGenerate(page: Page): Promise<{ source: string; result: string }> {
   await openApp(page);
+  await resetHistory(page);
   await page.getByTestId('backend-select').selectOption('fake');
   await page.getByTestId('capture-button').click();
-  const sourceImg = page.getByTestId('source-view').locator('img');
-  await expect(sourceImg).toBeVisible();
-  const source = (await sourceImg.getAttribute('data-asset-id')) ?? '';
+  await expectCaptured(page);
+  const source = (await canvas(page).getAttribute('data-asset-id')) ?? '';
   await page.getByTestId('prompt-input').fill('render');
   await page.getByTestId('generate-button').click();
-  const resultImg = page.getByTestId('result-view').locator('img');
-  await expect(resultImg).toBeVisible();
-  const result = (await resultImg.getAttribute('data-asset-id')) ?? '';
-  await expect(canvas(page)).toHaveAttribute('data-asset-id', result);
+  await expectGenerated(page);
+  await expect(canvas(page)).not.toHaveAttribute('data-asset-id', source);
+  const result = (await canvas(page).getAttribute('data-asset-id')) ?? '';
   await expect(canvas(page)).not.toHaveAttribute('data-zoom', '');
   return { source, result };
 }
 
 test('zooms at the pointer, fits on double-click and shows 100% with the 1 key', async ({ page }) => {
   await openApp(page);
+  await resetHistory(page);
   await page.getByTestId('capture-button').click();
   await expect(canvas(page)).not.toHaveAttribute('data-zoom', '');
   await expect(page.getByTestId('canvas-view-status')).toContainText('1280×720');
@@ -76,11 +76,12 @@ test('compares the result with its source', async ({ page }) => {
   await page.keyboard.up('\\');
   await expect(canvas(page)).toHaveAttribute('data-peek', 'false');
 
-  // The thumbnails choose what the canvas shows; the source has nothing to compare with.
-  await page.getByTestId('source-view').locator('img').click();
+  // Selecting a history node shows it; a capture has no parent to compare with.
+  await page.locator('[data-testid="history-node"][data-kind="capture"] img').click();
   await expect(canvas(page)).toHaveAttribute('data-asset-id', source);
   await expect(page.getByTestId('canvas-compare-slider')).toBeDisabled();
-  await page.getByTestId('result-view').locator('img').click();
+  await page.locator('[data-testid="history-node"][data-kind="generation"] img').click();
+  await expect(currentNode(page)).toHaveAttribute('data-kind', 'generation');
   await expect(canvas(page)).toHaveAttribute('data-asset-id', result);
 });
 

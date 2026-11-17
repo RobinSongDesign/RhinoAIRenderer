@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openApp } from './helpers';
+import { expectGenerated, openApp } from './helpers';
 
 /** The only key the development host's fake providers accept. */
 const GOOD_KEY = 'dev-good-key';
@@ -110,7 +110,7 @@ test('storing a key makes the provider ready, and it can then generate', async (
   await page.getByTestId('capture-button').click();
   await page.getByTestId('prompt-input').fill('render through the provider');
   await page.getByTestId('generate-button').click();
-  await expect(page.getByTestId('result-view').locator('img')).toBeVisible();
+  await expectGenerated(page);
 
   await openSettings(page);
   await page.getByTestId('provider-select').selectOption('BltAI');

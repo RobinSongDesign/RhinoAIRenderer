@@ -1,15 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clearOutput, openApp, outputFiles } from './helpers';
+import { canvasView, clearOutput, expectCaptured, expectGenerated, openApp, outputFiles, resetHistory } from './helpers';
 
 async function prepare(page: Page): Promise<void> {
   await openApp(page);
+  await resetHistory(page);
   await page.getByTestId('backend-select').selectOption('fake');
   await expect(page.getByTestId('model-select')).toHaveValue('fake-fast');
 }
 
 async function captureAndGenerate(page: Page, prompt: string): Promise<void> {
   await page.getByTestId('capture-button').click();
-  await expect(page.getByTestId('source-view').locator('img')).toBeVisible();
+  await expectCaptured(page);
   await page.getByTestId('prompt-input').fill(prompt);
   await page.getByTestId('generate-button').click();
 }
@@ -18,7 +19,7 @@ test('captures, applies a style template and generates a result', async ({ page 
   await prepare(page);
 
   await page.getByTestId('capture-button').click();
-  await expect(page.getByTestId('source-view').locator('img')).toBeVisible();
+  await expectCaptured(page);
   await expect(page.getByTestId('status-text')).toHaveText('Captured: 1280×720');
 
   await page.getByTestId('style-select').selectOption('dusk');
@@ -26,7 +27,7 @@ test('captures, applies a style template and generates a result', async ({ page 
 
   await page.getByTestId('generate-button').click();
   await expect(page.getByTestId('cancel-button')).toBeVisible();
-  await expect(page.getByTestId('result-view').locator('img')).toBeVisible();
+  await expectGenerated(page);
   await expect(page.getByTestId('status-text')).toHaveText('Generated: 1280×720');
   await expect(page.getByTestId('generate-button')).toBeEnabled();
 });
@@ -61,14 +62,14 @@ test('cancels a running generation', async ({ page }) => {
 
   await expect(page.getByTestId('status-text')).toHaveText('Cancelled');
   await expect(page.getByTestId('generate-button')).toBeVisible();
-  await expect(page.getByTestId('result-view').locator('img')).toHaveCount(0);
+  await expect(page.locator('[data-testid="history-node"][data-kind="generation"]')).toHaveCount(0);
 });
 
 test('saves the result as PNG and as JPEG', async ({ page }) => {
   clearOutput();
   await prepare(page);
   await captureAndGenerate(page, 'render');
-  await expect(page.getByTestId('result-view').locator('img')).toBeVisible();
+  await expectGenerated(page);
 
   await page.getByTestId('save-button').click();
   await expect(page.getByTestId('status-text')).toContainText('Saved to:');
@@ -82,23 +83,16 @@ test('saves the result as PNG and as JPEG', async ({ page }) => {
   expect(files.some((f) => /^AIRender_\d{8}_\d{6}\.jpg$/.test(f))).toBe(true);
 });
 
-test('uses the result as the new source, then clears everything', async ({ page }) => {
+test('clears the history after confirming', async ({ page }) => {
   await prepare(page);
   await captureAndGenerate(page, 'render');
-  const result = page.getByTestId('result-view').locator('img');
-  await expect(result).toBeVisible();
-  const resultId = await result.getAttribute('data-asset-id');
+  await expectGenerated(page);
 
-  await page.getByTestId('use-as-source-button').click();
-  await expect(page.getByTestId('source-view').locator('img')).toHaveAttribute(
-    'data-asset-id',
-    resultId ?? '',
-  );
-  await expect(result).toHaveCount(0);
+  await page.getByTestId('history-clear').click();
+  await page.getByTestId('history-clear-dialog').getByTestId('history-clear-confirm').click();
 
-  await page.getByTestId('clear-button').click();
-  await expect(page.getByTestId('source-view').locator('img')).toHaveCount(0);
-  await expect(page.getByTestId('prompt-input')).toHaveValue('');
+  await expect(page.getByTestId('history-empty')).toBeVisible();
+  await expect(canvasView(page)).toHaveAttribute('data-asset-id', '');
   await expect(page.getByTestId('generate-button')).toBeDisabled();
 });
 

@@ -8,6 +8,7 @@ import { createJobsStore, type JobsStoreState } from './jobsStore';
 import { createUiStore, type UiStoreState } from './uiStore';
 import { createParamsStore, type ParamsStoreState } from '../features/params/paramsStore';
 import { createSingleStore, type SingleStoreState } from '../features/single/singleStore';
+import { createSessionStore, type SessionStoreState } from '../features/history/sessionStore';
 import { createBatchStore, type BatchStoreState } from '../features/batch/batchStore';
 import { createSettingsStore, type SettingsStoreState } from '../features/settings/settingsStore';
 import { createAccountStore, type AccountStoreState } from '../features/account/accountStore';
@@ -22,6 +23,7 @@ export interface Services {
   ui: StoreApi<UiStoreState>;
   params: StoreApi<ParamsStoreState>;
   single: StoreApi<SingleStoreState>;
+  session: StoreApi<SessionStoreState>;
   batch: StoreApi<BatchStoreState>;
   settings: StoreApi<SettingsStoreState>;
   account: StoreApi<AccountStoreState>;
@@ -34,7 +36,8 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
   const app = createAppStore(bridge, initialLanguage);
   const jobs = createJobsStore(bridge);
   const params = createParamsStore(bridge);
-  const single = createSingleStore({ bridge, app, jobs, params });
+  const session = createSessionStore(bridge, app);
+  const single = createSingleStore({ bridge, app, jobs, params, session });
   const batch = createBatchStore({ bridge, app, jobs, params });
   return {
     bridge,
@@ -43,6 +46,7 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
     ui: createUiStore(),
     params,
     single,
+    session,
     batch,
     settings: createSettingsStore(bridge),
     account: createAccountStore({ bridge, app, statusSources: [single, batch] }),
@@ -98,6 +102,10 @@ export function useSettingsStore<T>(selector: (state: SettingsStoreState) => T):
 
 export function useAccountStore<T>(selector: (state: AccountStoreState) => T): T {
   return useStore(useServices().account, selector);
+}
+
+export function useSessionStore<T>(selector: (state: SessionStoreState) => T): T {
+  return useStore(useServices().session, selector);
 }
 
 /** Translator for the current UI language; re-renders the caller when the language changes. */

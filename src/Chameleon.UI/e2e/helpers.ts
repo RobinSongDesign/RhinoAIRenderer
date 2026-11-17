@@ -46,3 +46,30 @@ export function clearOutput(): void {
 export function outputFiles(): string[] {
   return fs.existsSync(outputDir) ? fs.readdirSync(outputDir).sort() : [];
 }
+
+/** The image the canvas shows (the selected history node). */
+export function canvasView(page: Page) {
+  return page.getByTestId('canvas-view');
+}
+
+/** The selected node in the history timeline. */
+export function currentNode(page: Page) {
+  return page.locator('[data-testid="history-node"][data-current="true"]');
+}
+
+/** Waits until a capture is on the canvas. */
+export async function expectCaptured(page: Page): Promise<void> {
+  await expect(currentNode(page)).toHaveAttribute('data-kind', 'capture');
+  await expect(canvasView(page)).not.toHaveAttribute('data-asset-id', '');
+}
+
+/** Waits until a generated image is selected (generation selects its result). */
+export async function expectGenerated(page: Page): Promise<void> {
+  await expect(currentNode(page)).toHaveAttribute('data-kind', 'generation');
+}
+
+/** Empties the history of the host's current project; the host is shared by all tests. */
+export async function resetHistory(page: Page): Promise<void> {
+  await rpc(page, 'session.clear');
+  await expect(page.getByTestId('history-empty')).toBeVisible();
+}

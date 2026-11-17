@@ -1,0 +1,98 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+.title { flex: 1; font-weight: 600; font-size: 12px; }
+.group { display: inline-flex; }
+.group > button { border-radius: 0; }
+.group > button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.group > button:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+.group > button + button { margin-left: -1px; }
+.scroll { position: relative; flex: 1; min-height: 0; overflow: auto; }
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.row:hover { background: var(--surface-hover); }
+.current { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.thumb {
+  flex: none;
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 3px;
+  background: var(--surface-sunken);
+}
+.info { display: flex; flex-direction: column; min-width: 0; flex: 1; font-size: 12px; }
+.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { color: var(--text-muted); font-size: 11px; }
+.star { color: #d49b00; }
+/* Floats over the right edge so showing it never shifts the row's layout. */
+.actions {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  display: none;
+  gap: 2px;
+  padding: 1px;
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.row:hover .actions, .current .actions { display: flex; }
+.icon {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.icon:hover { background: var(--surface-sunken); color: var(--text); }
+.rename { width: 100%; font: inherit; }
+.tree { position: relative; }
+.treeEdges { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.treeEdges path { fill: none; stroke: var(--border-strong); stroke-width: 1.5; }
+.treeNode {
+  position: absolute;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+.treeNode img { display: block; width: 64px; height: 48px; object-fit: cover; border-radius: 2px; }
+.treeNode.current { border-color: var(--accent); box-shadow: none; }
+.treeStar { position: absolute; top: -6px; right: -6px; font-size: 12px; }

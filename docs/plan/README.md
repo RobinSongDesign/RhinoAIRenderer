@@ -118,7 +118,7 @@
 | ID | 任务 | 依赖 | 执行者 | 状态 |
 |---|---|---|---|---|
 | P4-T00 | 准备私有仓库、服务器、域名、邮件服务、上游 Key | — | human | todo |
-| P4-T01 | OpenAPI 契约定稿 | P1-T03 | agent | todo |
+| P4-T01 | OpenAPI 契约定稿 | P1-T03 | agent | done |
 | P4-T02 | 服务端骨架 | P4-T00、P4-T01 | agent | todo |
 | P4-T03 | 登录：邮箱验证码、设备授权、令牌 | P4-T02 | agent | todo |
 | P4-T04 | 点数账本与兑换码 | P4-T03 | agent | todo |

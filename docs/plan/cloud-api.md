@@ -1,5 +1,7 @@
 # 云端网关规格
 
+> 机器可读的契约见 [`contracts/cloud-api.openapi.yaml`](../../contracts/cloud-api.openapi.yaml)（P4-T01）。两者不一致时以契约文件为准。
+
 账号模式下，插件通过这套接口使用生成能力；上游服务商的 Key 只存在于服务端。
 本文件是设计规格，P4-T01 据此写出机器可读的 `contracts/cloud-api.openapi.yaml`，之后以 OpenAPI 文件为准。
 

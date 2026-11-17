@@ -1,0 +1,636 @@
+openapi: 3.1.0
+info:
+  title: Chameleon Cloud API
+  version: 1.0.0
+  summary: Account mode of the Chameleon Rhino plug-in.
+  description: |
+    Contract between the plug-in (`CloudBackend` in Chameleon.Core) and the Chameleon gateway.
+    Upstream provider keys live only on the server; the plug-in signs in with the device
+    authorization flow and spends credits.
+
+    Conventions:
+    - Authenticated requests send `Authorization: Bearer <accessToken>` (JWT, 15 minutes).
+    - Errors are `{ "error": { "code", "message", "detail" } }`; codes match the plug-in's
+      bridge error codes (docs/plan/bridge-protocol.md section 5) plus the few listed in `ErrorCode`.
+    - Times are ISO 8601 UTC; credits are integers.
+    - Write endpoints accept `Idempotency-Key`: the same key within 24 hours returns the first result.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: '{baseUrl}'
+    description: The deployed gateway.
+    variables:
+      baseUrl:
+        default: https://gateway.invalid
+        description: Address of the Chameleon gateway (set per deployment).
+tags:
+  - name: auth
+    description: Device authorization and tokens.
+  - name: account
+    description: Credits, redeem codes and the ledger.
+  - name: catalog
+    description: Models, prices, templates and limits.
+  - name: generations
+    description: Image generation jobs.
+security:
+  - bearerAuth: []
+
+paths:
+  /v1/auth/device:
+    post:
+      tags: [auth]
+      operationId: startDeviceAuthorization
+      summary: Start signing in a device
+      description: |
+        Returns a code the user confirms in the browser. Poll `/v1/auth/token` with the device
+        code every `interval` seconds until it succeeds or expires.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeviceAuthorizationRequest' }
+            example: { clientName: Chameleon for Rhino, clientVersion: 2.0.0, platform: win }
+      responses:
+        '200':
+          description: Device authorization started.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceAuthorization' }
+              example:
+                deviceCode: 6Q0bqB2v7rWc9S1aZ8nYk3mL5pT4xE0d
+                userCode: WDJB-MJHT
+                verificationUrl: https://api.example.com/device
+                verificationUrlComplete: https://api.example.com/device?code=WDJB-MJHT
+                expiresIn: 600
+                interval: 3
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /v1/auth/token:
+    post:
+      tags: [auth]
+      operationId: pollDeviceToken
+      summary: Exchange a confirmed device code for tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceCode]
+              properties:
+                deviceCode: { type: string }
+      responses:
+        '200':
+          description: The user confirmed the device. The device code is now spent.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+        '400':
+          description: |
+            Not (yet) usable. `authorization_pending`: keep polling. `slow_down`: add 5 seconds to
+            the interval. `expired_token`: start over. `access_denied`: the user refused.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example: { error: { code: authorization_pending, message: The user has not confirmed the device yet. } }
+
+  /v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshTokens
+      summary: Rotate tokens
+      description: Returns a new access token and a new refresh token. Reusing an old refresh token revokes the whole session.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: New tokens.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Revoke the current session
+      responses:
+        '204': { description: 'Signed out.' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+
+  /v1/me:
+    get:
+      tags: [account]
+      operationId: getMe
+      summary: The signed-in user and their balance
+      responses:
+        '200':
+          description: The user.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+
+  /v1/redeem:
+    post:
+      tags: [account]
+      operationId: redeemCode
+      summary: Add credits with a redeem code
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Spaces, hyphens and letter case are ignored.
+                  example: K7QH-2MXW-9PRT-CV3N
+      responses:
+        '200':
+          description: Credits added.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [creditsAdded, credits]
+                properties:
+                  creditsAdded: { type: integer, minimum: 1 }
+                  credits: { type: integer, minimum: 0, description: 'Balance after redeeming.' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The code was already used.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '410':
+          description: The code expired or was revoked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /v1/ledger:
+    get:
+      tags: [account]
+      operationId: listLedger
+      summary: Credit movements, newest first
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: One page of entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/LedgerEntry' }
+                  nextCursor: { type: [string, 'null'] }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+
+  /v1/catalog:
+    get:
+      tags: [catalog]
+      operationId: getCatalog
+      summary: Models with prices, templates and limits
+      description: Same shape as the plug-in's built-in catalog, plus prices and limits. Supports `If-None-Match`.
+      parameters:
+        - in: header
+          name: If-None-Match
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: The catalog.
+          headers:
+            ETag:
+              description: Catalog version, for conditional requests.
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Catalog' }
+        '304': { description: 'Unchanged since the given ETag.' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+
+  /v1/generations:
+    post:
+      tags: [generations]
+      operationId: submitGeneration
+      summary: Submit a generation
+      description: |
+        Validates the request, reserves the price in credits and queues the job. Images travel as
+        multipart parts: `source`, `mask` and the parts named in `request.references[].part`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [request]
+              properties:
+                request: { $ref: '#/components/schemas/GenerationRequest' }
+                source:
+                  type: string
+                  contentMediaType: application/octet-stream
+                  description: Source image (PNG, JPEG or WebP).
+                mask:
+                  type: string
+                  contentMediaType: application/octet-stream
+                  description: Edit mask; white pixels may change. Only for models with supportsMask.
+              additionalProperties:
+                type: string
+                contentMediaType: application/octet-stream
+                description: Reference images, named as in request.references[].part.
+            encoding:
+              request: { contentType: application/json }
+      responses:
+        '202':
+          description: Queued.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, status, creditsReserved]
+                properties:
+                  id: { type: string, format: uuid }
+                  status: { $ref: '#/components/schemas/GenerationStatus' }
+                  creditsReserved: { type: integer, minimum: 0 }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+        '402':
+          description: Not enough credits for this model and size.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example: { error: { code: insufficient_credits, message: This generation costs 8 credits; 3 are left. } }
+        '409':
+          description: The idempotency key was reused with a different request.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    get:
+      tags: [generations]
+      operationId: listGenerations
+      summary: The user's recent generations
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: One page of generations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Generation' }
+                  nextCursor: { type: [string, 'null'] }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+
+  /v1/generations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/GenerationId'
+    get:
+      tags: [generations]
+      operationId: getGeneration
+      summary: State of a generation
+      parameters:
+        - in: query
+          name: wait
+          required: false
+          description: Long poll. Seconds to wait for the job to finish before answering (at most 25).
+          schema: { type: integer, minimum: 0, maximum: 25 }
+      responses:
+        '200':
+          description: Current state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Generation' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [generations]
+      operationId: cancelGeneration
+      summary: Cancel a generation
+      description: A queued job is cancelled and refunded at once; a running one is cancelled as soon as possible.
+      responses:
+        '204': { description: 'Cancellation accepted. Read the generation for its final state.' }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/generations/{id}/images/{index}:
+    parameters:
+      - $ref: '#/components/parameters/GenerationId'
+      - in: path
+        name: index
+        required: true
+        schema: { type: integer, minimum: 0 }
+    get:
+      tags: [generations]
+      operationId: getGenerationImage
+      summary: Bytes of a result image
+      responses:
+        '200':
+          description: The image.
+          content:
+            image/png: { schema: { type: string, contentMediaType: image/png } }
+            image/jpeg: { schema: { type: string, contentMediaType: image/jpeg } }
+            image/webp: { schema: { type: string, contentMediaType: image/webp } }
+        '401': { $ref: '#/components/responses/AuthFailed' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      required: false
+      description: Client-chosen unique key; retries with the same key return the first result for 24 hours.
+      schema: { type: string, maxLength: 128 }
+    Cursor:
+      in: query
+      name: cursor
+      required: false
+      schema: { type: string }
+    Limit:
+      in: query
+      name: limit
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    GenerationId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    InvalidRequest:
+      description: The request is malformed or violates a rule.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    AuthFailed:
+      description: Missing, invalid or expired access token, or a disabled account.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+          example: { error: { code: auth_failed, message: The access token has expired. } }
+    NotFound:
+      description: No such item for this user.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    RateLimited:
+      description: Too many requests or too many unfinished generations.
+      headers:
+        Retry-After:
+          description: Seconds to wait.
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    ErrorCode:
+      type: string
+      description: |
+        Bridge error codes (shared with the plug-in) plus `conflict`, `gone` and the device flow's
+        `authorization_pending`, `slow_down`, `expired_token` and `access_denied`.
+      enum:
+        - invalid_request
+        - auth_failed
+        - insufficient_credits
+        - rate_limited
+        - content_blocked
+        - model_unavailable
+        - timeout
+        - network
+        - provider_error
+        - no_image
+        - cancelled
+        - not_found
+        - internal
+        - conflict
+        - gone
+        - authorization_pending
+        - slow_down
+        - expired_token
+        - access_denied
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { $ref: '#/components/schemas/ErrorCode' }
+        message: { type: string, description: 'English message for logs.' }
+        detail: { type: string, description: 'Extra information the plug-in may show on demand.' }
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { $ref: '#/components/schemas/Error' }
+
+    DeviceAuthorizationRequest:
+      type: object
+      required: [clientName, clientVersion, platform]
+      properties:
+        clientName: { type: string, maxLength: 64 }
+        clientVersion: { type: string, maxLength: 32 }
+        platform: { type: string, enum: [win, mac, dev] }
+
+    DeviceAuthorization:
+      type: object
+      required: [deviceCode, userCode, verificationUrl, verificationUrlComplete, expiresIn, interval]
+      properties:
+        deviceCode: { type: string, description: 'Secret; only the plug-in sees it.' }
+        userCode: { type: string, description: 'Shown to the user, e.g. WDJB-MJHT.' }
+        verificationUrl: { type: string, format: uri }
+        verificationUrlComplete: { type: string, format: uri, description: 'Verification page with the code filled in.' }
+        expiresIn: { type: integer, description: 'Seconds until the codes expire.' }
+        interval: { type: integer, description: 'Minimum seconds between polls.' }
+
+    TokenResponse:
+      type: object
+      required: [accessToken, expiresIn, refreshToken, user]
+      properties:
+        accessToken: { type: string }
+        expiresIn: { type: integer, description: 'Seconds the access token stays valid.' }
+        refreshToken: { type: string, description: 'Opaque; valid for 60 days and rotated on every refresh.' }
+        user: { $ref: '#/components/schemas/User' }
+
+    User:
+      type: object
+      required: [id, email, credits, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        credits: { type: integer, minimum: 0 }
+        createdAt: { type: string, format: date-time }
+
+    LedgerEntry:
+      type: object
+      required: [id, delta, balanceAfter, type, createdAt]
+      properties:
+        id: { type: integer }
+        delta: { type: integer, description: 'Positive adds credits, negative spends them.' }
+        balanceAfter: { type: integer, minimum: 0 }
+        type: { type: string, enum: [redeem, reserve, refund, admin_adjust] }
+        refType: { type: string, description: 'What the entry refers to, e.g. "generation" or "redeem_code".' }
+        refId: { type: string }
+        note: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Capabilities:
+      type: object
+      required: [supportsMask, maxInputImages, imageSizes, aspectRatios, maxConcurrency]
+      properties:
+        supportsMask: { type: boolean }
+        maxInputImages: { type: integer, minimum: 0, description: '0 means unlimited.' }
+        imageSizes: { type: array, items: { type: string } }
+        aspectRatios: { type: array, items: { type: string } }
+        maxConcurrency: { type: integer, minimum: 1 }
+
+    LocalizedText:
+      type: object
+      required: [zh, en]
+      properties:
+        zh: { type: string }
+        en: { type: string }
+
+    CatalogModel:
+      type: object
+      required: [id, displayName, capabilities, prices]
+      properties:
+        id: { type: string }
+        displayName: { type: string }
+        capabilities: { $ref: '#/components/schemas/Capabilities' }
+        prices:
+          type: object
+          description: Credits per generation by image size tier; sizes without a price are not offered.
+          additionalProperties: { type: integer, minimum: 0 }
+          example: { 1K: 4, 2K: 8, 4K: 16 }
+
+    Catalog:
+      type: object
+      required: [version, models, styleTemplates, defaultSystemPrompt, imageSizes, aspectRatios, defaultImageSize, limits]
+      properties:
+        version: { type: string }
+        models:
+          type: array
+          items: { $ref: '#/components/schemas/CatalogModel' }
+        styleTemplates:
+          type: array
+          items:
+            type: object
+            required: [id, name, prompt]
+            properties:
+              id: { type: string }
+              name: { $ref: '#/components/schemas/LocalizedText' }
+              prompt: { type: string }
+        defaultSystemPrompt: { type: string }
+        imageSizes: { type: array, items: { type: string } }
+        aspectRatios: { type: array, items: { type: string } }
+        defaultImageSize: { type: string }
+        quickActions:
+          type: array
+          description: One-click edit presets (phase 3); the item shape is defined with that feature.
+          items: { type: object }
+        limits:
+          type: object
+          required: [maxConcurrency, maxUploadBytes]
+          properties:
+            maxConcurrency: { type: integer, minimum: 1 }
+            maxUploadBytes: { type: integer, minimum: 1 }
+
+    ReferenceRole:
+      type: string
+      enum: [style, material, object, consistency]
+
+    GenerationRequest:
+      type: object
+      description: Mirrors Chameleon.Core.Generation.GenerationRequest; images are multipart parts.
+      required: [modelId, prompt, imageSize]
+      properties:
+        modelId: { type: string }
+        prompt: { type: string, minLength: 1 }
+        systemPrompt: { type: [string, 'null'], description: 'The server may add its own on top.' }
+        aspectRatio: { type: [string, 'null'], description: 'Empty or absent keeps the source ratio.' }
+        imageSize: { type: string }
+        references:
+          type: array
+          description: In the order they are sent after the source; consistency references first.
+          items:
+            type: object
+            required: [part, role]
+            properties:
+              part: { type: string, description: 'Multipart part name, e.g. "ref0".' }
+              role: { $ref: '#/components/schemas/ReferenceRole' }
+              note: { type: string }
+        extras:
+          type: object
+          additionalProperties: { type: string }
+
+    GenerationStatus:
+      type: string
+      enum: [queued, running, succeeded, failed, cancelled]
+
+    GenerationImage:
+      type: object
+      required: [index, url, mimeType, width, height]
+      properties:
+        index: { type: integer, minimum: 0 }
+        url: { type: string, description: 'Path of the image endpoint, e.g. /v1/generations/{id}/images/0.' }
+        mimeType: { type: string }
+        width: { type: integer }
+        height: { type: integer }
+
+    Generation:
+      type: object
+      required: [id, status, createdAt, creditsCharged]
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/GenerationStatus' }
+        createdAt: { type: string, format: date-time }
+        finishedAt: { type: [string, 'null'], format: date-time }
+        images:
+          type: array
+          items: { $ref: '#/components/schemas/GenerationImage' }
+        text: { type: string, description: 'Text the model returned with the images.' }
+        creditsCharged: { type: integer, minimum: 0, description: '0 until the job succeeded; refunded jobs stay at 0.' }
+        error: { $ref: '#/components/schemas/Error' }

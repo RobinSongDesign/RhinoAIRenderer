@@ -118,6 +118,10 @@ textarea.control {
   object-fit: contain;
   cursor: zoom-in;
 }
+.imageViewSelected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
 .imagePlaceholder {
   padding: 16px;
   color: var(--text-muted);

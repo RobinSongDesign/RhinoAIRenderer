@@ -11,6 +11,8 @@ import { createSingleStore, type SingleStoreState } from '../features/single/sin
 import { createBatchStore, type BatchStoreState } from '../features/batch/batchStore';
 import { createSettingsStore, type SettingsStoreState } from '../features/settings/settingsStore';
 import { createAccountStore, type AccountStoreState } from '../features/account/accountStore';
+import { BitmapCache } from '../features/canvas/bitmapCache';
+import { decodeImage, type CanvasBitmap } from '../features/canvas/decode';
 
 /** Everything components may use. Created once at start-up and handed down through context. */
 export interface Services {
@@ -23,6 +25,8 @@ export interface Services {
   batch: StoreApi<BatchStoreState>;
   settings: StoreApi<SettingsStoreState>;
   account: StoreApi<AccountStoreState>;
+  /** Decoded images shared by every canvas. */
+  bitmaps: BitmapCache<CanvasBitmap>;
 }
 
 /** Builds every store on top of a bridge. Feature stores live next to their features. */
@@ -42,6 +46,7 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
     batch,
     settings: createSettingsStore(bridge),
     account: createAccountStore({ bridge, app, statusSources: [single, batch] }),
+    bitmaps: new BitmapCache<CanvasBitmap>((assetId) => decodeImage(bridge.assetUrl(assetId))),
   };
 }
 

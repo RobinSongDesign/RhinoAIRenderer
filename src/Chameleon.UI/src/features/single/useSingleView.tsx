@@ -7,6 +7,7 @@ import { useServices, useSingleStore, useT } from '../../state/services';
 import { CostHint } from '../account/CostHint';
 import { useCostEstimate } from '../account/useCostEstimate';
 import { WelcomeCard } from '../account/WelcomeCard';
+import { CanvasView } from '../canvas/CanvasView';
 import { BackendSection } from '../params/BackendSection';
 import { ParametersSection } from '../params/ParametersSection';
 import { ReferenceSection } from '../params/ReferenceSection';
@@ -14,33 +15,57 @@ import { Section } from '../shell/Section';
 import type { ModeView } from '../shell/AppShell';
 import styles from './single.module.css';
 
-function SingleWorkspace() {
+/** The canvas plus the source/result thumbnails that choose what it shows. */
+function SingleCanvas() {
   const t = useT();
   const source = useSingleStore((s) => s.source);
   const result = useSingleStore((s) => s.result);
   const capturing = useSingleStore((s) => s.capturing);
   const generating = useSingleStore((s) => s.activeJobId !== null);
+  // Remounted per result (see SingleWorkspace), so a new result is always shown first.
+  const [showSource, setShowSource] = useState(false);
+  const shown = showSource || !result ? source : result;
 
   return (
     <div className={styles.workspace}>
-      <h2>{t('panel.source')}</h2>
-      <ImageView
-        testId="source-view"
-        asset={source}
-        alt={t('panel.source')}
+      <CanvasView
+        testId="canvas-view"
+        image={shown}
+        compareWith={shown === result ? source : null}
         placeholder={t('placeholder.source')}
-        busyText={capturing ? t('status.capturing') : null}
+        busyText={capturing ? t('status.capturing') : generating ? t('status.generating') : null}
       />
-      <h2>{t('panel.result')}</h2>
-      <ImageView
-        testId="result-view"
-        asset={result}
-        alt={t('panel.result')}
-        placeholder={t('placeholder.result')}
-        busyText={generating ? t('status.generating') : null}
-      />
+      <div className={styles.thumbnails}>
+        <figure className={styles.thumbnail}>
+          <ImageView
+            testId="source-view"
+            asset={source}
+            alt={t('panel.source')}
+            placeholder="—"
+            selected={source !== null && shown === source}
+            onSelect={() => setShowSource(true)}
+          />
+          <figcaption>{t('panel.source')}</figcaption>
+        </figure>
+        <figure className={styles.thumbnail}>
+          <ImageView
+            testId="result-view"
+            asset={result}
+            alt={t('panel.result')}
+            placeholder="—"
+            selected={result !== null && shown === result}
+            onSelect={() => setShowSource(false)}
+          />
+          <figcaption>{t('panel.result')}</figcaption>
+        </figure>
+      </div>
     </div>
   );
+}
+
+function SingleWorkspace() {
+  const resultId = useSingleStore((s) => s.result?.assetId ?? '');
+  return <SingleCanvas key={resultId} />;
 }
 
 function SinglePanel() {

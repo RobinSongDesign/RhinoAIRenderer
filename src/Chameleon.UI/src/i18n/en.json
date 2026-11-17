@@ -202,5 +202,13 @@
   "settings.access": "Access",
   "settings.accessMode": "Generate with",
   "settings.access.account": "Chameleon account (credits)",
-  "settings.access.ownKey": "My own API key"
+  "settings.access.ownKey": "My own API key",
+  "canvas.fit": "Fit",
+  "canvas.compare": "Compare",
+  "canvas.compare.off": "Single",
+  "canvas.compare.slider": "Slider",
+  "canvas.compare.sideBySide": "Side by side",
+  "canvas.fullscreen": "Full screen",
+  "canvas.before": "Before",
+  "canvas.after": "After"
 }

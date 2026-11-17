@@ -202,5 +202,13 @@
   "settings.access": "接入方式",
   "settings.accessMode": "生成方式",
   "settings.access.account": "Chameleon 账号（点数）",
-  "settings.access.ownKey": "自己的 API Key"
+  "settings.access.ownKey": "自己的 API Key",
+  "canvas.fit": "适应窗口",
+  "canvas.compare": "对比",
+  "canvas.compare.off": "单图",
+  "canvas.compare.slider": "滑块对比",
+  "canvas.compare.sideBySide": "并排",
+  "canvas.fullscreen": "全屏预览",
+  "canvas.before": "之前",
+  "canvas.after": "之后"
 }

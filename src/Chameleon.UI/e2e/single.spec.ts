@@ -105,13 +105,14 @@ test('uses the result as the new source, then clears everything', async ({ page 
 test('opens and closes the full-screen preview', async ({ page }) => {
   await prepare(page);
   await page.getByTestId('capture-button').click();
+  await expect(page.getByTestId('canvas-fullscreen')).toBeEnabled();
 
-  await page.getByTestId('source-view').locator('img').click();
+  await page.getByTestId('canvas-fullscreen').click();
   await expect(page.getByTestId('preview-overlay')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('preview-overlay')).toHaveCount(0);
 
-  await page.getByTestId('source-view').locator('img').click();
+  await page.getByTestId('canvas-fullscreen').click();
   await page.getByTestId('preview-overlay').click();
   await expect(page.getByTestId('preview-overlay')).toHaveCount(0);
 });

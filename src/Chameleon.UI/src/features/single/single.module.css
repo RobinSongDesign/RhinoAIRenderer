@@ -1,8 +1,29 @@
 .workspace {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 6px;
   height: 100%;
+}
+.thumbnails {
+  display: flex;
+  gap: 8px;
+}
+.thumbnail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 128px;
+  height: 104px;
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.thumbnail > :first-child {
+  flex: 1;
+  min-height: 0;
+}
+.thumbnail img {
+  cursor: pointer;
 }
 .footerRow {
   display: flex;

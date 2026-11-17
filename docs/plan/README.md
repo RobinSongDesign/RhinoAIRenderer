@@ -125,7 +125,7 @@
 | P4-T05 | 模型目录、定价、上游通道 | P4-T02 | agent | todo |
 | P4-T06 | 生成管线 | P4-T04、P4-T05、P1-T08 | agent | todo |
 | P4-T07 | 管理接口与管理后台 | P4-T04、P4-T05 | agent | todo |
-| P4-T08 | 插件端 `CloudBackend` 与登录客户端 | P4-T01、P1-T10 | agent | todo |
+| P4-T08 | 插件端 `CloudBackend` 与登录客户端 | P4-T01、P1-T10 | agent | done |
 | P4-T09 | 插件 UI：登录、点数、兑换、模式切换 | P4-T08、P2-T08 | agent | todo |
 | P4-T10 | 部署与运维手册 | P4-T06、P4-T07 | agent+human | todo |
 | P4-T11 | 安全检查与压测 | P4-T10 | agent | todo |

@@ -239,6 +239,7 @@ chameleon-server/
 ### 实现要点
 
 - 服务地址：编译期默认值可被设置中的 `cloud.baseUrl` 覆盖（便于连测试环境）。只接受 `https:`，例外是 `http://127.0.0.1` 与 `http://localhost`（本地开发）。
+  - 实现说明：`CloudEndpoint.DefaultBaseUrl` 目前为 `null`（网关尚未部署）。没有地址时不提供账号模式；P4-T10 部署后填入正式地址。
 - `AuthSession`：刷新令牌存 `ISecretStore`（名字 `cloud:refreshToken`），访问令牌只在内存；过期前 60 秒或收到 401 时刷新；并发请求共享同一次刷新；刷新失败（令牌失效）则转为未登录并触发 `Changed` 事件。
 - `DeviceLoginFlow.StartAsync` 返回验证地址与用户码；后台按 `interval` 轮询，处理 `authorization_pending`、`slow_down`（间隔加 5 秒）、`expired_token`、拒绝；可取消。
 - `CloudBackend`：

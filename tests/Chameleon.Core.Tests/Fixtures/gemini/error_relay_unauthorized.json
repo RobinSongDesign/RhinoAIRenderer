@@ -1,0 +1,7 @@
+{
+  "error": {
+    "message": "Invalid token (request id: 20260101000000)",
+    "type": "new_api_error",
+    "code": "invalid_token"
+  }
+}

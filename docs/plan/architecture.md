@@ -248,19 +248,31 @@ namespace Chameleon.Core.Providers
         public bool EnableSearchGrounding { get; set; } = true;   // legacy always sent google_search
     }
 
+    /// <summary>Endpoint, credential and shared HttpClient for one call; also redacts the key from text.</summary>
+    public sealed class AdapterContext
+    {
+        public ProviderProfile Profile { get; }
+        public string ApiKey { get; }
+        public HttpClient HttpClient { get; }
+        public string? Redact(string? text);
+    }
+
     /// <summary>Translates between the neutral request model and one wire format. Stateless.</summary>
     public interface IProviderAdapter
     {
         string ApiFormat { get; }
-        HttpRequestMessage BuildGenerateRequest(ProviderProfile profile, string apiKey, GenerationRequest request);
-        Task<GenerationResult> ParseGenerateResponseAsync(HttpResponseMessage response, CancellationToken ct);
-        HttpRequestMessage BuildValidateRequest(ProviderProfile profile, string apiKey, string modelId);
-        BackendCapabilities GetCapabilities(ProviderProfile profile, string modelId);
+        // promptText is the final text from PromptComposer; adapters never assemble prompts.
+        HttpRequestMessage BuildGenerateRequest(AdapterContext context, GenerationRequest request, string promptText);
+        Task<GenerationResult> ParseGenerateResponseAsync(AdapterContext context, HttpResponseMessage response, CancellationToken ct);
+        HttpRequestMessage BuildValidateRequest(AdapterContext context, string modelId);
+        Task<RenderException> ParseErrorAsync(AdapterContext context, HttpResponseMessage response, CancellationToken ct);
     }
 }
 ```
 
 `DirectBackend` 组合 `ProviderProfile` + `IProviderAdapter` + `ISecretStore` + 共享的 `HttpClient`。新增一种协议只需要新增一个适配器类并注册。
+
+模型能力不由适配器给出：它是目录数据，由 `ProviderRegistry` 解析后放在 `ProviderProfile.Models[].Capabilities` 中。
 
 ### 5.4 设置与机密
 

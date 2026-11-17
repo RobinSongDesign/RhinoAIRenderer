@@ -1,0 +1,11 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [ { "text": "I cannot edit this image, but here is a description." } ]
+      },
+      "finishReason": "STOP"
+    }
+  ]
+}

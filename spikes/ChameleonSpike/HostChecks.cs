@@ -227,35 +227,42 @@ namespace ChameleonSpike
                     return Outcome.Skipped("select a few objects before running the spike");
                 }
 
-                // Render meshes must exist before the conduit draws; creating them inside a draw
-                // callback is not safe.
-                foreach (RhinoObject obj in doc.Objects)
-                {
-                    Mesh[] meshes = obj.GetMeshes(MeshType.Render);
-                    if (meshes == null || meshes.Length == 0)
-                    {
-                        obj.CreateMeshes(MeshType.Render, MeshingParameters.FastRenderMesh, false);
-                    }
-                }
-
                 Size size = view.ActiveViewport.Size;
-                byte[] beauty = CapturePng(view, size.Width, size.Height, out _);
-
-                double white, black, other;
+                byte[] beauty;
                 byte[] mask;
-                var conduit = new MaskConduit(selected) { Enabled = true };
+                double white, black, other;
+                int whiteObjects, blackObjects;
+                string displayMode = view.ActiveViewport.DisplayMode?.EnglishName ?? "?";
+
+                // Selection highlights and the gumball would end up in both images: hide the
+                // selection while capturing and restore it afterwards (selection is not undoable).
+                doc.Objects.UnselectAll();
+                doc.Views.Redraw();
                 try
                 {
-                    using (Bitmap bitmap = Capture(view, size.Width, size.Height))
+                    beauty = CapturePng(view, size.Width, size.Height, out _);
+
+                    var conduit = new MaskConduit(selected) { Enabled = true };
+                    try
                     {
-                        Classify(bitmap, out white, out black, out other);
-                        mask = ToPng(bitmap);
+                        using (Bitmap bitmap = Capture(view, size.Width, size.Height))
+                        {
+                            Classify(bitmap, out white, out black, out other);
+                            mask = ToPng(bitmap);
+                        }
+
+                        whiteObjects = conduit.WhiteObjectsDrawn;
+                        blackObjects = conduit.BlackObjectsDrawn;
+                    }
+                    finally
+                    {
+                        conduit.Enabled = false;
                     }
                 }
                 finally
                 {
-                    conduit.Enabled = false;
-                    view.Redraw();
+                    doc.Objects.Select(selected);
+                    doc.Views.Redraw();
                 }
 
                 string desktop = SpikeReport.DesktopDirectory();
@@ -266,7 +273,8 @@ namespace ChameleonSpike
                 bool ok = white > 0.001 && black > 0.05 && other < 0.05;
                 return new Outcome(
                     ok,
-                    selected.Length + " selected; white " + white.ToString("P1") + ", black " + black.ToString("P1") +
+                    selected.Length + " selected (" + whiteObjects + " drawn white, " + blackObjects + " black), display mode " +
+                    displayMode + "; white " + white.ToString("P1") + ", black " + black.ToString("P1") +
                     ", other " + other.ToString("P1") + "; images saved to the desktop for visual comparison");
             });
         }

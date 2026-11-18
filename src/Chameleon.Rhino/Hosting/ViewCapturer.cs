@@ -92,6 +92,8 @@ namespace Chameleon.Rhino.Hosting
             }
 
             var capture = new ViewCapture { Width = width, Height = height, TransparentBackground = false };
+            // Highlights and the gumball would otherwise be sent to the model as part of the scene.
+            using (new HiddenSelection(view.Document))
             using (Bitmap? bitmap = capture.CaptureToBitmap(view))
             {
                 if (bitmap == null)

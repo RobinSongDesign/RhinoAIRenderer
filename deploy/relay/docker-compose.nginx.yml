@@ -1,0 +1,31 @@
+# For servers that already run Nginx on ports 80/443 and have little memory to spare:
+# only new-api runs in Docker (SQLite under ./data), published on localhost for Nginx to proxy.
+# Pair it with nginx-relay.conf. Usage: sudo docker compose -f docker-compose.nginx.yml up -d
+services:
+  new-api:
+    # Verified version; see docker-compose.yml.
+    image: calciumion/new-api:${NEW_API_VERSION}
+    restart: always
+    command: --log-dir /app/logs
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    environment:
+      - SESSION_SECRET=${SESSION_SECRET}
+      - TZ=Asia/Shanghai
+      - ERROR_LOG_ENABLED=true
+      - NODE_NAME=chameleon-relay-1
+    # Keeps the gateway and other services on the machine from starving each other.
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -q '\"success\":true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

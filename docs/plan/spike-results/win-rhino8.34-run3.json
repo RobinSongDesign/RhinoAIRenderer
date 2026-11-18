@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-11-18T15:03:44.8227773+00:00",
+  "platform": "win",
+  "os": "Microsoft Windows 10.0.26200",
+  "rhinoVersion": "8.34.26223.11001",
+  "runtime": ".NET 8.0.33",
+  "pluginTargetFramework": "net7.0",
+  "checks": [
+    {
+      "id": "A1",
+      "passed": true,
+      "detail": "listening on 127.0.0.1:64489",
+      "durationMs": 0
+    },
+    {
+      "id": "A2",
+      "passed": true,
+      "detail": "page script ran",
+      "durationMs": 52
+    },
+    {
+      "id": "A3",
+      "passed": true,
+      "detail": "round trip ok",
+      "durationMs": 3
+    },
+    {
+      "id": "A4",
+      "passed": true,
+      "detail": "3 events received",
+      "durationMs": 622
+    },
+    {
+      "id": "A5",
+      "passed": true,
+      "detail": "3840x2160",
+      "durationMs": 131
+    },
+    {
+      "id": "A6",
+      "passed": true,
+      "detail": "server saw 20971520|ok",
+      "durationMs": 360
+    },
+    {
+      "id": "A7",
+      "passed": true,
+      "detail": "HTTP 404",
+      "durationMs": 1
+    },
+    {
+      "id": "B1",
+      "passed": false,
+      "detail": "no window.eto.postMessage message received",
+      "durationMs": 0
+    },
+    {
+      "id": "B2",
+      "passed": false,
+      "detail": "returned 'null'",
+      "durationMs": 1
+    },
+    {
+      "id": "B3",
+      "passed": true,
+      "detail": "1 MB: 17 ms; 10 MB: 112 ms; ",
+      "durationMs": 0
+    },
+    {
+      "id": "B4",
+      "passed": true,
+      "detail": "b4-loaded 256",
+      "durationMs": 159
+    },
+    {
+      "id": "C1",
+      "passed": true,
+      "detail": "1921x915, 50313 bytes, png=True",
+      "durationMs": 69
+    },
+    {
+      "id": "C2",
+      "passed": true,
+      "detail": "1920x1080 -> 1920x1080, 59825 bytes, 74 ms; 3840x2160 -> 3840x2160, 120138 bytes, 268 ms; ",
+      "durationMs": 344
+    },
+    {
+      "id": "C3",
+      "passed": null,
+      "detail": "skipped: the document has no named views",
+      "durationMs": 0
+    },
+    {
+      "id": "C4",
+      "passed": true,
+      "detail": "from worker thread: 1921x915, 50313 bytes, png=True",
+      "durationMs": 59
+    },
+    {
+      "id": "D1",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "D2",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "D3",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "D4",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "D5",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "D6",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "E1",
+      "passed": true,
+      "detail": "278 cipher bytes",
+      "durationMs": 1
+    },
+    {
+      "id": "E2",
+      "passed": null,
+      "detail": "skipped: macOS only",
+      "durationMs": 0
+    },
+    {
+      "id": "F1",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "F2",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "G1",
+      "passed": true,
+      "detail": "1 selected; white 13.5%, black 83.1%, other 3.3%; images saved to the desktop for visual comparison",
+      "durationMs": 159
+    },
+    {
+      "id": "H1",
+      "passed": true,
+      "detail": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36 Edg/157.0.0.0",
+      "durationMs": 0
+    },
+    {
+      "id": "H2",
+      "passed": true,
+      "detail": "PNG blob 332295 bytes",
+      "durationMs": 129
+    },
+    {
+      "id": "H3",
+      "passed": null,
+      "detail": "not run",
+      "durationMs": 0
+    },
+    {
+      "id": "H4",
+      "passed": true,
+      "detail": "devicePixelRatio 1.25, viewport 1100x820",
+      "durationMs": 0
+    }
+  ]
+}

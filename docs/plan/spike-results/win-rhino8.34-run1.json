@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-11-18T14:45:34.6389882+00:00",
+  "platform": "win",
+  "os": "Microsoft Windows 10.0.26200",
+  "rhinoVersion": "8.34.26223.11001",
+  "runtime": ".NET 8.0.33",
+  "pluginTargetFramework": "net7.0",
+  "checks": [
+    {
+      "id": "A1",
+      "passed": true,
+      "detail": "listening on 127.0.0.1:57795",
+      "durationMs": 0
+    },
+    {
+      "id": "A2",
+      "passed": true,
+      "detail": "page script ran",
+      "durationMs": 362
+    },
+    {
+      "id": "A3",
+      "passed": true,
+      "detail": "round trip ok",
+      "durationMs": 3
+    },
+    {
+      "id": "A4",
+      "passed": true,
+      "detail": "3 events received",
+      "durationMs": 618
+    },
+    {
+      "id": "A5",
+      "passed": true,
+      "detail": "3840x2160",
+      "durationMs": 174
+    },
+    {
+      "id": "A6",
+      "passed": true,
+      "detail": "server saw 20971520|ok",
+      "durationMs": 491
+    },
+    {
+      "id": "A7",
+      "passed": true,
+      "detail": "HTTP 404",
+      "durationMs": 3
+    },
+    {
+      "id": "B1",
+      "passed": false,
+      "detail": "no window.eto.postMessage message received",
+      "durationMs": 0
+    },
+    {
+      "id": "B2",
+      "passed": false,
+      "detail": "returned 'null'",
+      "durationMs": 9
+    },
+    {
+      "id": "B3",
+      "passed": true,
+      "detail": "1 MB: 21 ms; 10 MB: 90 ms; ",
+      "durationMs": 0
+    },
+    {
+      "id": "B4",
+      "passed": true,
+      "detail": "b4-loaded 256",
+      "durationMs": 120
+    },
+    {
+      "id": "C1",
+      "passed": true,
+      "detail": "1921x915, 82135 bytes, png=True",
+      "durationMs": 57
+    },
+    {
+      "id": "C2",
+      "passed": true,
+      "detail": "1920x1080 -> 1920x1080, 101407 bytes, 71 ms; 3840x2160 -> 3840x2160, 222343 bytes, 249 ms; ",
+      "durationMs": 322
+    },
+    {
+      "id": "C3",
+      "passed": null,
+      "detail": "skipped: the document has no named views",
+      "durationMs": 1
+    },
+    {
+      "id": "C4",
+      "passed": true,
+      "detail": "from worker thread: 1921x915, 82135 bytes, png=True",
+      "durationMs": 57
+    },
+    {
+      "id": "D1",
+      "passed": true,
+      "detail": "manual: fail | manual: pass | manual: pass | manual: pass | manual: pass | manual: pass | manual: fail | manual: pass | manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "D2",
+      "passed": true,
+      "detail": "manual: pass | manual: fail | manual: pass | manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "D3",
+      "passed": true,
+      "detail": "manual: pass | manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "D4",
+      "passed": true,
+      "detail": "manual: pass | manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "D5",
+      "passed": true,
+      "detail": "manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "D6",
+      "passed": true,
+      "detail": "manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "E1",
+      "passed": true,
+      "detail": "278 cipher bytes",
+      "durationMs": 1
+    },
+    {
+      "id": "E2",
+      "passed": null,
+      "detail": "skipped: macOS only",
+      "durationMs": 0
+    },
+    {
+      "id": "F1",
+      "passed": false,
+      "detail": "manual: fail | manual: fail",
+      "durationMs": 0
+    },
+    {
+      "id": "F2",
+      "passed": true,
+      "detail": "manual: pass | manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "G1",
+      "passed": false,
+      "detail": "skipped: select a few objects before running the spike | manual: pass | manual: fail | manual: fail",
+      "durationMs": 0
+    },
+    {
+      "id": "H1",
+      "passed": true,
+      "detail": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36 Edg/157.0.0.0",
+      "durationMs": 0
+    },
+    {
+      "id": "H2",
+      "passed": true,
+      "detail": "PNG blob 332295 bytes",
+      "durationMs": 85
+    },
+    {
+      "id": "H3",
+      "passed": true,
+      "detail": "manual: pass | manual: pass",
+      "durationMs": 0
+    },
+    {
+      "id": "H4",
+      "passed": true,
+      "detail": "devicePixelRatio 1.25, viewport 1100x772",
+      "durationMs": 0
+    }
+  ]
+}

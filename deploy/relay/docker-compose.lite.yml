@@ -1,0 +1,49 @@
+# Lightweight variant for small servers (e.g. 2 GB RAM shared with other services):
+# new-api stores its data in SQLite under ./data, so there is no Postgres or Redis to run.
+# Fine for a start (hundreds of users); move to docker-compose.yml when traffic grows.
+# Usage: docker compose -f docker-compose.lite.yml up -d
+services:
+  caddy:
+    image: caddy:2.8
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    mem_limit: 128m
+    depends_on:
+      - new-api
+
+  new-api:
+    # Verified version; see docker-compose.yml.
+    image: calciumion/new-api:${NEW_API_VERSION}
+    restart: always
+    command: --log-dir /app/logs
+    expose:
+      - "3000"
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    environment:
+      - SESSION_SECRET=${SESSION_SECRET}
+      - TZ=Asia/Shanghai
+      - ERROR_LOG_ENABLED=true
+      - NODE_NAME=chameleon-relay-1
+    # Caps memory so the gateway cannot starve other services on the machine (and vice versa
+    # the kernel kills the offender, not a random process). Image bodies are buffered in memory,
+    # hence the headroom.
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -q '\"success\":true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  caddy_data:
+  caddy_config:

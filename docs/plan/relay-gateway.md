@@ -97,9 +97,11 @@ docker compose logs -f new-api   # 看到 "Local: http://..." 即启动成功
     "apiKeyUrl": "https://api.你的域名/console/token",
     "topUpUrl": "https://api.你的域名/console/topup",
     "balanceApi": "oneapi",
-    "models": [ { "id": "gemini-3.1-flash-image-preview" } ]
+    "models": [ "…从 BltAI 条目中复制要开放的模型的完整定义（含 capabilities）…" ]
   }
   ```
+
+  `models` 中每一项都要带完整的 `capabilities`（尺寸、宽高比、最多几张输入图等），直接复制 `BltAI` 条目里对应的模型即可；模型 ID 要与 new-api 渠道里开放的一致。
 
 - 插件在服务商选择框下方显示余额（生成成功后自动刷新，也可手动刷新）和「充值」链接。
 - 余额不足（new-api 返回 403 与 `insufficient_user_quota` / `pre_consume_token_quota_failed`）时，提示「点数或余额不足，请兑换或充值」，不会弹出账号模式的兑换对话框。

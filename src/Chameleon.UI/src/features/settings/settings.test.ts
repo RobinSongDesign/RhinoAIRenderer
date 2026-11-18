@@ -48,6 +48,16 @@ describe('provider drafts', () => {
     expect(kept).toMatchObject({ baseUrl: 'https://relay.example.com', models: 'x' });
   });
 
+  it('read and validate the balance and top-up options', () => {
+    const relay = draftFrom(provider({ isBuiltIn: false, balanceApi: 'oneapi', topUpUrl: 'https://relay.example.com/pay' }));
+    expect(relay).toMatchObject({ reportsBalance: true, topUpUrl: 'https://relay.example.com/pay' });
+    expect(draftFrom(provider())).toMatchObject({ reportsBalance: false, topUpUrl: '' });
+
+    const ok = { ...emptyDraft(), displayName: 'Relay', baseUrl: 'https://relay.example.com', models: 'm' };
+    expect(validateDraft({ ...ok, topUpUrl: 'https://relay.example.com/pay' })).toBeNull();
+    expect(validateDraft({ ...ok, topUpUrl: 'http://relay.example.com/pay' })).toBe('settings.validation.topUpUrl');
+  });
+
   it('validate name, URL and models', () => {
     const ok = { ...emptyDraft(), displayName: 'Relay', baseUrl: 'https://relay.example.com', models: 'm' };
     expect(validateDraft(ok)).toBeNull();

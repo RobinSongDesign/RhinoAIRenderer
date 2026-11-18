@@ -82,7 +82,7 @@
   "error.invalid_request": "请求参数有误",
   "error.auth_failed": "API Key 无效或已过期",
   "error.not_ready": "当前服务商尚未设置 API Key",
-  "error.insufficient_credits": "点数不足",
+  "error.insufficient_credits": "点数或余额不足，请兑换或充值",
   "error.rate_limited": "请求过于频繁或额度已用完，请稍后再试",
   "error.content_blocked": "内容被服务商的安全策略拦截",
   "error.model_unavailable": "模型不存在或暂不可用",
@@ -232,5 +232,14 @@
   "history.applyRecipe": "沿用这些参数",
   "status.imported": "已导入 {count} 张图片",
   "status.rerunUnavailable": "这个版本没有可以重跑的参数",
-  "status.recipeApplied": "已载入该版本的参数"
+  "status.recipeApplied": "已载入该版本的参数",
+  "settings.reportsBalance": "显示剩余额度（兼容 One API / new-api 的中转）",
+  "settings.topUpUrl": "充值页面",
+  "settings.topUpUrlHint": "可选：用户购买或兑换额度的网址（https）",
+  "settings.validation.topUpUrl": "充值页面必须以 https:// 开头",
+  "balance.label": "余额：{amount}",
+  "balance.unlimited": "不限额（已用 {used}）",
+  "balance.refresh": "刷新余额",
+  "balance.failed": "余额暂时无法获取",
+  "balance.topUp": "充值"
 }

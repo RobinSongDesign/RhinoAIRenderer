@@ -28,5 +28,11 @@ namespace Chameleon.Core.Providers
 
         /// <summary>Whether Gemini requests enable Google Search grounding.</summary>
         public bool EnableSearchGrounding { get; set; } = true;
+
+        /// <summary>How the remaining balance can be queried; see <see cref="BalanceApis"/>. Null: not at all.</summary>
+        public string? BalanceApi { get; set; }
+
+        /// <summary>Web page where the user tops up or redeems credit for this provider (https only).</summary>
+        public string? TopUpUrl { get; set; }
     }
 }

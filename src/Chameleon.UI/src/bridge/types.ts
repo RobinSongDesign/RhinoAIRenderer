@@ -71,6 +71,9 @@ export interface BackendInfo {
   ready: boolean;
   models: ModelInfo[];
   defaultModel: string;
+  /** Direct backends whose provider reports a balance through "providers.balance". */
+  supportsBalance?: boolean;
+  topUpUrl?: string;
 }
 
 export interface BackendSelection {
@@ -165,6 +168,21 @@ export interface ProviderDto {
   isOverridden: boolean;
   enableSearchGrounding: boolean;
   hasKey: boolean;
+  /** How the remaining balance is queried; only providers the user adds can set it. */
+  balanceApi?: BalanceApi | null;
+  /** https page where the user tops up or redeems credit. */
+  topUpUrl?: string | null;
+}
+
+/** Balance protocols the host understands: "oneapi" is One API / new-api's dashboard endpoints. */
+export type BalanceApi = 'oneapi';
+
+/** What is left on a provider key (amounts in `currency`); null total/remaining: no limit. */
+export interface ProviderBalance {
+  remaining: number | null;
+  used: number;
+  total: number | null;
+  currency: string;
 }
 
 export type ReferenceRole = 'style' | 'material' | 'object' | 'consistency';
@@ -282,6 +300,7 @@ export interface RpcMethods {
   'providers.resetBuiltIn': { params: { id: string }; result: ProviderDto };
   'providers.setKey': { params: { id: string; key: string }; result: { hasKey: boolean } };
   'providers.testKey': { params: { id: string; key?: string; modelId?: string }; result: { ok: true } };
+  'providers.balance': { params: { id: string }; result: ProviderBalance };
   'rhino.captureActiveView': { params: { width?: number; height?: number } | void; result: AssetRef };
   'rhino.listNamedViews': { params: void; result: { name: string }[] };
   'rhino.captureNamedView': { params: { name: string; width?: number; height?: number }; result: AssetRef };

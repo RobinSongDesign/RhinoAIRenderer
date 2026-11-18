@@ -129,13 +129,23 @@ describe('accountStore', () => {
     expect(store.getState().redeemOutcome).toEqual({ kind: 'error', key });
   });
 
-  it('opens the redeem dialog when a generation fails for lack of credits', () => {
-    const { single, store } = setup();
+  it('opens the redeem dialog when an account generation fails for lack of credits', () => {
+    const { app, single, store } = setup();
+    app.setState({ activeBackendId: 'cloud' });
 
     single.setState({ status: { kind: 'error', key: 'status.saved', error: { code: 'insufficient_credits', message: 'x' } } });
 
     expect(store.getState().dialog).toBe('redeem');
     expect(store.getState().redeemReason).toBe('redeem.insufficient');
+  });
+
+  it('leaves a relay that ran out of balance to its own top-up page', () => {
+    const { app, single, store } = setup();
+    app.setState({ activeBackendId: 'direct:relay' });
+
+    single.setState({ status: { kind: 'error', key: 'status.saved', error: { code: 'insufficient_credits', message: 'x' } } });
+
+    expect(store.getState().dialog).toBeNull();
   });
 
   it('ignores other failures', () => {

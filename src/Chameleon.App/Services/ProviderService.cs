@@ -107,6 +107,18 @@ namespace Chameleon.App.Services
                 throw BridgeException.InvalidRequest("Unknown authentication type '" + authType + "'.");
             }
 
+            string? balanceApi = string.IsNullOrWhiteSpace(provider.BalanceApi) ? null : provider.BalanceApi!.Trim();
+            if (balanceApi != null && !BalanceApis.IsKnown(balanceApi))
+            {
+                throw BridgeException.InvalidRequest("Unknown balance API '" + balanceApi + "'.");
+            }
+
+            string? topUpUrl = string.IsNullOrWhiteSpace(provider.TopUpUrl) ? null : provider.TopUpUrl!.Trim();
+            if (topUpUrl != null && !IsHttps(topUpUrl))
+            {
+                throw BridgeException.InvalidRequest("The top-up page must be an https address.");
+            }
+
             string defaultModel = models.Contains(provider.DefaultModel ?? string.Empty) ? provider.DefaultModel! : models[0];
             string id = (provider.Id ?? string.Empty).Trim();
             bool isBuiltIn = _catalog.FindProvider(id) != null;
@@ -142,7 +154,10 @@ namespace Chameleon.App.Services
                     AuthType = authType,
                     Models = models,
                     DefaultModel = defaultModel,
-                    EnableSearchGrounding = provider.EnableSearchGrounding
+                    EnableSearchGrounding = provider.EnableSearchGrounding,
+                    // Only providers the user adds can declare these; built-ins take them from the catalog.
+                    BalanceApi = balanceApi,
+                    TopUpUrl = topUpUrl
                 };
                 int index = settings.UserProviders.FindIndex(p => p.Id == id);
                 if (index >= 0)
@@ -239,6 +254,11 @@ namespace Chameleon.App.Services
             await backend.ValidateAsync(parameters.ModelId ?? profile.DefaultModel, cancellationToken).ConfigureAwait(false);
         }
 
+        private static bool IsHttps(string url)
+        {
+            return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri.Scheme == Uri.UriSchemeHttps;
+        }
+
         private ProviderDto Require(string id)
         {
             ProviderProfile? profile = _backends.GetProviders().FirstOrDefault(p => p.Id == id);
@@ -260,7 +280,9 @@ namespace Chameleon.App.Services
                 IsBuiltIn = profile.IsBuiltIn,
                 IsOverridden = profile.IsOverridden,
                 EnableSearchGrounding = profile.EnableSearchGrounding,
-                HasKey = _secrets.Contains(SecretNames.ForProvider(profile.Id))
+                HasKey = _secrets.Contains(SecretNames.ForProvider(profile.Id)),
+                BalanceApi = profile.BalanceApi,
+                TopUpUrl = profile.TopUpUrl
             };
         }
     }

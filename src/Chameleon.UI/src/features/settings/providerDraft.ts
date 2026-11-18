@@ -11,6 +11,9 @@ export interface ProviderDraft {
   authType: AuthType;
   models: string;
   enableSearchGrounding: boolean;
+  /** The provider reports its balance like One API / new-api relays do. */
+  reportsBalance: boolean;
+  topUpUrl: string;
 }
 
 /** Defaults filled in when the OpenAI format is chosen on an empty form (as the WPF dialog did). */
@@ -27,6 +30,8 @@ export function emptyDraft(): ProviderDraft {
     authType: 'bearer',
     models: '',
     enableSearchGrounding: true,
+    reportsBalance: false,
+    topUpUrl: '',
   };
 }
 
@@ -43,6 +48,8 @@ export function draftFrom(provider: ProviderDto): ProviderDraft {
       .filter(Boolean)
       .join(', '),
     enableSearchGrounding: provider.enableSearchGrounding,
+    reportsBalance: provider.balanceApi === 'oneapi',
+    topUpUrl: provider.topUpUrl ?? '',
   };
 }
 
@@ -82,6 +89,10 @@ export function validateDraft(draft: ProviderDraft): MessageKey | null {
   }
   if (parseModels(draft.models).length === 0) {
     return 'settings.validation.models';
+  }
+  // The page opens in the system browser, which only ever gets https addresses.
+  if (draft.topUpUrl.trim() && !/^https:\/\/\S+$/i.test(draft.topUpUrl.trim())) {
+    return 'settings.validation.topUpUrl';
   }
   return null;
 }

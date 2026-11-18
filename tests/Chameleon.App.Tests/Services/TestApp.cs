@@ -182,6 +182,17 @@ namespace Chameleon.App.Tests.Services
                     });
                 }
 
+                // One API / new-api balance endpoints: $2 granted, 82.8 cents used.
+                if (request.RequestUri!.AbsolutePath.EndsWith("/dashboard/billing/subscription", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"hard_limit_usd\":2}") });
+                }
+
+                if (request.RequestUri.AbsolutePath.EndsWith("/dashboard/billing/usage", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"total_usage\":82.8}") });
+                }
+
                 string image = Convert.ToBase64String(TestImages.Webp().Bytes);
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {

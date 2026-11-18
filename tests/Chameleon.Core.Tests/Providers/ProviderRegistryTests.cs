@@ -27,6 +27,27 @@ namespace Chameleon.Core.Tests.Providers
         }
 
         [Fact]
+        public void Build_UserProviders_KeepKnownBalanceApisAndOnlyHttpsTopUpPages()
+        {
+            IReadOnlyList<ProviderProfile> result = Registry.Build(
+                new[]
+                {
+                    new UserProviderConfig { Id = "relay", DisplayName = "Relay", BaseUrl = "https://relay.test", Models = new List<string> { "m" }, BalanceApi = BalanceApis.OneApi, TopUpUrl = "https://relay.test/topup" },
+                    new UserProviderConfig { Id = "odd", DisplayName = "Odd", BaseUrl = "https://odd.test", Models = new List<string> { "m" }, BalanceApi = "mystery", TopUpUrl = "javascript:alert(1)" },
+                    new UserProviderConfig { Id = "plain", DisplayName = "Plain", BaseUrl = "https://plain.test", Models = new List<string> { "m" }, TopUpUrl = "http://plain.test/topup" }
+                },
+                null,
+                "en");
+
+            ProviderProfile relay = result.Single(p => p.Id == "relay");
+            Assert.Equal(BalanceApis.OneApi, relay.BalanceApi);
+            Assert.Equal("https://relay.test/topup", relay.TopUpUrl);
+            Assert.Null(result.Single(p => p.Id == "odd").BalanceApi);
+            Assert.Null(result.Single(p => p.Id == "odd").TopUpUrl);
+            Assert.Null(result.Single(p => p.Id == "plain").TopUpUrl);
+        }
+
+        [Fact]
         public void Build_UsesRequestedLanguageForBuiltInNames()
         {
             Assert.Equal("Google (native)", Registry.Build(null, null, "en")[0].DisplayName);

@@ -1,0 +1,16 @@
+.balance {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.linkButton {
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+.linkButton:hover { text-decoration: underline; }

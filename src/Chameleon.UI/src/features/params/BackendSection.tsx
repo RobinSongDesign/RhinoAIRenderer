@@ -5,6 +5,7 @@ import { Select } from '../../components/Select';
 import { selectActiveBackend } from '../../state/appStore';
 import { useAppStore, useServices, useT } from '../../state/services';
 import { Section } from '../shell/Section';
+import { BalanceLine } from './BalanceLine';
 
 /** Which backend and model generate the image; warns when the backend still needs a key. */
 export function BackendSection() {
@@ -44,6 +45,7 @@ export function BackendSection() {
           )}
         </div>
       )}
+      {backend && <BalanceLine backend={backend} />}
       <Field label={t('label.model')}>
         <Select
           data-testid="model-select"

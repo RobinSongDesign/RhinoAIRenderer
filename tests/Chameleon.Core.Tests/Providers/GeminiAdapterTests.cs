@@ -327,6 +327,8 @@ namespace Chameleon.Core.Tests.Providers
         [InlineData((HttpStatusCode)429, "gemini/error_quota.json", RenderErrorCode.RateLimited)]
         [InlineData(HttpStatusCode.NotFound, "gemini/error_model_not_found.json", RenderErrorCode.ModelUnavailable)]
         [InlineData(HttpStatusCode.Unauthorized, "gemini/error_relay_unauthorized.json", RenderErrorCode.AuthFailed)]
+        [InlineData(HttpStatusCode.Forbidden, "gemini/error_relay_token_quota.json", RenderErrorCode.InsufficientCredits)]
+        [InlineData(HttpStatusCode.Forbidden, "gemini/error_relay_user_quota.json", RenderErrorCode.InsufficientCredits)]
         public async Task Parse_ErrorBodies_MapToCodes(HttpStatusCode status, string fixture, RenderErrorCode expected)
         {
             RenderException ex = await Assert.ThrowsAsync<RenderException>(

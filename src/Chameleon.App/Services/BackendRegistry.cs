@@ -133,6 +133,8 @@ namespace Chameleon.App.Services
                     Kind = backend is IBackendStatus status ? status.Kind : BackendInfoDto.KindDirect,
                     DisplayName = backend.DisplayName,
                     Ready = IsReady(backend),
+                    SupportsBalance = backend is DirectBackend withBalance && withBalance.Profile.BalanceApi != null,
+                    TopUpUrl = (backend as DirectBackend)?.Profile.TopUpUrl,
                     Models = await backend.ListModelsAsync(cancellationToken).ConfigureAwait(false),
                     DefaultModel = await GetDefaultModelAsync(backend, cancellationToken).ConfigureAwait(false)
                 });

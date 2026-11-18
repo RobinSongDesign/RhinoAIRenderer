@@ -82,7 +82,7 @@
   "error.invalid_request": "The request was invalid",
   "error.auth_failed": "The API key was rejected or has expired",
   "error.not_ready": "The selected provider has no API key yet",
-  "error.insufficient_credits": "Not enough credits",
+  "error.insufficient_credits": "Not enough credits or balance — redeem a code or top up",
   "error.rate_limited": "Too many requests or quota exhausted — try again later",
   "error.content_blocked": "Blocked by the provider's safety filter",
   "error.model_unavailable": "The model does not exist or is unavailable",
@@ -232,5 +232,14 @@
   "history.applyRecipe": "Use these settings",
   "status.imported": "Imported {count} image(s)",
   "status.rerunUnavailable": "This version has no settings to run again",
-  "status.recipeApplied": "Settings loaded from this version"
+  "status.recipeApplied": "Settings loaded from this version",
+  "settings.reportsBalance": "Show the remaining balance (One API / new-api compatible relays)",
+  "settings.topUpUrl": "Top-up page",
+  "settings.topUpUrlHint": "Optional: where users buy or redeem credit (https)",
+  "settings.validation.topUpUrl": "The top-up page must start with https://",
+  "balance.label": "Balance: {amount}",
+  "balance.unlimited": "No limit (used {used})",
+  "balance.refresh": "Refresh balance",
+  "balance.failed": "Balance unavailable",
+  "balance.topUp": "Top up"
 }

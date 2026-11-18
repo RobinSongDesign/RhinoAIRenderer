@@ -92,6 +92,8 @@ interface BackendInfo {
   ready: boolean;                  // direct: key is set; cloud: signed in
   models: ModelInfo[];
   defaultModel: string;
+  supportsBalance: boolean;        // direct backends whose provider reports a balance ("providers.balance")
+  topUpUrl?: string;               // https page where the user tops up or redeems credit
 }
 
 interface GenerateParams {
@@ -186,12 +188,13 @@ interface JobInfo {
 
 | 方法 | 参数 | 返回 | 阶段 |
 |---|---|---|---|
-| `providers.list` | — | `ProviderDto[]`（含 `hasKey: boolean`，不含 Key） | P2 |
+| `providers.list` | — | `ProviderDto[]`（含 `hasKey: boolean`，不含 Key；P4-R2 起另含 `balanceApi: 'oneapi' \| null` 与 `topUpUrl?`，只有用户新增的服务商可设置这两项） | P2 |
 | `providers.save` | `ProviderDto`（无 `id` 表示新增；`isBuiltIn` 的项保存为覆盖配置） | `ProviderDto` | P2 |
 | `providers.delete` | `{ id }`（内置项不可删，返回 `invalid_request`） | — | P2 |
 | `providers.resetBuiltIn` | `{ id }` | `ProviderDto` | P2 |
 | `providers.setKey` | `{ id, key }`（`key` 为空字符串表示清除） | `{ hasKey }` | P2 |
 | `providers.testKey` | `{ id, key?, modelId? }`（`key` 省略时用已保存的） | `{ ok: true }` 或抛 `auth_failed` / `network` 等 | P2 |
+| `providers.balance` | `{ id }` | `{ remaining: number \| null, used: number, total: number \| null, currency: 'USD' }`（`null` 表示不限额）；未保存 Key 抛 `not_ready`，服务商不支持抛 `invalid_request` | P4-R2 |
 
 Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI。
 
@@ -293,7 +296,7 @@ interface LoginState {
 | `invalid_request` | 参数错误 | 宿主校验或 `RenderErrorCode.InvalidRequest` |
 | `auth_failed` | Key 无效或登录失效 | `AuthFailed` |
 | `not_ready` | 当前后端未设置 Key 或未登录 | 宿主 |
-| `insufficient_credits` | 点数不足 | `InsufficientCredits` |
+| `insufficient_credits` | 点数不足（账号模式），或中转服务商余额不足（HTTP 403 且 `error.code` 为 `insufficient_user_quota` / `pre_consume_token_quota_failed`） | `InsufficientCredits` |
 | `rate_limited` | 触发限流 | `RateLimited` |
 | `content_blocked` | 被服务商安全策略拦截 | `ContentBlocked` |
 | `model_unavailable` | 模型不存在或不可用 | `ModelUnavailable` |

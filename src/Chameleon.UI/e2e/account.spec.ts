@@ -76,8 +76,7 @@ test('signs in, spends and redeems credits, then signs out and returns to own ke
   await expect(ledger).toContainText('Redeemed');
   await ledger.getByRole('button', { name: 'Close' }).first().click();
 
-  // Running out of credits during a job (here simulated by the fake backend) opens the redeem dialog.
-  await page.getByTestId('backend-select').selectOption('fake');
+  // Running out of credits during a job (simulated by the fake gateway) opens the redeem dialog.
   await page.getByTestId('prompt-input').fill('render #fail:insufficient_credits');
   await page.getByTestId('generate-button').click();
   await expect(page.getByTestId('redeem-dialog')).toBeVisible();
@@ -85,7 +84,6 @@ test('signs in, spends and redeems credits, then signs out and returns to own ke
   await page.getByTestId('redeem-dialog').getByRole('button', { name: 'Close' }).first().click();
 
   // Sign out: the account backend is no longer ready.
-  await page.getByTestId('backend-select').selectOption('cloud');
   await page.getByTestId('account-button').click();
   await page.getByTestId('account-sign-out').click();
   await expect(page.getByTestId('account-sign-in')).toBeVisible();

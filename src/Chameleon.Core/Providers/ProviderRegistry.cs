@@ -77,7 +77,10 @@ namespace Chameleon.Core.Providers
                 ApiKeyUrl = builtIn.ApiKeyUrl,
                 IsBuiltIn = true,
                 IsOverridden = ov != null,
-                EnableSearchGrounding = ov?.EnableSearchGrounding ?? true
+                EnableSearchGrounding = ov?.EnableSearchGrounding ?? true,
+                // Like the key page, these describe the service itself and are not overridable.
+                BalanceApi = KnownBalanceApi(builtIn.BalanceApi),
+                TopUpUrl = HttpsOrNull(builtIn.TopUpUrl)
             };
         }
 
@@ -98,8 +101,23 @@ namespace Chameleon.Core.Providers
                 ApiKeyUrl = null,
                 IsBuiltIn = false,
                 IsOverridden = false,
-                EnableSearchGrounding = config.EnableSearchGrounding
+                EnableSearchGrounding = config.EnableSearchGrounding,
+                BalanceApi = KnownBalanceApi(config.BalanceApi),
+                TopUpUrl = HttpsOrNull(config.TopUpUrl)
             };
+        }
+
+        private static string? KnownBalanceApi(string? balanceApi)
+        {
+            return BalanceApis.IsKnown(balanceApi) ? balanceApi : null;
+        }
+
+        // Top-up pages are opened in the system browser, which only ever gets https addresses.
+        private static string? HttpsOrNull(string? url)
+        {
+            return url != null && Uri.TryCreate(url.Trim(), UriKind.Absolute, out Uri? uri) && uri.Scheme == Uri.UriSchemeHttps
+                ? uri.AbsoluteUri
+                : null;
         }
 
         private List<ModelInfo> ResolveModels(string apiFormat, IEnumerable<string> modelIds, string? builtInProviderId)

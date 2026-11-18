@@ -13,6 +13,7 @@ using Chameleon.Core.Catalog;
 using Chameleon.Core.Jobs;
 using Chameleon.Core.Prompts;
 using Chameleon.Core.Providers;
+using Chameleon.Core.Providers.Balance;
 using Chameleon.Core.Settings;
 
 namespace Chameleon.App
@@ -129,6 +130,7 @@ namespace Chameleon.App
             backendService.Register(router);
             accountService.Register(router);
             new ProviderService(catalog, settings, secrets, backends, backendService, factory).Register(router);
+            new BalanceService(backends, secrets, new OneApiBalanceClient(httpClient)).Register(router);
             new CaptureService(host, assets).Register(router);
             new JobService(queue, backends, assets, settings, catalog, events, projects, host.Log).Register(router);
             new SessionService(projects, assets, events).Register(router);

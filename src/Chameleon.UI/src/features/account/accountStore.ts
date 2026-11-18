@@ -159,10 +159,15 @@ export function createAccountStore({ bridge, app, statusSources }: AccountStoreD
     }
   });
 
-  // Running out of credits leads straight to the redeem dialog.
+  // Running out of account credits leads straight to the redeem dialog. A relay key that runs
+  // out is topped up on the relay's own site (see BalanceLine), not here.
   for (const source of statusSources) {
     source.subscribe((state, previous) => {
-      if (state.status !== previous.status && state.status?.error?.code === 'insufficient_credits') {
+      if (
+        state.status !== previous.status &&
+        state.status?.error?.code === 'insufficient_credits' &&
+        app.getState().activeBackendId === CLOUD_BACKEND_ID
+      ) {
         store.getState().openRedeem('redeem.insufficient');
       }
     });

@@ -44,6 +44,24 @@ namespace Chameleon.DevHost
                 return Json(HttpStatusCode.OK, "{\"data\":[]}");
             }
 
+            // One API / new-api balance endpoints: $2 granted, 4 cents per generated image.
+            if (path.EndsWith("/dashboard/billing/subscription", StringComparison.Ordinal))
+            {
+                return Json(HttpStatusCode.OK, "{\"object\":\"billing_subscription\",\"hard_limit_usd\":2}");
+            }
+
+            if (path.EndsWith("/dashboard/billing/usage", StringComparison.Ordinal))
+            {
+                return Json(HttpStatusCode.OK, "{\"object\":\"list\",\"total_usage\":" + (4 * Volatile.Read(ref _counter)) + "}");
+            }
+
+            // "#quota" in a prompt answers like a relay whose account is out of balance.
+            string body = request.Content == null ? string.Empty : await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (body.Contains("#quota"))
+            {
+                return Json(HttpStatusCode.Forbidden, "{\"error\":{\"message\":\"user quota is not enough\",\"type\":\"new_api_error\",\"code\":\"insufficient_user_quota\"}}");
+            }
+
             bool openAi = path.Contains("/v1/images/");
             // The key check of a Gemini provider is a tiny text-only request: answer without the delay.
             long? length = request.Content?.Headers.ContentLength;

@@ -153,6 +153,12 @@ namespace Chameleon.Core.Providers
                     code = RenderErrorCode.RateLimited;
                     summary = "The provider account has run out of quota.";
                     break;
+                case RelayErrorCodes.InsufficientUserQuota:
+                case RelayErrorCodes.TokenQuotaExhausted:
+                    // A relay account (One API / new-api) is out of balance: the user has to top up.
+                    code = RenderErrorCode.InsufficientCredits;
+                    summary = "The account at the relay has run out of balance.";
+                    break;
                 case "content_policy_violation":
                 case "moderation_blocked":
                     code = RenderErrorCode.ContentBlocked;

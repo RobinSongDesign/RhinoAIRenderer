@@ -81,10 +81,29 @@ docker compose logs -f new-api   # 看到 "Local: http://..." 即启动成功
 
 起步阶段可以只用兑换码：在后台批量生成，通过发卡平台等渠道出售。正规的微信、支付宝收款通常需要营业执照。
 
-## 5. 插件端对接
+## 5. 插件端对接（P4-R2，已完成）
 
-- 现在就能用：设置 → 添加服务商，接口格式选 Gemini，地址填你的域名，Key 填用户的令牌。
-- P4-R2 增加内置的「中转账号」服务商（地址随版本预置，用户只填令牌）、余额显示，以及把 403 额度不足识别为「点数不足」并引导兑换。
+- **用户自己添加**：设置 → 添加服务商，接口格式选 Gemini，地址填你的域名，模型填你开放的模型 ID；勾选「显示剩余额度（兼容 One API / new-api 的中转）」，「充值页面」填你网站的充值或兑换地址（必须 https）。保存后填入令牌。
+- **随版本预置**（推荐，用户只需填令牌）：在 `src/Chameleon.Core/Catalog/catalog.json` 的 `providers` 中增加一项，`balanceApi` 设为 `"oneapi"`，`topUpUrl` 设为充值页面，`apiKeyUrl` 设为用户获取令牌的页面，然后发布新版本。例如：
+
+  ```json
+  {
+    "id": "ChameleonRelay",
+    "displayName": { "zh": "Chameleon 账号", "en": "Chameleon account" },
+    "baseUrl": "https://api.你的域名",
+    "apiFormat": "gemini",
+    "authType": "bearer",
+    "defaultModel": "gemini-3.1-flash-image-preview",
+    "apiKeyUrl": "https://api.你的域名/console/token",
+    "topUpUrl": "https://api.你的域名/console/topup",
+    "balanceApi": "oneapi",
+    "models": [ { "id": "gemini-3.1-flash-image-preview" } ]
+  }
+  ```
+
+- 插件在服务商选择框下方显示余额（生成成功后自动刷新，也可手动刷新）和「充值」链接。
+- 余额不足（new-api 返回 403 与 `insufficient_user_quota` / `pre_consume_token_quota_failed`）时，提示「点数或余额不足，请兑换或充值」，不会弹出账号模式的兑换对话框。
+- 余额以美元显示（new-api 计费接口的单位）。如果你的网站对用户展示人民币，需要在网站上说明换算，或后续增加显示换算比例的设置。
 
 ## 6. 复测方法
 

@@ -28,5 +28,12 @@ namespace Chameleon.Core.Catalog
 
         /// <summary>Models offered by this provider.</summary>
         public List<CatalogModel> Models { get; set; } = new List<CatalogModel>();
+
+        /// <summary>How the remaining balance can be queried; see <see cref="Providers.BalanceApis"/>. Null: not at all.</summary>
+        public string? BalanceApi { get; set; }
+
+        /// <summary>Web page where the user tops up or redeems credit for this provider (https only).</summary>
+        public string? TopUpUrl { get; set; }
+
     }
 }

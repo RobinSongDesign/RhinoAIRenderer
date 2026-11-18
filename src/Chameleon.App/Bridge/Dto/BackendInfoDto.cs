@@ -32,5 +32,11 @@ namespace Chameleon.App.Bridge.Dto
 
         /// <summary>Model selected by default.</summary>
         public string DefaultModel { get; set; } = string.Empty;
+
+        /// <summary>True when "providers.balance" can report what is left on the key (direct backends).</summary>
+        public bool SupportsBalance { get; set; }
+
+        /// <summary>Page where the user tops up or redeems credit, if the provider has one (https).</summary>
+        public string? TopUpUrl { get; set; }
     }
 }

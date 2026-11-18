@@ -81,6 +81,28 @@ export function ProviderForm() {
           {t('settings.searchGrounding')}
         </label>
       )}
+      {!draft.isBuiltIn && (
+        <>
+          <label className={styles.checkbox}>
+            <input
+              type="checkbox"
+              data-testid="provider-balance"
+              checked={draft.reportsBalance}
+              onChange={(e) => update({ reportsBalance: e.target.checked })}
+            />
+            {t('settings.reportsBalance')}
+          </label>
+          <Field label={t('settings.topUpUrl')} hint={t('settings.topUpUrlHint')}>
+            <input
+              className={controlClass}
+              data-testid="provider-topup"
+              value={draft.topUpUrl}
+              placeholder="https://"
+              onChange={(e) => update({ topUpUrl: e.target.value })}
+            />
+          </Field>
+        </>
+      )}
       <div className={styles.actions}>
         <Button
           variant="primary"

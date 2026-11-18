@@ -40,5 +40,11 @@ namespace Chameleon.App.Bridge.Dto
 
         /// <summary>True when an API key is stored for this provider.</summary>
         public bool HasKey { get; set; }
+
+        /// <summary>How the balance is queried: "oneapi" (One API / new-api relays) or null for not at all.</summary>
+        public string? BalanceApi { get; set; }
+
+        /// <summary>Page where the user tops up or redeems credit (https only).</summary>
+        public string? TopUpUrl { get; set; }
     }
 }

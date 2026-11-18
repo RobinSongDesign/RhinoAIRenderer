@@ -121,6 +121,9 @@ export function createSettingsStore(bridge: Bridge): StoreApi<SettingsStoreState
           models,
           defaultModel: models[0],
           enableSearchGrounding: draft.enableSearchGrounding,
+          // Built-in providers take these from the catalog; the host ignores them there.
+          balanceApi: draft.reportsBalance ? 'oneapi' : null,
+          topUpUrl: draft.topUpUrl.trim() || null,
         });
         set({ draft: null });
         await reload(saved.id);

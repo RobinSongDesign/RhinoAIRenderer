@@ -185,3 +185,48 @@ test('shows version information and closes with Escape', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('settings-dialog')).toHaveCount(0);
 });
+
+test('a relay provider shows its balance and points to its top-up page when it runs out', async ({ page }) => {
+  await openApp(page);
+  await openSettings(page);
+  await page.getByTestId('provider-add').click();
+  await page.getByTestId('provider-name').fill('Balance Relay');
+  await page.getByTestId('provider-url').fill('https://relay.example.com');
+  await page.getByTestId('provider-models').fill('gemini-3.1-flash-image-preview');
+  await page.getByTestId('provider-balance').check();
+  await page.getByTestId('provider-topup').fill('http://relay.example.com/topup');
+  await page.getByTestId('provider-save').click();
+  await expect(page.getByTestId('settings-message')).toContainText('https://');
+  await page.getByTestId('provider-topup').fill('https://relay.example.com/topup');
+  await page.getByTestId('provider-save').click();
+  await expect(page.getByTestId('provider-details')).toBeVisible();
+  await page.getByTestId('key-input').fill(GOOD_KEY);
+  await page.getByTestId('key-save').click();
+  await expect(page.getByTestId('settings-message')).toHaveText('API key saved');
+  await page.getByTestId('settings-close').click();
+
+  await page.getByTestId('backend-select').selectOption({ label: 'Balance Relay' });
+  const balance = page.getByTestId('balance-text');
+  await expect(balance).toHaveText(/^Balance: \$\d+\.\d{2}$/);
+  const before = await balance.textContent();
+  await expect(page.getByTestId('balance-topup')).toBeVisible();
+
+  // A generation costs something: the balance refreshes by itself.
+  await page.getByTestId('capture-button').click();
+  await page.getByTestId('prompt-input').fill('render through the relay');
+  await page.getByTestId('generate-button').click();
+  await expectGenerated(page);
+  await expect(balance).not.toHaveText(before ?? '');
+
+  // Out of balance: a clear message, and no account-mode redeem dialog.
+  await page.getByTestId('prompt-input').fill('render #quota');
+  await page.getByTestId('generate-button').click();
+  await expect(page.getByTestId('error-notice')).toHaveAttribute('data-error-code', 'insufficient_credits');
+  await expect(page.getByTestId('redeem-dialog')).toHaveCount(0);
+
+  await openSettings(page);
+  await page.getByTestId('provider-select').selectOption({ label: 'Balance Relay · ✓' });
+  await page.getByTestId('provider-delete').click();
+  await page.getByTestId('provider-delete-confirm').click();
+  await page.getByTestId('settings-close').click();
+});

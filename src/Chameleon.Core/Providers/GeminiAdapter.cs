@@ -193,9 +193,12 @@ namespace Chameleon.Core.Providers
             JObject? json = ProviderResponseReader.TryParseObject(body);
 
             string? errorStatus = (string?)json?.SelectToken("error.status");
+            string? relayCode = json?.SelectToken("error.code")?.Type == JTokenType.String ? (string?)json.SelectToken("error.code") : null;
             string? errorMessage = (string?)json?.SelectToken("error.message");
 
-            RenderErrorCode code = ClassifyError(status, errorStatus, body);
+            RenderErrorCode code = RelayErrorCodes.IsQuotaExhausted(relayCode)
+                ? RenderErrorCode.InsufficientCredits
+                : ClassifyError(status, errorStatus, body);
             var exception = new RenderException(
                 code,
                 "The provider returned HTTP " + status + (errorStatus != null ? " (" + errorStatus + ")." : "."),

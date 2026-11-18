@@ -115,8 +115,14 @@
 
 ### P4 云端账号 — 见 [`phase-4-cloud.md`](phase-4-cloud.md)
 
+P4 分两个阶段：先用开源的 new-api 做中转网关（P4-R，见 [`relay-gateway.md`](relay-gateway.md)），自建网关（P4-T02–T07、T10、T11）推迟到需要浏览器登录、异步任务等能力时再做。插件端的账号模式（P4-T08、T09）已完成，等自建网关上线后启用。
+
 | ID | 任务 | 依赖 | 执行者 | 状态 |
 |---|---|---|---|---|
+| P4-R0 | 中转阶段准备：香港服务器、域名、上游 Key（确认允许转售）、阅读 new-api 合规声明 | — | human | todo |
+| P4-R1 | 验证 new-api 能完整转发插件请求，编写部署方案 | — | agent | done |
+| P4-R2 | 插件端「中转账号」：内置服务商、余额显示、额度不足提示 | P4-R1、P2-T08 | agent | todo |
+| P4-R3 | 部署上线并用真实上游验收 | P4-R0、P4-R1 | human | todo |
 | P4-T00 | 准备私有仓库、服务器、域名、邮件服务、上游 Key | — | human | todo |
 | P4-T01 | OpenAPI 契约定稿 | P1-T03 | agent | done |
 | P4-T02 | 服务端骨架 | P4-T00、P4-T01 | agent | todo |

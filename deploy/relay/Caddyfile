@@ -1,0 +1,18 @@
+# HTTPS certificates are obtained automatically for the domain in .env (DOMAIN).
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Source and reference images make requests of 20 MB and more.
+	request_body {
+		max_size 64MB
+	}
+
+	reverse_proxy new-api:3000 {
+		# Pass streamed answers through as they come.
+		flush_interval -1
+		transport http {
+			# Image generation can take minutes before the first byte comes back.
+			response_header_timeout 30m
+		}
+	}
+}

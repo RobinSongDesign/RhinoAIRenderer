@@ -1,0 +1,66 @@
+# Relay gateway for Chameleon account distribution (phase P4-R): new-api behind Caddy.
+# See docs/plan/relay-gateway.md for the full procedure. Copy .env.example to .env first.
+services:
+  caddy:
+    image: caddy:2.8
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - new-api
+
+  new-api:
+    # Pin a version: the plug-in's requests were verified against v1.0.0-rc.51 (2026-11).
+    # Older releases (e.g. v0.13.2) cannot price image generations by size tier.
+    image: calciumion/new-api:${NEW_API_VERSION}
+    restart: always
+    command: --log-dir /app/logs
+    # Not published: only Caddy talks to it.
+    expose:
+      - "3000"
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    environment:
+      - SQL_DSN=postgresql://newapi:${POSTGRES_PASSWORD}@postgres:5432/newapi
+      - REDIS_CONN_STRING=redis://:${REDIS_PASSWORD}@redis:6379
+      - SESSION_SECRET=${SESSION_SECRET}
+      - TZ=Asia/Shanghai
+      - ERROR_LOG_ENABLED=true
+      - BATCH_UPDATE_ENABLED=true
+      - NODE_NAME=chameleon-relay-1
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -q '\"success\":true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=newapi
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=newapi
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    restart: always
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+
+volumes:
+  pg_data:
+  caddy_data:
+  caddy_config:

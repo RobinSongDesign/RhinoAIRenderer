@@ -61,21 +61,40 @@ namespace Chameleon.Core.Tests.Jobs
         }
 
         /// <summary>Waits until the backend has received <paramref name="count"/> calls in total.</summary>
-        public async Task<Call> WaitForCallAsync(int count)
+        /// <remarks>
+        /// Only meaningful when the jobs reach the backend one at a time. Jobs that run in parallel
+        /// are started on separate thread-pool threads, so their arrival order is not their enqueue
+        /// order; use <see cref="WaitForCallAsync(string)"/> for those.
+        /// </remarks>
+        public Task<Call> WaitForCallAsync(int count)
         {
+            return WaitForAsync(calls => calls.Count >= count ? calls[count - 1] : null, "call #" + count);
+        }
+
+        /// <summary>Waits for the call made on behalf of the job whose request carries <paramref name="prompt"/>.</summary>
+        public Task<Call> WaitForCallAsync(string prompt)
+        {
+            return WaitForAsync(
+                calls => calls.FirstOrDefault(c => c.Request.Prompt == prompt),
+                "a call with prompt '" + prompt + "'");
+        }
+
+        private async Task<Call> WaitForAsync(Func<IReadOnlyList<Call>, Call?> pick, string description)
+        {
+            // The deadline only turns a hang into a readable failure; no test relies on its length.
             DateTime deadline = DateTime.UtcNow.AddSeconds(5);
             while (DateTime.UtcNow < deadline)
             {
-                IReadOnlyList<Call> calls = Calls;
-                if (calls.Count >= count)
+                Call? call = pick(Calls);
+                if (call != null)
                 {
-                    return calls[count - 1];
+                    return call;
                 }
 
                 await Task.Delay(5);
             }
 
-            throw new TimeoutException("The backend never received call #" + count + ".");
+            throw new TimeoutException("The backend never received " + description + ".");
         }
 
         public sealed class Call

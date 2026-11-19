@@ -51,6 +51,22 @@ namespace Chameleon.Core.Tests.Jobs
             throw new TimeoutException("Job " + jobId + " never reached " + state + " (is " + _queue.Find(jobId)?.State + ").");
         }
 
+        private async Task WaitForEventAsync(string jobId, JobState state)
+        {
+            DateTime deadline = DateTime.UtcNow.AddSeconds(5);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (StatesOf(jobId).Contains(state))
+                {
+                    return;
+                }
+
+                await Task.Delay(5);
+            }
+
+            throw new TimeoutException("No " + state + " event was raised for job " + jobId + ".");
+        }
+
         private List<JobState> StatesOf(string jobId)
         {
             lock (_events)
@@ -72,7 +88,10 @@ namespace Chameleon.Core.Tests.Jobs
             Assert.NotNull(done.StartedAt);
             Assert.NotNull(done.FinishedAt);
             Assert.True(done.IsFinished);
-            await Task.Delay(30); // let the last notification drain
+
+            // The state changes under the queue lock but is announced after the lock is released, so
+            // Find can report Succeeded before the event arrives: wait for the event itself.
+            await WaitForEventAsync(job.Id, JobState.Succeeded);
             Assert.Equal(new[] { JobState.Queued, JobState.Running, JobState.Succeeded }, StatesOf(job.Id));
         }
 
@@ -91,10 +110,12 @@ namespace Chameleon.Core.Tests.Jobs
         [Fact]
         public async Task UnexpectedBackendException_FailsOnlyThatJob()
         {
-            GenerationJob crashed = _queue.Enqueue(_backend.Id, Request());
-            GenerationJob healthy = _queue.Enqueue(_backend.Id, Request());
-            (await _backend.WaitForCallAsync(1)).Crash();
-            (await _backend.WaitForCallAsync(2)).Succeed();
+            GenerationJob crashed = _queue.Enqueue(_backend.Id, Request("crashes"));
+            GenerationJob healthy = _queue.Enqueue(_backend.Id, Request("healthy"));
+
+            // Both jobs run in parallel and may reach the backend in either order: match calls by job.
+            (await _backend.WaitForCallAsync("crashes")).Crash();
+            (await _backend.WaitForCallAsync("healthy")).Succeed();
 
             Assert.Equal(RenderErrorCode.Unknown, (await WaitForStateAsync(crashed.Id, JobState.Failed)).Error!.Code);
             await WaitForStateAsync(healthy.Id, JobState.Succeeded);
@@ -189,11 +210,12 @@ namespace Chameleon.Core.Tests.Jobs
             options.DependsOn.Add("no-such-job");
             GenerationJob dependent = _queue.Enqueue(_backend.Id, Request("after"), options);
 
-            (await _backend.WaitForCallAsync(1)).Fail();
-            await _backend.WaitForCallAsync(2);
+            // The two dependencies run in parallel and may reach the backend in either order.
+            (await _backend.WaitForCallAsync("fails")).Fail();
+            await _backend.WaitForCallAsync("cancelled");
             _queue.Cancel(cancelled.Id);
 
-            ControllableBackend.Call call = await _backend.WaitForCallAsync(3);
+            ControllableBackend.Call call = await _backend.WaitForCallAsync("after");
             Assert.Empty(call.Request.References);
             call.Succeed();
             await WaitForStateAsync(dependent.Id, JobState.Succeeded);

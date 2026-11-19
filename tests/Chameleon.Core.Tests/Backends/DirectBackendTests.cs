@@ -58,7 +58,7 @@ namespace Chameleon.Core.Tests.Backends
         {
             return new GenerationRequest
             {
-                ModelId = "gemini-3-pro-image-preview",
+                ModelId = "gemini-3-pro-image",
                 Prompt = "make it real",
                 SystemPrompt = "SYS",
                 Source = TestImages.Png(),
@@ -312,7 +312,7 @@ namespace Chameleon.Core.Tests.Backends
         {
             var handler = new StubHttpHandler(_ => AdapterTestKit.JsonResponse(HttpStatusCode.OK, "{}"));
 
-            await Backend(handler).ValidateAsync("gemini-3-pro-image-preview", CancellationToken.None);
+            await Backend(handler).ValidateAsync("gemini-3-pro-image", CancellationToken.None);
 
             Assert.EndsWith(":generateContent", Assert.Single(handler.Requests).RequestUri!.ToString());
         }
@@ -333,7 +333,7 @@ namespace Chameleon.Core.Tests.Backends
         {
             var handler = new StubHttpHandler(_ => Error(400, "{\"error\":{\"status\":\"INVALID_ARGUMENT\",\"message\":\"TEXT modality not supported\"}}"));
 
-            await Backend(handler).ValidateAsync("gemini-3-pro-image-preview", CancellationToken.None);
+            await Backend(handler).ValidateAsync("gemini-3-pro-image", CancellationToken.None);
         }
 
         [Fact]
@@ -352,7 +352,7 @@ namespace Chameleon.Core.Tests.Backends
         {
             DirectBackend backend = Backend(new StubHttpHandler(_ => Ok()));
 
-            Assert.Equal(8, backend.GetCapabilities("gemini-3-pro-image-preview").MaxInputImages);
+            Assert.Equal(14, backend.GetCapabilities("gemini-3-pro-image").MaxInputImages);
             Assert.Equal(0, backend.GetCapabilities("mystery").MaxInputImages);
         }
 
@@ -373,7 +373,7 @@ namespace Chameleon.Core.Tests.Backends
         }
 
         [Theory]
-        [InlineData("direct:BltAI", true, "BltAI")]
+        [InlineData("direct:Chameleon", true, "Chameleon")]
         [InlineData("direct:", false, "")]
         [InlineData("cloud", false, "")]
         [InlineData(null, false, "")]

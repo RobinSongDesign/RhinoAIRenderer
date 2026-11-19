@@ -166,7 +166,7 @@ namespace Chameleon.App.Tests.Services
         {
             string source = await CaptureAsync();
 
-            Assert.Equal("not_ready", await _app.ErrorCodeAsync("jobs.submit", Job(source, backend: "direct:BltAI", model: "gemini-3-pro-image-preview")));
+            Assert.Equal("not_ready", await _app.ErrorCodeAsync("jobs.submit", Job(source, backend: "direct:Chameleon", model: "gemini-3-pro-image")));
             Assert.Equal("not_found", await _app.ErrorCodeAsync("jobs.submit", Job(source, backend: "direct:nope")));
             Assert.Equal("not_found", await _app.ErrorCodeAsync("jobs.submit", Job(new string('a', 64))));
             Assert.Equal("invalid_request", await _app.ErrorCodeAsync("jobs.submit", new
@@ -181,9 +181,9 @@ namespace Chameleon.App.Tests.Services
         public async Task Submit_ThroughADirectProvider_SendsTheStoredKeyAndReturnsTheImage()
         {
             string source = await CaptureAsync();
-            await _app.CallAsync("providers.setKey", new { id = "BltAI", key = TestApp.GoodKey });
+            await _app.CallAsync("providers.setKey", new { id = "Chameleon", key = TestApp.GoodKey });
 
-            JToken job = await _app.CallAsync("jobs.submit", Job(source, backend: "direct:BltAI", model: "gemini-3-pro-image-preview"));
+            JToken job = await _app.CallAsync("jobs.submit", Job(source, backend: "direct:Chameleon", model: "gemini-3-pro-image"));
             JToken done = await WaitForJobAsync((string)job["id"]!, "succeeded");
 
             Assert.Equal("image/webp", (string)done["result"]!["assets"]![0]!["mimeType"]!);

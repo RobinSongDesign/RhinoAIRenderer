@@ -236,7 +236,7 @@ namespace Chameleon.Core.Providers
     /// <summary>Everything needed to reach one endpoint. Replaces the four legacy provider types.</summary>
     public sealed class ProviderProfile
     {
-        public string Id { get; set; }               // "Gemini", "BltAI" for built-ins; GUID for user-defined
+        public string Id { get; set; }               // "Chameleon", "Gemini" for built-ins; GUID for user-defined
         public string DisplayName { get; set; }
         public string BaseUrl { get; set; }
         public string ApiFormat { get; set; }        // "gemini" | "openai"
@@ -367,10 +367,10 @@ namespace Chameleon.App.Hosting
 {
   "schemaVersion": 2,
   "language": "zh",
-  "activeBackendId": "direct:BltAI",
-  "activeModelByBackend": { "direct:BltAI": "gemini-3.1-flash-image-preview" },
+  "activeBackendId": "direct:Chameleon",
+  "activeModelByBackend": { "direct:Chameleon": "gemini-nano-banana-2.1" },
   "userProviders": [ /* ProviderProfile，用户新增的 */ ],
-  "builtInOverrides": { "BltAI": { /* 覆盖内置项的部分字段 */ } },
+  "builtInOverrides": { "Gemini": { /* 覆盖内置项的部分字段 */ } },
   "systemPrompt": null,
   "batch": { "mode": "serial", "maxConsistencyRefs": 3 },
   "cloud": { "baseUrl": null }

@@ -27,13 +27,16 @@ namespace Chameleon.App.Tests.Services
             Assert.Equal("dev", (string)state["platform"]!);
             Assert.Equal("8.36", (string)state["rhinoVersion"]!);
             Assert.EndsWith("logs", (string)state["logsDirectory"]!);
-            Assert.Equal("direct:BltAI", (string)state["activeBackendId"]!);
-            Assert.Equal("gemini-3.1-flash-image-preview", (string)state["activeModelId"]!);
-            Assert.Equal(new[] { "direct:Gemini", "direct:BltAI", "scripted" }, state["backends"]!.Select(b => (string)b["id"]!).ToArray());
+            Assert.Equal("direct:Chameleon", (string)state["activeBackendId"]!);
+            Assert.Equal("gemini-nano-banana-2.1", (string)state["activeModelId"]!);
+            Assert.Equal(new[] { "direct:Chameleon", "direct:Gemini", "scripted" }, state["backends"]!.Select(b => (string)b["id"]!).ToArray());
             Assert.Equal(new[] { false, false, true }, state["backends"]!.Select(b => (bool)b["ready"]!).ToArray());
             Assert.Equal("dev", (string)state["backends"]![2]!["kind"]!);
-            Assert.Equal("Nano Banana Pro", (string)state["backends"]![0]!["models"]![1]!["displayName"]!);
-            Assert.Equal(8, (int)state["backends"]![0]!["models"]![1]!["capabilities"]!["maxInputImages"]!);
+            Assert.Equal("Nano Banana Pro", (string)state["backends"]![1]!["models"]![2]!["displayName"]!);
+            Assert.Equal(14, (int)state["backends"]![1]!["models"]![2]!["capabilities"]!["maxInputImages"]!);
+            // The Chameleon account reports its balance and links to its top-up page.
+            Assert.True((bool)state["backends"]![0]!["supportsBalance"]!);
+            Assert.StartsWith("https://", (string)state["backends"]![0]!["topUpUrl"]!);
             Assert.Equal(11, ((JArray)state["catalog"]!["styleTemplates"]!).Count);
             Assert.False(string.IsNullOrEmpty((string)state["catalog"]!["defaultSystemPrompt"]!));
             Assert.Equal(JTokenType.Null, state["settings"]!["systemPrompt"]!.Type);
@@ -66,7 +69,8 @@ namespace Chameleon.App.Tests.Services
 
             JToken state = await _app.CallAsync("app.getState");
 
-            Assert.Equal("柏拉图AI", (string)state["backends"]![1]!["displayName"]!);
+            Assert.Equal("Chameleon 账号", (string)state["backends"]![0]!["displayName"]!);
+            Assert.Equal("Google原生", (string)state["backends"]![1]!["displayName"]!);
         }
 
         [Fact]
@@ -119,7 +123,7 @@ namespace Chameleon.App.Tests.Services
             JToken gemini = await _app.CallAsync("app.getState");
             JToken backToScripted = await _app.CallAsync("backend.select", new { backendId = "scripted" });
 
-            Assert.Equal("gemini-3.1-flash-image-preview", (string)gemini["activeModelId"]!);
+            Assert.Equal("gemini-nano-banana-2.1", (string)gemini["activeModelId"]!);
             Assert.Equal("scripted-b", (string)backToScripted["activeModelId"]!);
         }
 
@@ -136,10 +140,10 @@ namespace Chameleon.App.Tests.Services
         {
             JToken providers = await _app.CallAsync("providers.list");
 
-            Assert.Equal(new[] { "Gemini", "BltAI" }, providers.Select(p => (string)p["id"]!).ToArray());
+            Assert.Equal(new[] { "Chameleon", "Gemini" }, providers.Select(p => (string)p["id"]!).ToArray());
             Assert.All(providers, p => Assert.True((bool)p["isBuiltIn"]!));
             Assert.All(providers, p => Assert.False((bool)p["hasKey"]!));
-            Assert.Equal("https://aistudio.google.com/app/apikey", (string)providers[0]!["apiKeyUrl"]!);
+            Assert.Equal("https://aistudio.google.com/app/apikey", (string)providers[1]!["apiKeyUrl"]!);
         }
 
         [Fact]
@@ -198,23 +202,23 @@ namespace Chameleon.App.Tests.Services
         {
             JToken overridden = await _app.CallAsync("providers.save", new
             {
-                id = "BltAI",
-                displayName = "BLT mirror",
+                id = "Chameleon",
+                displayName = "Account mirror",
                 baseUrl = "https://mirror.example.com",
                 apiFormat = "gemini",
                 authType = "bearer",
-                models = new[] { "gemini-3-pro-image-preview" },
+                models = new[] { "gemini-3-pro-image" },
                 enableSearchGrounding = false
             });
-            JToken reset = await _app.CallAsync("providers.resetBuiltIn", new { id = "BltAI" });
+            JToken reset = await _app.CallAsync("providers.resetBuiltIn", new { id = "Chameleon" });
 
             Assert.True((bool)overridden["isBuiltIn"]!);
             Assert.True((bool)overridden["isOverridden"]!);
             Assert.Equal("https://mirror.example.com", (string)overridden["baseUrl"]!);
             Assert.False((bool)overridden["enableSearchGrounding"]!);
             Assert.False((bool)reset["isOverridden"]!);
-            Assert.Equal("https://hk-api.gptbest.vip", (string)reset["baseUrl"]!);
-            Assert.Equal(2, ((JArray)reset["models"]!).Count);
+            Assert.Equal("https://api.robinsong.top", (string)reset["baseUrl"]!);
+            Assert.Equal(4, ((JArray)reset["models"]!).Count);
             Assert.Equal("not_found", await _app.ErrorCodeAsync("providers.resetBuiltIn", new { id = "nope" }));
         }
 
@@ -229,7 +233,7 @@ namespace Chameleon.App.Tests.Services
             JToken state = await _app.CallAsync("app.getState");
 
             Assert.False(_app.Secrets.Contains("provider:" + id));
-            Assert.Equal("direct:BltAI", (string)state["activeBackendId"]!);
+            Assert.Equal("direct:Chameleon", (string)state["activeBackendId"]!);
             Assert.DoesNotContain("direct:" + id, state["backends"]!.Select(b => (string)b["id"]!));
             Assert.Equal("not_found", await _app.ErrorCodeAsync("providers.delete", new { id }));
         }
@@ -243,26 +247,26 @@ namespace Chameleon.App.Tests.Services
         [Fact]
         public async Task SetKey_MakesTheBackendReady_AndClearingItMakesItUnready()
         {
-            JToken set = await _app.CallAsync("providers.setKey", new { id = "BltAI", key = "  " + TestApp.GoodKey + " " });
+            JToken set = await _app.CallAsync("providers.setKey", new { id = "Chameleon", key = "  " + TestApp.GoodKey + " " });
             JToken announced = await _app.WaitForEventAsync("backends.changed");
-            JToken cleared = await _app.CallAsync("providers.setKey", new { id = "BltAI", key = "" });
+            JToken cleared = await _app.CallAsync("providers.setKey", new { id = "Chameleon", key = "" });
 
             Assert.True((bool)set["hasKey"]!);
-            Assert.True((bool)announced["backends"]!.Single(b => (string)b["id"]! == "direct:BltAI")["ready"]!);
+            Assert.True((bool)announced["backends"]!.Single(b => (string)b["id"]! == "direct:Chameleon")["ready"]!);
             Assert.False((bool)cleared["hasKey"]!);
-            Assert.False(_app.Secrets.Contains("provider:BltAI"));
+            Assert.False(_app.Secrets.Contains("provider:Chameleon"));
             Assert.Equal("not_found", await _app.ErrorCodeAsync("providers.setKey", new { id = "nope", key = "x" }));
         }
 
         [Fact]
         public async Task TestKey_WithAGivenKey_ChecksItWithoutStoringIt()
         {
-            JToken ok = await _app.CallAsync("providers.testKey", new { id = "BltAI", key = TestApp.GoodKey });
-            string rejected = await _app.ErrorCodeAsync("providers.testKey", new { id = "BltAI", key = "wrong-key-value" });
+            JToken ok = await _app.CallAsync("providers.testKey", new { id = "Chameleon", key = TestApp.GoodKey });
+            string rejected = await _app.ErrorCodeAsync("providers.testKey", new { id = "Chameleon", key = "wrong-key-value" });
 
             Assert.True((bool)ok["ok"]!);
             Assert.Equal("auth_failed", rejected);
-            Assert.False(_app.Secrets.Contains("provider:BltAI"));
+            Assert.False(_app.Secrets.Contains("provider:Chameleon"));
             Assert.Equal(2, _app.ProviderRequests.Count);
             Assert.EndsWith(":generateContent", _app.ProviderRequests[0].RequestUri!.AbsolutePath);
         }
@@ -273,22 +277,22 @@ namespace Chameleon.App.Tests.Services
             Assert.Equal("auth_failed", await _app.ErrorCodeAsync("providers.testKey", new { id = "Gemini" }));
 
             await _app.CallAsync("providers.setKey", new { id = "Gemini", key = TestApp.GoodKey });
-            JToken ok = await _app.CallAsync("providers.testKey", new { id = "Gemini", modelId = "gemini-3-pro-image-preview" });
+            JToken ok = await _app.CallAsync("providers.testKey", new { id = "Gemini", modelId = "gemini-3-pro-image" });
 
             Assert.True((bool)ok["ok"]!);
-            Assert.Contains("gemini-3-pro-image-preview", _app.ProviderRequests.Last().RequestUri!.AbsolutePath);
+            Assert.Contains("gemini-3-pro-image", _app.ProviderRequests.Last().RequestUri!.AbsolutePath);
         }
 
         [Fact]
         public async Task StoredKeys_NeverAppearInAnyResponseOrEventOrSettingsFile()
         {
-            await _app.CallAsync("providers.setKey", new { id = "BltAI", key = TestApp.GoodKey });
+            await _app.CallAsync("providers.setKey", new { id = "Chameleon", key = TestApp.GoodKey });
             JToken announced = await _app.WaitForEventAsync("backends.changed");
             await _app.CallAsync("providers.list");
-            await _app.CallAsync("providers.testKey", new { id = "BltAI" });
+            await _app.CallAsync("providers.testKey", new { id = "Chameleon" });
             await _app.CallAsync("app.getState");
-            await _app.CallAsync("backend.select", new { backendId = "direct:BltAI" });
-            await _app.CallAsync("providers.save", new { id = "BltAI", displayName = "x", baseUrl = "https://x.example.com", models = new[] { "m" } });
+            await _app.CallAsync("backend.select", new { backendId = "direct:Chameleon" });
+            await _app.CallAsync("providers.save", new { id = "Chameleon", displayName = "x", baseUrl = "https://x.example.com", models = new[] { "m" } });
 
             Assert.DoesNotContain(TestApp.GoodKey, _app.AllResponses.ToString());
             Assert.DoesNotContain(TestApp.GoodKey, announced.ToString());
@@ -349,15 +353,15 @@ namespace Chameleon.App.Tests.Services
             using var root = new TempDirectory();
             var paths = new PathsWithLegacy(root.Path);
             Directory.CreateDirectory(Path.GetDirectoryName(paths.LegacySettingsFile!)!);
-            File.WriteAllText(paths.LegacySettingsFile!, "{\"ApiKeys\":{\"Gemini\":\"" + TestApp.GoodKey + "\"},\"SelectedProvider\":0,\"SelectedModel\":\"gemini-3-pro-image-preview\",\"LanguageIndex\":0}");
+            File.WriteAllText(paths.LegacySettingsFile!, "{\"ApiKeys\":{\"Gemini\":\"" + TestApp.GoodKey + "\"},\"SelectedProvider\":0,\"SelectedModel\":\"gemini-3-pro-image\",\"LanguageIndex\":0}");
 
             using var app = new TestApp(paths: paths);
             JToken state = await app.CallAsync("app.getState");
 
             Assert.Equal("direct:Gemini", (string)state["activeBackendId"]!);
-            Assert.Equal("gemini-3-pro-image-preview", (string)state["activeModelId"]!);
+            Assert.Equal("gemini-3-pro-image", (string)state["activeModelId"]!);
             Assert.Equal("zh", (string)state["language"]!);
-            Assert.True((bool)state["backends"]![0]!["ready"]!);
+            Assert.True((bool)state["backends"]!.Single(b => (string)b["id"]! == "direct:Gemini")["ready"]!);
             Assert.Equal(TestApp.GoodKey, app.Secrets.Get("provider:Gemini"));
             Assert.False(File.Exists(paths.LegacySettingsFile));
             Assert.Contains(app.Host.LogLines, l => l.Contains("Imported settings"));

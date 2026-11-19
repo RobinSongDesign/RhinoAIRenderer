@@ -15,15 +15,15 @@ namespace Chameleon.Core.Tests.Providers
         {
             IReadOnlyList<ProviderProfile> providers = Registry.Build(null, null, "zh");
 
-            Assert.Equal(new[] { "Gemini", "BltAI" }, providers.Select(p => p.Id).ToArray());
-            ProviderProfile gemini = providers[0];
+            Assert.Equal(new[] { "Chameleon", "Gemini" }, providers.Select(p => p.Id).ToArray());
+            ProviderProfile gemini = providers[1];
             Assert.True(gemini.IsBuiltIn);
             Assert.False(gemini.IsOverridden);
             Assert.Equal("Google原生", gemini.DisplayName);
             Assert.Equal("goog", gemini.AuthType);
             Assert.Equal("https://aistudio.google.com/app/apikey", gemini.ApiKeyUrl);
             Assert.True(gemini.EnableSearchGrounding);
-            Assert.Equal("Nano Banana 2", gemini.FindModel("gemini-3.1-flash-image-preview")!.DisplayName);
+            Assert.Equal("Nano Banana 2", gemini.FindModel("gemini-3.1-flash-image")!.DisplayName);
         }
 
         [Fact]
@@ -50,7 +50,9 @@ namespace Chameleon.Core.Tests.Providers
         [Fact]
         public void Build_UsesRequestedLanguageForBuiltInNames()
         {
-            Assert.Equal("Google (native)", Registry.Build(null, null, "en")[0].DisplayName);
+            Assert.Equal("Chameleon account", Registry.Build(null, null, "en")[0].DisplayName);
+            Assert.Equal("Google (native)", Registry.Build(null, null, "en")[1].DisplayName);
+            Assert.Equal("Chameleon 账号", Registry.Build(null, null, "zh")[0].DisplayName);
         }
 
         [Fact]
@@ -58,17 +60,20 @@ namespace Chameleon.Core.Tests.Providers
         {
             var overrides = new Dictionary<string, ProviderOverride>
             {
-                ["BltAI"] = new ProviderOverride { BaseUrl = "https://mirror.example.com/", DisplayName = "  " }
+                ["Chameleon"] = new ProviderOverride { BaseUrl = "https://mirror.example.com/", DisplayName = "  " }
             };
 
-            ProviderProfile blt = Registry.Build(null, overrides, "zh").Single(p => p.Id == "BltAI");
+            ProviderProfile account = Registry.Build(null, overrides, "zh").Single(p => p.Id == "Chameleon");
 
-            Assert.True(blt.IsOverridden);
-            Assert.Equal("https://mirror.example.com", blt.BaseUrl);
-            Assert.Equal("柏拉图AI", blt.DisplayName);
-            Assert.Equal("bearer", blt.AuthType);
-            Assert.Equal(2, blt.Models.Count);
-            Assert.Equal("gemini-3.1-flash-image-preview", blt.DefaultModel);
+            Assert.True(account.IsOverridden);
+            Assert.Equal("https://mirror.example.com", account.BaseUrl);
+            Assert.Equal("Chameleon 账号", account.DisplayName);
+            Assert.Equal("bearer", account.AuthType);
+            Assert.Equal(4, account.Models.Count);
+            Assert.Equal("gemini-nano-banana-2.1", account.DefaultModel);
+            // An override cannot redirect the balance query or the top-up page.
+            Assert.Equal(BalanceApis.OneApi, account.BalanceApi);
+            Assert.StartsWith("https://api.robinsong.top", account.TopUpUrl);
         }
 
         [Fact]
@@ -76,18 +81,18 @@ namespace Chameleon.Core.Tests.Providers
         {
             var overrides = new Dictionary<string, ProviderOverride>
             {
-                ["BltAI"] = new ProviderOverride
+                ["Chameleon"] = new ProviderOverride
                 {
-                    Models = new List<string> { "custom-a", " gemini-3-pro-image-preview ", "custom-a" },
-                    DefaultModel = "gemini-3-pro-image-preview",
+                    Models = new List<string> { "custom-a", " gemini-3-pro-image ", "custom-a" },
+                    DefaultModel = "gemini-3-pro-image",
                     EnableSearchGrounding = false
                 }
             };
 
-            ProviderProfile blt = Registry.Build(null, overrides, "zh").Single(p => p.Id == "BltAI");
+            ProviderProfile blt = Registry.Build(null, overrides, "zh").Single(p => p.Id == "Chameleon");
 
-            Assert.Equal(new[] { "custom-a", "gemini-3-pro-image-preview" }, blt.Models.Select(m => m.Id).ToArray());
-            Assert.Equal("gemini-3-pro-image-preview", blt.DefaultModel);
+            Assert.Equal(new[] { "custom-a", "gemini-3-pro-image" }, blt.Models.Select(m => m.Id).ToArray());
+            Assert.Equal("gemini-3-pro-image", blt.DefaultModel);
             Assert.Equal("custom-a", blt.Models[0].DisplayName);
             Assert.Equal("Nano Banana Pro", blt.Models[1].DisplayName);
             Assert.False(blt.EnableSearchGrounding);
@@ -98,10 +103,10 @@ namespace Chameleon.Core.Tests.Providers
         {
             var overrides = new Dictionary<string, ProviderOverride>
             {
-                ["BltAI"] = new ProviderOverride { Models = new List<string> { "only-model" }, DefaultModel = "missing" }
+                ["Chameleon"] = new ProviderOverride { Models = new List<string> { "only-model" }, DefaultModel = "missing" }
             };
 
-            Assert.Equal("only-model", Registry.Build(null, overrides, "zh").Single(p => p.Id == "BltAI").DefaultModel);
+            Assert.Equal("only-model", Registry.Build(null, overrides, "zh").Single(p => p.Id == "Chameleon").DefaultModel);
         }
 
         [Fact]
@@ -158,8 +163,8 @@ namespace Chameleon.Core.Tests.Providers
 
             IReadOnlyList<ProviderProfile> providers = Registry.Build(user, null, "en");
 
-            Assert.Equal(new[] { "Gemini", "BltAI", "dup" }, providers.Select(p => p.Id).ToArray());
-            Assert.Equal("Google (native)", providers[0].DisplayName);
+            Assert.Equal(new[] { "Chameleon", "Gemini", "dup" }, providers.Select(p => p.Id).ToArray());
+            Assert.Equal("Google (native)", providers[1].DisplayName);
             Assert.Equal("First", providers[2].DisplayName);
         }
     }

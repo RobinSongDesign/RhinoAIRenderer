@@ -11,45 +11,76 @@ namespace Chameleon.Core.Tests.Catalog
     {
         private static readonly ChameleonCatalog BuiltIn = CatalogLoader.LoadBuiltIn();
 
-        [Fact]
-        public void BuiltIn_HasTheTwoLegacyProviders()
+        private static readonly string[] CurrentGoogleImageModels =
         {
-            Assert.Equal(new[] { "Gemini", "BltAI" }, BuiltIn.Providers.Select(p => p.Id).ToArray());
-            Assert.Equal("BltAI", BuiltIn.DefaultProviderId);
+            "gemini-nano-banana-2.1", "gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-3.1-flash-lite-image"
+        };
+
+        [Fact]
+        public void BuiltIn_OffersTheChameleonAccountFirstAndGoogleDirect()
+        {
+            Assert.Equal(new[] { "Chameleon", "Gemini" }, BuiltIn.Providers.Select(p => p.Id).ToArray());
+            Assert.Equal("Chameleon", BuiltIn.DefaultProviderId);
+
+            CatalogProvider account = BuiltIn.FindProvider("Chameleon")!;
+            Assert.Equal("https://api.robinsong.top", account.BaseUrl);
+            Assert.Equal("bearer", account.AuthType);
+            Assert.Equal("gemini", account.ApiFormat);
+            Assert.Equal("oneapi", account.BalanceApi);
+            Assert.StartsWith("https://", account.TopUpUrl);
+            Assert.Equal("Chameleon 账号", account.DisplayName.Get("zh"));
 
             CatalogProvider gemini = BuiltIn.FindProvider("Gemini")!;
             Assert.Equal("https://generativelanguage.googleapis.com", gemini.BaseUrl);
             Assert.Equal("goog", gemini.AuthType);
             Assert.Equal("gemini", gemini.ApiFormat);
-            Assert.Equal("gemini-3.1-flash-image-preview", gemini.DefaultModel);
-            Assert.Equal(
-                new[] { "gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview", "gemini-2.5-flash-image" },
-                gemini.Models.Select(m => m.Id).ToArray());
+            Assert.Null(gemini.BalanceApi);
             Assert.Equal("Google原生", gemini.DisplayName.Get("zh"));
-
-            CatalogProvider blt = BuiltIn.FindProvider("BltAI")!;
-            Assert.Equal("https://hk-api.gptbest.vip", blt.BaseUrl);
-            Assert.Equal("bearer", blt.AuthType);
-            Assert.Equal("柏拉图AI", blt.DisplayName.Get("zh"));
-            Assert.Equal(2, blt.Models.Count);
         }
 
         [Fact]
-        public void BuiltIn_KeepsLegacyModelNicknames()
+        public void BuiltIn_OffersGooglesCurrentImageModels_NotTheRetiredPreviews()
         {
-            CatalogProvider gemini = BuiltIn.FindProvider("Gemini")!;
+            foreach (CatalogProvider provider in BuiltIn.Providers)
+            {
+                Assert.Equal("gemini-nano-banana-2.1", provider.DefaultModel);
+                Assert.Equal(CurrentGoogleImageModels, provider.Models.Select(m => m.Id).ToArray());
+                // Shut down by Google on 2026-06-25.
+                Assert.DoesNotContain(provider.Models, m => m.Id.EndsWith("-preview", System.StringComparison.Ordinal));
+            }
 
-            Assert.Equal("Nano Banana 2", gemini.Models.Single(m => m.Id == "gemini-3.1-flash-image-preview").DisplayName);
-            Assert.Equal("Nano Banana Pro", gemini.Models.Single(m => m.Id == "gemini-3-pro-image-preview").DisplayName);
-            Assert.Equal("Nano Banana", gemini.Models.Single(m => m.Id == "gemini-2.5-flash-image").DisplayName);
+            CatalogProvider gemini = BuiltIn.FindProvider("Gemini")!;
+            Assert.Equal("Nano Banana 2.1", gemini.Models.Single(m => m.Id == "gemini-nano-banana-2.1").DisplayName);
+            Assert.Equal("Nano Banana Pro", gemini.Models.Single(m => m.Id == "gemini-3-pro-image").DisplayName);
         }
 
         [Fact]
-        public void BuiltIn_KeepsLegacySizesAndRatios()
+        public void BuiltIn_ModelCapabilitiesFollowGooglesDocumentation()
+        {
+            ModelInfo nanoBanana21 = BuiltIn.ResolveModel("gemini", "gemini-nano-banana-2.1");
+            ModelInfo flash = BuiltIn.ResolveModel("gemini", "gemini-3.1-flash-image");
+            ModelInfo pro = BuiltIn.ResolveModel("gemini", "gemini-3-pro-image");
+            ModelInfo lite = BuiltIn.ResolveModel("gemini", "gemini-3.1-flash-lite-image");
+
+            Assert.Equal(new[] { "1K", "2K", "4K" }, nanoBanana21.Capabilities.ImageSizes.ToArray());
+            Assert.Equal(new[] { "0.5K", "1K", "2K", "4K" }, flash.Capabilities.ImageSizes.ToArray());
+            Assert.Equal(new[] { "1K" }, lite.Capabilities.ImageSizes.ToArray());
+            Assert.Equal(14, nanoBanana21.Capabilities.MaxInputImages);
+            Assert.Contains("8:1", nanoBanana21.Capabilities.AspectRatios);
+            Assert.DoesNotContain("8:1", pro.Capabilities.AspectRatios);
+        }
+
+        [Fact]
+        public void BuiltIn_SizesAndRatiosCoverEveryModel()
         {
             Assert.Equal(new[] { "0.5K", "1K", "2K", "4K" }, BuiltIn.ImageSizes.ToArray());
             Assert.Equal("1K", BuiltIn.DefaultImageSize);
-            Assert.Equal(new[] { "1:1", "4:3", "3:2", "16:9", "9:16", "21:9" }, BuiltIn.AspectRatios.ToArray());
+            Assert.Equal(new[] { "1:1", "4:3", "3:2", "16:9" }, BuiltIn.AspectRatios.Take(4).ToArray());
+            foreach (CatalogModel model in BuiltIn.Providers.SelectMany(p => p.Models))
+            {
+                Assert.All(model.Capabilities!.AspectRatios, r => Assert.Contains(r, BuiltIn.AspectRatios));
+                Assert.All(model.Capabilities.ImageSizes, size => Assert.Contains(size, BuiltIn.ImageSizes));
+            }
         }
 
         [Fact]
@@ -75,10 +106,10 @@ namespace Chameleon.Core.Tests.Catalog
         [Fact]
         public void ResolveModel_KnownModelKeepsNameAndCapabilitiesAcrossProvidersOfSameFormat()
         {
-            ModelInfo model = BuiltIn.ResolveModel("gemini", "gemini-3-pro-image-preview");
+            ModelInfo model = BuiltIn.ResolveModel("gemini", "gemini-3-pro-image");
 
             Assert.Equal("Nano Banana Pro", model.DisplayName);
-            Assert.Equal(8, model.Capabilities.MaxInputImages);
+            Assert.Equal(14, model.Capabilities.MaxInputImages);
             Assert.False(model.Capabilities.SupportsMask);
         }
 
@@ -96,10 +127,10 @@ namespace Chameleon.Core.Tests.Catalog
         [Fact]
         public void ResolveModel_ReturnsIndependentCapabilityCopies()
         {
-            ModelInfo first = BuiltIn.ResolveModel("gemini", "gemini-3-pro-image-preview");
+            ModelInfo first = BuiltIn.ResolveModel("gemini", "gemini-3-pro-image");
             first.Capabilities.MaxInputImages = 99;
 
-            Assert.Equal(8, BuiltIn.ResolveModel("gemini", "gemini-3-pro-image-preview").Capabilities.MaxInputImages);
+            Assert.Equal(14, BuiltIn.ResolveModel("gemini", "gemini-3-pro-image").Capabilities.MaxInputImages);
         }
 
         [Fact]

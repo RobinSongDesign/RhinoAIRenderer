@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Chameleon.Core.Catalog;
 using Chameleon.Core.Providers;
 using Chameleon.Core.Settings;
@@ -28,7 +30,7 @@ namespace Chameleon.Core.Tests.Settings
         public void Dispose() => _dir.Dispose();
 
         [Fact]
-        public void BuiltInKeysOnly_MovesKeysAndSelection()
+        public void BuiltInKeys_MoveWithTheSelection_ExceptForTheRetiredBltAi()
         {
             // Shape written by the WPF version: enum values as numbers, enum dictionary keys as names.
             LegacyMigrationResult result = Migrate(@"{
@@ -36,7 +38,7 @@ namespace Chameleon.Core.Tests.Settings
               ""CustomApiKeys"": {},
               ""CustomProviders"": [],
               ""BuiltInOverrides"": {},
-              ""SelectedModel"": ""gemini-3-pro-image-preview"",
+              ""SelectedModel"": ""gemini-3-pro-image"",
               ""SelectedProvider"": 0,
               ""SelectedProviderId"": null,
               ""LanguageIndex"": 1
@@ -44,23 +46,26 @@ namespace Chameleon.Core.Tests.Settings
 
             AppSettings settings = Store().Load();
             Assert.True(result.Migrated);
-            Assert.Equal(2, result.KeysMigrated);
-            Assert.Equal("test-blt-key", _secrets.Get("provider:BltAI"));
+            Assert.Equal(1, result.KeysMigrated);
+            // BLT AI shut down: its key would only point at a dead endpoint.
+            Assert.False(_secrets.Contains("provider:BltAI"));
             Assert.Equal("test-gemini-key", _secrets.Get("provider:Gemini"));
             Assert.Equal("direct:Gemini", settings.ActiveBackendId);
-            Assert.Equal("gemini-3-pro-image-preview", settings.ActiveModelByBackend["direct:Gemini"]);
+            Assert.Equal("gemini-3-pro-image", settings.ActiveModelByBackend["direct:Gemini"]);
             Assert.Equal("en", settings.Language);
         }
 
         [Fact]
-        public void NumericEnumKeys_AreMappedToProviderNames()
+        public void NumericEnumKeys_AreMappedToProviderNames_AndASelectedBltAiFallsBackToTheDefault()
         {
-            Migrate(@"{ ""ApiKeys"": { ""1"": ""test-blt-key"", ""0"": ""test-gemini-key"" }, ""SelectedProvider"": ""BltAI"", ""LanguageIndex"": 0 }");
+            Migrate(@"{ ""ApiKeys"": { ""1"": ""test-blt-key"", ""0"": ""test-gemini-key"" }, ""SelectedProvider"": ""BltAI"", ""SelectedModel"": ""x"", ""LanguageIndex"": 0 }");
 
-            Assert.Equal("test-blt-key", _secrets.Get("provider:BltAI"));
+            Assert.False(_secrets.Contains("provider:BltAI"));
             Assert.Equal("test-gemini-key", _secrets.Get("provider:Gemini"));
-            Assert.Equal("direct:BltAI", Store().Load().ActiveBackendId);
-            Assert.Equal("zh", Store().Load().Language);
+            AppSettings settings = Store().Load();
+            Assert.Equal("direct:Chameleon", settings.ActiveBackendId);
+            Assert.False(settings.ActiveModelByBackend.ContainsKey("direct:BltAI"));
+            Assert.Equal("zh", settings.Language);
         }
 
         [Fact]
@@ -91,34 +96,40 @@ namespace Chameleon.Core.Tests.Settings
         }
 
         [Fact]
-        public void BuiltInOverrides_AreKept()
+        public void BuiltInOverrides_AreKept_ExceptForTheRetiredBltAi()
         {
             Migrate(@"{
-              ""BuiltInOverrides"": { ""BltAI"": {
-                 ""Id"": ""BltAI"", ""DisplayName"": ""柏拉图 (镜像)"", ""BaseUrl"": ""https://mirror.example.com"",
-                 ""AuthType"": ""bearer"", ""ApiFormat"": ""gemini"", ""Models"": [""gemini-3-pro-image-preview""], ""DefaultModel"": ""gemini-3-pro-image-preview"" } },
-              ""SelectedProvider"": 1
+              ""BuiltInOverrides"": {
+                ""Gemini"": {
+                  ""Id"": ""Gemini"", ""DisplayName"": ""Google (镜像)"", ""BaseUrl"": ""https://mirror.example.com"",
+                  ""AuthType"": ""goog"", ""ApiFormat"": ""gemini"", ""Models"": [""gemini-3-pro-image""], ""DefaultModel"": ""gemini-3-pro-image"" },
+                ""BltAI"": {
+                  ""Id"": ""BltAI"", ""DisplayName"": ""柏拉图 (镜像)"", ""BaseUrl"": ""https://blt-mirror.example.com"",
+                  ""AuthType"": ""bearer"", ""ApiFormat"": ""gemini"", ""Models"": [""m""], ""DefaultModel"": ""m"" } },
+              ""SelectedProvider"": 0
             }");
 
-            ProviderOverride ov = Store().Load().BuiltInOverrides["BltAI"];
-            Assert.Equal("柏拉图 (镜像)", ov.DisplayName);
+            Dictionary<string, ProviderOverride> overrides = Store().Load().BuiltInOverrides;
+            Assert.False(overrides.ContainsKey("BltAI"));
+            ProviderOverride ov = overrides["Gemini"];
+            Assert.Equal("Google (镜像)", ov.DisplayName);
             Assert.Equal("https://mirror.example.com", ov.BaseUrl);
-            Assert.Equal(new[] { "gemini-3-pro-image-preview" }, ov.Models!.ToArray());
+            Assert.Equal(new[] { "gemini-3-pro-image" }, ov.Models!.ToArray());
 
             // And the migrated override produces a working provider list.
             var registry = new ProviderRegistry(CatalogLoader.LoadBuiltIn());
-            ProviderProfile blt = registry.Build(null, Store().Load().BuiltInOverrides, "zh")[1];
-            Assert.Equal("https://mirror.example.com", blt.BaseUrl);
-            Assert.Equal("gemini-3-pro-image-preview", blt.DefaultModel);
+            ProviderProfile gemini = registry.Build(null, overrides, "zh").Single(p => p.Id == "Gemini");
+            Assert.Equal("https://mirror.example.com", gemini.BaseUrl);
+            Assert.Equal("gemini-3-pro-image", gemini.DefaultModel);
         }
 
         [Fact]
-        public void MinimalLegacyFile_FallsBackToTheLegacyDefaults()
+        public void MinimalLegacyFile_FallsBackToTheCurrentDefaults()
         {
             Migrate("{}");
 
             AppSettings settings = Store().Load();
-            Assert.Equal("direct:BltAI", settings.ActiveBackendId);
+            Assert.Equal("direct:Chameleon", settings.ActiveBackendId);
             Assert.Equal("zh", settings.Language);
             Assert.Empty(settings.UserProviders);
         }
@@ -135,11 +146,11 @@ namespace Chameleon.Core.Tests.Settings
         [Fact]
         public void LegacyFile_IsRenamedNotDeleted_AndKeysNeverReachTheNewSettingsFile()
         {
-            Migrate(@"{ ""ApiKeys"": { ""BltAI"": ""test-blt-key"" } }");
+            Migrate(@"{ ""ApiKeys"": { ""Gemini"": ""test-gemini-key"" } }");
 
             Assert.False(File.Exists(LegacyPath));
             Assert.True(File.Exists(_dir.File("settings.migrated.json")));
-            Assert.DoesNotContain("test-blt-key", File.ReadAllText(_dir.File("settings.json")));
+            Assert.DoesNotContain("test-gemini-key", File.ReadAllText(_dir.File("settings.json")));
         }
 
         [Fact]
@@ -150,10 +161,10 @@ namespace Chameleon.Core.Tests.Settings
             existing.Language = "en";
             store.Save(existing);
 
-            LegacyMigrationResult result = Migrate(@"{ ""ApiKeys"": { ""BltAI"": ""test-blt-key"" }, ""LanguageIndex"": 0 }");
+            LegacyMigrationResult result = Migrate(@"{ ""ApiKeys"": { ""Gemini"": ""test-gemini-key"" }, ""LanguageIndex"": 0 }");
 
             Assert.False(result.Migrated);
-            Assert.False(_secrets.Contains("provider:BltAI"));
+            Assert.False(_secrets.Contains("provider:Gemini"));
             Assert.True(File.Exists(LegacyPath));
             Assert.Equal("en", Store().Load().Language);
         }
@@ -169,13 +180,13 @@ namespace Chameleon.Core.Tests.Settings
         [Fact]
         public void RunningTwice_OnlyMigratesOnce()
         {
-            Migrate(@"{ ""ApiKeys"": { ""BltAI"": ""test-blt-key"" } }");
-            _secrets.Set("provider:BltAI", "changed-later");
+            Migrate(@"{ ""ApiKeys"": { ""Gemini"": ""test-gemini-key"" } }");
+            _secrets.Set("provider:Gemini", "changed-later");
 
             LegacyMigrationResult second = LegacySettingsMigrator.TryMigrate(LegacyPath, Store(), _secrets);
 
             Assert.False(second.Migrated);
-            Assert.Equal("changed-later", _secrets.Get("provider:BltAI"));
+            Assert.Equal("changed-later", _secrets.Get("provider:Gemini"));
         }
     }
 }

@@ -41,7 +41,7 @@ test('adds, edits and deletes a custom provider, falling back when it was active
   await page.getByTestId('provider-delete-confirm').click();
   await page.getByTestId('settings-close').click();
 
-  await expect(page.getByTestId('backend-select')).toHaveValue('direct:BltAI');
+  await expect(page.getByTestId('backend-select')).toHaveValue('direct:Chameleon');
   await expect(
     page.getByTestId('backend-select').locator('option', { hasText: 'Renamed Relay' }),
   ).toHaveCount(0);
@@ -94,11 +94,11 @@ test('tests keys: a wrong key fails with a reason, the right one passes', async 
 
 test('storing a key makes the provider ready, and it can then generate', async ({ page }) => {
   await openApp(page);
-  await page.getByTestId('backend-select').selectOption('direct:BltAI');
+  await page.getByTestId('backend-select').selectOption('direct:Chameleon');
   await expect(page.getByTestId('backend-not-ready')).toBeVisible();
 
   await page.getByTestId('backend-not-ready').getByRole('button').click();
-  await expect(page.getByTestId('provider-details')).toHaveAttribute('data-provider', 'BltAI');
+  await expect(page.getByTestId('provider-details')).toHaveAttribute('data-provider', 'Chameleon');
   await page.getByTestId('key-input').fill(GOOD_KEY);
   await page.getByTestId('key-save').click();
   await expect(page.getByTestId('settings-message')).toHaveText('API key saved');
@@ -113,7 +113,7 @@ test('storing a key makes the provider ready, and it can then generate', async (
   await expectGenerated(page);
 
   await openSettings(page);
-  await page.getByTestId('provider-select').selectOption('BltAI');
+  await page.getByTestId('provider-select').selectOption('Chameleon');
   await page.getByTestId('key-clear').click();
   await expect(page.getByTestId('settings-message')).toHaveText('API key cleared');
 });

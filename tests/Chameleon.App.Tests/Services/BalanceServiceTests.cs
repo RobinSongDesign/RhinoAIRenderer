@@ -18,7 +18,7 @@ namespace Chameleon.App.Tests.Services
             {
                 displayName = "My relay",
                 baseUrl = "https://relay.example.com",
-                models = new[] { "gemini-3.1-flash-image-preview" },
+                models = new[] { "gemini-3.1-flash-image" },
                 balanceApi = "oneapi",
                 topUpUrl = "https://relay.example.com/topup"
             });

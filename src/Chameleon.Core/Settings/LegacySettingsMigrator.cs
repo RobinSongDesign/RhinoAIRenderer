@@ -20,6 +20,10 @@ namespace Chameleon.Core.Settings
         // Names of the legacy ApiProvider enum, by numeric value.
         private static readonly string[] LegacyProviderNames = { "Gemini", "BltAI" };
 
+        // Built-in providers of the WPF version that no longer exist (the service shut down):
+        // their keys, overrides and selection are left behind instead of pointing at a dead endpoint.
+        private static readonly HashSet<string> RetiredProviderIds = new HashSet<string>(StringComparer.Ordinal) { "BltAI" };
+
         /// <summary>Migrates legacy settings when they exist and no current settings were saved yet.</summary>
         /// <param name="legacyFilePath">Path of the WPF version's settings.json.</param>
         /// <param name="settingsStore">Destination for non-secret settings.</param>
@@ -61,7 +65,11 @@ namespace Chameleon.Core.Settings
 
             foreach (KeyValuePair<string, string> entry in ReadStringMap(legacy["ApiKeys"]))
             {
-                keys += StoreKey(secretStore, NormalizeProviderName(entry.Key), entry.Value);
+                string id = NormalizeProviderName(entry.Key);
+                if (!RetiredProviderIds.Contains(id))
+                {
+                    keys += StoreKey(secretStore, id, entry.Value);
+                }
             }
 
             foreach (KeyValuePair<string, string> entry in ReadStringMap(legacy["CustomApiKeys"]))
@@ -71,6 +79,10 @@ namespace Chameleon.Core.Settings
 
             settings.UserProviders = ReadCustomProviders(legacy["CustomProviders"]);
             settings.BuiltInOverrides = ReadOverrides(legacy["BuiltInOverrides"]);
+            foreach (string retired in RetiredProviderIds)
+            {
+                settings.BuiltInOverrides.Remove(retired);
+            }
             settings.Language = ReadInt(legacy["LanguageIndex"]) == 1 ? Languages.English : Languages.Chinese;
 
             string providerId = (string?)legacy["SelectedProviderId"] ?? string.Empty;
@@ -79,11 +91,15 @@ namespace Chameleon.Core.Settings
                 providerId = NormalizeProviderName(TokenToString(legacy["SelectedProvider"]) ?? "BltAI");
             }
 
-            settings.ActiveBackendId = BackendIds.Direct(providerId);
-            string? model = (string?)legacy["SelectedModel"];
-            if (!string.IsNullOrEmpty(model))
+            // A retired provider keeps the default selection of a fresh install.
+            if (!RetiredProviderIds.Contains(providerId))
             {
-                settings.ActiveModelByBackend[settings.ActiveBackendId] = model!;
+                settings.ActiveBackendId = BackendIds.Direct(providerId);
+                string? model = (string?)legacy["SelectedModel"];
+                if (!string.IsNullOrEmpty(model))
+                {
+                    settings.ActiveModelByBackend[settings.ActiveBackendId] = model!;
+                }
             }
 
             settingsStore.Save(settings);

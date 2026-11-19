@@ -20,7 +20,7 @@ namespace Chameleon.Core.Tests.Providers
         {
             return new GenerationRequest
             {
-                ModelId = "gemini-3-pro-image-preview",
+                ModelId = "gemini-3-pro-image",
                 Prompt = "ignored: the adapter sends the composed text",
                 Source = TestImages.Png(),
                 ImageSize = "2K",
@@ -51,7 +51,7 @@ namespace Chameleon.Core.Tests.Providers
 
             Assert.Equal(HttpMethod.Post, message.Method);
             Assert.Equal(
-                "https://gemini.test/v1beta/models/gemini-3-pro-image-preview:generateContent",
+                "https://gemini.test/v1beta/models/gemini-3-pro-image:generateContent",
                 message.RequestUri!.ToString());
 
             var expected = new JObject
@@ -193,11 +193,11 @@ namespace Chameleon.Core.Tests.Providers
         public async Task BuildValidateRequest_IsATextOnlyProbe()
         {
             HttpRequestMessage message = _adapter.BuildValidateRequest(
-                AdapterTestKit.Context(AdapterTestKit.GeminiProfile()), "gemini-3-pro-image-preview");
+                AdapterTestKit.Context(AdapterTestKit.GeminiProfile()), "gemini-3-pro-image");
 
             JObject body = await AdapterTestKit.ReadJsonBodyAsync(message);
 
-            Assert.EndsWith("/v1beta/models/gemini-3-pro-image-preview:generateContent", message.RequestUri!.ToString());
+            Assert.EndsWith("/v1beta/models/gemini-3-pro-image:generateContent", message.RequestUri!.ToString());
             Assert.Equal("Hi", (string)body.SelectToken("contents[0].parts[0].text")!);
             Assert.Equal(new[] { "TEXT" }, body.SelectToken("generationConfig.responseModalities")!.Select(t => (string)t!).ToArray());
         }

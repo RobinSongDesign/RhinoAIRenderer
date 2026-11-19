@@ -33,8 +33,8 @@ namespace Chameleon.Core.Tests.Settings
             Assert.False(store.Exists);
             Assert.Equal(2, settings.SchemaVersion);
             Assert.Equal("en", settings.Language);
-            Assert.Equal("direct:BltAI", settings.ActiveBackendId);
-            Assert.Equal("gemini-3.1-flash-image-preview", settings.ActiveModelByBackend["direct:BltAI"]);
+            Assert.Equal("direct:Chameleon", settings.ActiveBackendId);
+            Assert.Equal("gemini-nano-banana-2.1", settings.ActiveModelByBackend["direct:Chameleon"]);
             Assert.Null(settings.SystemPrompt);
             Assert.Equal("serial", settings.Batch.Mode);
             Assert.Equal(3, settings.Batch.MaxConsistencyRefs);
@@ -68,7 +68,7 @@ namespace Chameleon.Core.Tests.Settings
                 ApiFormat = "openai", AuthType = "bearer", Models = { "gpt-image-2" }, DefaultModel = "gpt-image-2",
                 EnableSearchGrounding = false
             });
-            settings.BuiltInOverrides["BltAI"] = new ProviderOverride { BaseUrl = "https://mirror.example.com" };
+            settings.BuiltInOverrides["Chameleon"] = new ProviderOverride { BaseUrl = "https://mirror.example.com" };
 
             store.Save(settings);
             AppSettings loaded = Store().Load();
@@ -84,8 +84,8 @@ namespace Chameleon.Core.Tests.Settings
             UserProviderConfig relay = Assert.Single(loaded.UserProviders);
             Assert.Equal("openai", relay.ApiFormat);
             Assert.False(relay.EnableSearchGrounding);
-            Assert.Equal("https://mirror.example.com", loaded.BuiltInOverrides["BltAI"].BaseUrl);
-            Assert.Null(loaded.BuiltInOverrides["BltAI"].DisplayName);
+            Assert.Equal("https://mirror.example.com", loaded.BuiltInOverrides["Chameleon"].BaseUrl);
+            Assert.Null(loaded.BuiltInOverrides["Chameleon"].DisplayName);
         }
 
         [Fact]
@@ -93,14 +93,14 @@ namespace Chameleon.Core.Tests.Settings
         {
             JsonSettingsStore store = Store();
             AppSettings settings = store.Load();
-            settings.BuiltInOverrides["BltAI"] = new ProviderOverride { BaseUrl = "https://x" };
+            settings.BuiltInOverrides["Chameleon"] = new ProviderOverride { BaseUrl = "https://x" };
             store.Save(settings);
 
             string json = File.ReadAllText(_dir.File("settings.json"));
 
             // camelCase applies to properties only; provider ids are identifiers.
-            Assert.Contains("\"BltAI\"", json);
-            Assert.Contains("\"direct:BltAI\"", json);
+            Assert.Contains("\"Chameleon\"", json);
+            Assert.Contains("\"direct:Chameleon\"", json);
             Assert.Contains("\"schemaVersion\": 2", json);
         }
 
@@ -125,7 +125,7 @@ namespace Chameleon.Core.Tests.Settings
 
             AppSettings settings = Store().Load();
 
-            Assert.Equal("direct:BltAI", settings.ActiveBackendId);
+            Assert.Equal("direct:Chameleon", settings.ActiveBackendId);
             Assert.False(File.Exists(_dir.File("settings.json")));
             string quarantined = Directory.GetFiles(_dir.Path, "settings.corrupt-*.json").Single();
             Assert.Equal("{ this is not json", File.ReadAllText(quarantined));
@@ -136,7 +136,7 @@ namespace Chameleon.Core.Tests.Settings
         {
             File.WriteAllText(_dir.File("settings.json"), "null");
 
-            Assert.Equal("direct:BltAI", Store().Load().ActiveBackendId);
+            Assert.Equal("direct:Chameleon", Store().Load().ActiveBackendId);
         }
 
         [Fact]

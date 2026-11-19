@@ -273,7 +273,7 @@ multipart 结构（各部分名称、文件名、内容类型）；带蒙版与�
 - 结构见 `architecture.md` 6.1 节。
 - `JsonSettingsStore(string filePath)`：读取失败（不存在、损坏）返回默认值并把损坏文件另存为 `settings.corrupt-{时间戳}.json`；保存用「写临时文件 → 替换」保证原子性；进程内加锁。
 - 默认语言：系统界面语言以 `zh` 开头为中文，否则英文。
-- 默认后端：`direct:BltAI`，默认模型为其默认模型（与旧行为一致）。
+- 默认后端：`direct:BltAI`，默认模型为其默认模型（与旧行为一致）。（2026-11 更新：柏拉图 AI 停止运营，内置服务商改为 `Chameleon`（自有中转网关）与 `Gemini`，默认后端为 `direct:Chameleon`；旧版设置中的柏拉图 Key 不再迁移。）
 - `LegacySettingsMigrator.TryMigrate(legacyPath, ISettingsStore, ISecretStore)`：规则见 `legacy-inventory.md` 第 4 节。旧文件中 `ApiKeys` 的键可能是枚举名字符串，也可能是数字（Newtonsoft 对枚举键的两种序列化形式），两种都要处理。返回迁移了多少个 Key。
 - `ProviderKeyNames.For(profileId)` 返回 `provider:{profileId}`。
 
@@ -352,7 +352,7 @@ multipart 结构（各部分名称、文件名、内容类型）；带蒙版与�
 ```bash
 export CHAMELEON_API_KEY=...        # never passed on the command line
 dotnet run --project tools/Chameleon.Cli -- generate \
-  --provider BltAI --model gemini-3.1-flash-image-preview \
+  --provider Gemini --model gemini-nano-banana-2.1 \
   --source sample.png --prompt "photorealistic render" \
   --size 1K --aspect 16:9 --ref style.jpg:style --out out.png
 

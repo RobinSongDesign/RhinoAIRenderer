@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "defaultProviderId": "BltAI",
+  "defaultProviderId": "Chameleon",
   "defaultSystemPrompt": "This is a render image. Do not change the camera position or FOV. Maintain the structural integrity and perspective consistency of all objects in the scene.",
   "defaultImageSize": "1K",
   "imageSizes": [
@@ -14,8 +14,16 @@
     "4:3",
     "3:2",
     "16:9",
+    "21:9",
+    "5:4",
+    "4:5",
+    "3:4",
+    "2:3",
     "9:16",
-    "21:9"
+    "4:1",
+    "1:4",
+    "8:1",
+    "1:8"
   ],
   "defaultCapabilities": {
     "gemini": {
@@ -32,8 +40,12 @@
         "4:3",
         "3:2",
         "16:9",
-        "9:16",
-        "21:9"
+        "21:9",
+        "5:4",
+        "4:5",
+        "3:4",
+        "2:3",
+        "9:16"
       ],
       "maxConcurrency": 2
     },
@@ -53,6 +65,137 @@
   },
   "providers": [
     {
+      "id": "Chameleon",
+      "displayName": {
+        "zh": "Chameleon 账号",
+        "en": "Chameleon account"
+      },
+      "baseUrl": "https://api.robinsong.top",
+      "apiFormat": "gemini",
+      "authType": "bearer",
+      "defaultModel": "gemini-nano-banana-2.1",
+      "apiKeyUrl": "https://api.robinsong.top/console/token",
+      "topUpUrl": "https://api.robinsong.top/console/topup",
+      "balanceApi": "oneapi",
+      "models": [
+        {
+          "id": "gemini-nano-banana-2.1",
+          "displayName": "Nano Banana 2.1",
+          "capabilities": {
+            "supportsMask": false,
+            "maxInputImages": 14,
+            "imageSizes": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "aspectRatios": [
+              "1:1",
+              "4:3",
+              "3:2",
+              "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16",
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
+            ],
+            "maxConcurrency": 2
+          }
+        },
+        {
+          "id": "gemini-3.1-flash-image",
+          "displayName": "Nano Banana 2",
+          "capabilities": {
+            "supportsMask": false,
+            "maxInputImages": 14,
+            "imageSizes": [
+              "0.5K",
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "aspectRatios": [
+              "1:1",
+              "4:3",
+              "3:2",
+              "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16",
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
+            ],
+            "maxConcurrency": 2
+          }
+        },
+        {
+          "id": "gemini-3-pro-image",
+          "displayName": "Nano Banana Pro",
+          "capabilities": {
+            "supportsMask": false,
+            "maxInputImages": 14,
+            "imageSizes": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "aspectRatios": [
+              "1:1",
+              "4:3",
+              "3:2",
+              "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16"
+            ],
+            "maxConcurrency": 2
+          }
+        },
+        {
+          "id": "gemini-3.1-flash-lite-image",
+          "displayName": "Nano Banana 2 Lite",
+          "capabilities": {
+            "supportsMask": false,
+            "maxInputImages": 4,
+            "imageSizes": [
+              "1K"
+            ],
+            "aspectRatios": [
+              "1:1",
+              "4:3",
+              "3:2",
+              "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16",
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
+            ],
+            "maxConcurrency": 2
+          }
+        }
+      ]
+    },
+    {
       "id": "Gemini",
       "displayName": {
         "zh": "Google原生",
@@ -61,15 +204,45 @@
       "baseUrl": "https://generativelanguage.googleapis.com",
       "apiFormat": "gemini",
       "authType": "goog",
-      "defaultModel": "gemini-3.1-flash-image-preview",
+      "defaultModel": "gemini-nano-banana-2.1",
       "apiKeyUrl": "https://aistudio.google.com/app/apikey",
       "models": [
         {
-          "id": "gemini-3.1-flash-image-preview",
+          "id": "gemini-nano-banana-2.1",
+          "displayName": "Nano Banana 2.1",
+          "capabilities": {
+            "supportsMask": false,
+            "maxInputImages": 14,
+            "imageSizes": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "aspectRatios": [
+              "1:1",
+              "4:3",
+              "3:2",
+              "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16",
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
+            ],
+            "maxConcurrency": 2
+          }
+        },
+        {
+          "id": "gemini-3.1-flash-image",
           "displayName": "Nano Banana 2",
           "capabilities": {
             "supportsMask": false,
-            "maxInputImages": 8,
+            "maxInputImages": 14,
             "imageSizes": [
               "0.5K",
               "1K",
@@ -81,20 +254,27 @@
               "4:3",
               "3:2",
               "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
               "9:16",
-              "21:9"
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
             ],
             "maxConcurrency": 2
           }
         },
         {
-          "id": "gemini-3-pro-image-preview",
+          "id": "gemini-3-pro-image",
           "displayName": "Nano Banana Pro",
           "capabilities": {
             "supportsMask": false,
-            "maxInputImages": 8,
+            "maxInputImages": 14,
             "imageSizes": [
-              "0.5K",
               "1K",
               "2K",
               "4K"
@@ -104,91 +284,40 @@
               "4:3",
               "3:2",
               "16:9",
-              "9:16",
-              "21:9"
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
+              "9:16"
             ],
             "maxConcurrency": 2
           }
         },
         {
-          "id": "gemini-2.5-flash-image",
-          "displayName": "Nano Banana",
+          "id": "gemini-3.1-flash-lite-image",
+          "displayName": "Nano Banana 2 Lite",
           "capabilities": {
             "supportsMask": false,
-            "maxInputImages": 3,
+            "maxInputImages": 4,
             "imageSizes": [
-              "0.5K",
-              "1K",
-              "2K",
-              "4K"
+              "1K"
             ],
             "aspectRatios": [
               "1:1",
               "4:3",
               "3:2",
               "16:9",
+              "21:9",
+              "5:4",
+              "4:5",
+              "3:4",
+              "2:3",
               "9:16",
-              "21:9"
-            ],
-            "maxConcurrency": 2
-          }
-        }
-      ]
-    },
-    {
-      "id": "BltAI",
-      "displayName": {
-        "zh": "柏拉图AI",
-        "en": "BLT AI"
-      },
-      "baseUrl": "https://hk-api.gptbest.vip",
-      "apiFormat": "gemini",
-      "authType": "bearer",
-      "defaultModel": "gemini-3.1-flash-image-preview",
-      "apiKeyUrl": "https://api.bltcy.ai/register?aff=2Z1d103040/",
-      "models": [
-        {
-          "id": "gemini-3.1-flash-image-preview",
-          "displayName": "Nano Banana 2",
-          "capabilities": {
-            "supportsMask": false,
-            "maxInputImages": 8,
-            "imageSizes": [
-              "0.5K",
-              "1K",
-              "2K",
-              "4K"
-            ],
-            "aspectRatios": [
-              "1:1",
-              "4:3",
-              "3:2",
-              "16:9",
-              "9:16",
-              "21:9"
-            ],
-            "maxConcurrency": 2
-          }
-        },
-        {
-          "id": "gemini-3-pro-image-preview",
-          "displayName": "Nano Banana Pro",
-          "capabilities": {
-            "supportsMask": false,
-            "maxInputImages": 8,
-            "imageSizes": [
-              "0.5K",
-              "1K",
-              "2K",
-              "4K"
-            ],
-            "aspectRatios": [
-              "1:1",
-              "4:3",
-              "3:2",
-              "16:9",
-              "9:16",
-              "21:9"
+              "4:1",
+              "1:4",
+              "8:1",
+              "1:8"
             ],
             "maxConcurrency": 2
           }

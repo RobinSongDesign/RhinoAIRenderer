@@ -23,8 +23,8 @@ namespace Chameleon.Core.Tests
                 BaseUrl = "https://gemini.test",
                 ApiFormat = ApiFormats.Gemini,
                 AuthType = authType,
-                DefaultModel = "gemini-3-pro-image-preview",
-                Models = { CatalogLoader.LoadBuiltIn().ResolveModel(ApiFormats.Gemini, "gemini-3-pro-image-preview") },
+                DefaultModel = "gemini-3-pro-image",
+                Models = { CatalogLoader.LoadBuiltIn().ResolveModel(ApiFormats.Gemini, "gemini-3-pro-image") },
                 EnableSearchGrounding = searchGrounding
             };
         }

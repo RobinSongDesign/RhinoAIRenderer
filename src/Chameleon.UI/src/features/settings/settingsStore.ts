@@ -42,6 +42,8 @@ export interface SettingsStoreState {
   clearKey(): Promise<void>;
   setTestModel(modelId: string): void;
   testKey(): Promise<void>;
+  /** Asks the provider which image models it offers and makes them its list. */
+  discoverModels(): Promise<void>;
   openKeyPage(): Promise<void>;
 }
 
@@ -184,6 +186,27 @@ export function createSettingsStore(bridge: Bridge): StoreApi<SettingsStoreState
         await bridge.call('providers.setKey', { id: provider.id, key: '' });
         await reload(provider.id);
         set({ message: status.info('settings.keyCleared') });
+      });
+    },
+
+    async discoverModels() {
+      const provider = selected();
+      if (!provider) {
+        return;
+      }
+      await run(async () => {
+        const result = await bridge.call('providers.discoverModels', { id: provider.id });
+        await reload(provider.id);
+        const changed = result.added.length + result.removed.length > 0;
+        set({
+          message: changed
+            ? status.success('settings.modelsUpdated', {
+                count: result.models.length,
+                added: result.added.join(', ') || '—',
+                removed: result.removed.join(', ') || '—',
+              })
+            : status.info('settings.modelsUnchanged', { count: result.models.length }),
+        });
       });
     },
 

@@ -192,8 +192,9 @@ interface JobInfo {
 | `providers.save` | `ProviderDto`（无 `id` 表示新增；`isBuiltIn` 的项保存为覆盖配置） | `ProviderDto` | P2 |
 | `providers.delete` | `{ id }`（内置项不可删，返回 `invalid_request`） | — | P2 |
 | `providers.resetBuiltIn` | `{ id }` | `ProviderDto` | P2 |
-| `providers.setKey` | `{ id, key }`（`key` 为空字符串表示清除） | `{ hasKey }` | P2 |
+| `providers.setKey` | `{ id, key }`（`key` 为空字符串表示清除） | `{ hasKey }`；为内置服务商保存 Key 后，宿主在后台自动检测一次模型（见 `providers.discoverModels`），启动时也会刷新超过一天未检测的内置服务商 | P2 |
 | `providers.testKey` | `{ id, key?, modelId? }`（`key` 省略时用已保存的） | `{ ok: true }` 或抛 `auth_failed` / `network` 等 | P2 |
+| `providers.discoverModels` | `{ id }` | `{ models: string[], added: string[], removed: string[] }`：向服务商查询它当前提供的图片模型并替换该服务商的模型列表（内置服务商存为「已检测模型」，仍可被覆盖配置取代；用户新增的服务商直接改写其模型列表）。返回空列表时不做改动。未保存 Key 抛 `not_ready` | P4-R2 |
 | `providers.balance` | `{ id }` | `{ remaining: number \| null, used: number, total: number \| null, currency: 'USD' }`（`null` 表示不限额）；未保存 Key 抛 `not_ready`，服务商不支持抛 `invalid_request` | P4-R2 |
 
 Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI。

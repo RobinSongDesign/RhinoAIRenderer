@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -52,6 +53,9 @@ namespace Chameleon.App.Tests.Services
         public ChameleonApp App { get; }
 
         public string DataDirectory => _directory.Path;
+
+        /// <summary>Image models the stubbed providers list; tests may change it.</summary>
+        public List<string> OfferedModels { get; } = new List<string> { "gemini-nano-banana-2.1", "gemini-3-pro-image", "gemini-nano-banana-3" };
 
         /// <summary>Every provider HTTP request the app made.</summary>
         public List<HttpRequestMessage> ProviderRequests { get; } = new List<HttpRequestMessage>();
@@ -180,6 +184,15 @@ namespace Chameleon.App.Tests.Services
                     {
                         Content = new StringContent("{\"error\":{\"status\":\"UNAUTHENTICATED\",\"message\":\"bad key\"}}")
                     });
+                }
+
+                // Model listings: what the stub "offers" can be changed by a test.
+                if (request.Method == HttpMethod.Get && request.RequestUri!.AbsolutePath.EndsWith("/v1beta/models", StringComparison.Ordinal))
+                {
+                    var models = _owner.OfferedModels
+                        .Select(m => "{\"name\":\"models/" + m + "\",\"supportedGenerationMethods\":[\"generateContent\"]}")
+                        .Concat(new[] { "{\"name\":\"models/gemini-4-carbon\"}" });
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"models\":[" + string.Join(",", models) + "]}") });
                 }
 
                 // One API / new-api balance endpoints: $2 granted, 82.8 cents used.

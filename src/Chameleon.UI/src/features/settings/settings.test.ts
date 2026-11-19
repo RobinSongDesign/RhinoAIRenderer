@@ -101,6 +101,11 @@ describe('settingsStore', () => {
         }
         return { ok: true };
       })
+      .handle('providers.discoverModels', (p) => {
+        const id = (p as { id: string }).id;
+        current = current.map((c) => (c.id === id ? { ...c, models: ['m2', 'm3'] } : c));
+        return { models: ['m2', 'm3'], added: ['m3'], removed: ['m1'] };
+      })
       .handle('shell.openUrl', () => null);
     return { transport, store: createSettingsStore(new Bridge(transport)) };
   }
@@ -112,6 +117,20 @@ describe('settingsStore', () => {
 
     expect(store.getState().selectedId).toBe('BltAI');
     expect(store.getState().testModel).toBe('m2');
+  });
+
+  it('detects the models a provider offers and reports what changed', async () => {
+    const { store, transport } = setup();
+    await store.getState().open('BltAI');
+
+    await store.getState().discoverModels();
+
+    expect(transport.callsOf('providers.discoverModels')).toEqual([{ id: 'BltAI' }]);
+    expect(store.getState().providers.find((p) => p.id === 'BltAI')?.models).toEqual(['m2', 'm3']);
+    expect(store.getState().message).toMatchObject({
+      key: 'settings.modelsUpdated',
+      params: { count: 2, added: 'm3', removed: 'm1' },
+    });
   });
 
   it('saves a new provider from the form and selects it', async () => {

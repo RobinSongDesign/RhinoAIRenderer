@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Chameleon.Core.Catalog;
 using Chameleon.Core.Generation;
+using Chameleon.Core.Settings;
 
 namespace Chameleon.Core.Providers
 {
@@ -24,10 +25,12 @@ namespace Chameleon.Core.Providers
         /// <param name="userProviders">Providers added by the user; may be null.</param>
         /// <param name="overrides">Overrides keyed by built-in provider id; may be null.</param>
         /// <param name="language">Language used for built-in display names.</param>
+        /// <param name="discovered">Models built-in providers reported, keyed by provider id; may be null.</param>
         public IReadOnlyList<ProviderProfile> Build(
             IEnumerable<UserProviderConfig>? userProviders,
             IDictionary<string, ProviderOverride>? overrides,
-            string? language)
+            string? language,
+            IDictionary<string, DiscoveredModels>? discovered = null)
         {
             var result = new List<ProviderProfile>();
 
@@ -35,7 +38,9 @@ namespace Chameleon.Core.Providers
             {
                 ProviderOverride? providerOverride = null;
                 overrides?.TryGetValue(builtIn.Id, out providerOverride);
-                result.Add(FromBuiltIn(builtIn, providerOverride, language));
+                DiscoveredModels? found = null;
+                discovered?.TryGetValue(builtIn.Id, out found);
+                result.Add(FromBuiltIn(builtIn, providerOverride, language, found));
             }
 
             if (userProviders != null)
@@ -54,13 +59,15 @@ namespace Chameleon.Core.Providers
             return result;
         }
 
-        private ProviderProfile FromBuiltIn(CatalogProvider builtIn, ProviderOverride? ov, string? language)
+        private ProviderProfile FromBuiltIn(CatalogProvider builtIn, ProviderOverride? ov, string? language, DiscoveredModels? discovered)
         {
             string apiFormat = NonEmpty(ov?.ApiFormat) ?? builtIn.ApiFormat;
             bool hasModelOverride = ov?.Models != null && ov.Models.Count > 0;
+            bool hasDiscovered = discovered?.Models != null && discovered.Models.Count > 0;
+            // The user's own list wins, then what the endpoint reported, then the catalog.
             IEnumerable<string> modelIds = hasModelOverride
                 ? ov!.Models!
-                : builtIn.Models.Select(m => m.Id);
+                : hasDiscovered ? discovered!.Models : builtIn.Models.Select(m => m.Id);
 
             List<ModelInfo> models = ResolveModels(apiFormat, modelIds, builtIn.Id);
 

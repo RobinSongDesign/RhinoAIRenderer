@@ -144,6 +144,18 @@ namespace Chameleon.Core.Backends
             }
         }
 
+        /// <summary>Asks the endpoint which image models it offers to the stored key.</summary>
+        /// <exception cref="RenderException">No key is stored, the key is rejected, or the endpoint fails.</exception>
+        public Task<IReadOnlyList<string>> DiscoverModelsAsync(CancellationToken cancellationToken)
+        {
+            AdapterContext context = CreateContext();
+            return SendOnceAsync(
+                context,
+                () => _adapter.BuildListModelsRequest(context),
+                (response, ct) => _adapter.ParseListModelsResponseAsync(context, response, ct),
+                cancellationToken);
+        }
+
         private AdapterContext CreateContext()
         {
             string? apiKey = _secrets.Get(SecretNames.ForProvider(_profile.Id));

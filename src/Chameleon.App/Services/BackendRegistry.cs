@@ -59,7 +59,7 @@ namespace Chameleon.App.Services
         public IReadOnlyList<ProviderProfile> GetProviders()
         {
             AppSettings settings = _settings.Read();
-            return _providers.Build(settings.UserProviders, settings.BuiltInOverrides, settings.Language);
+            return _providers.Build(settings.UserProviders, settings.BuiltInOverrides, settings.Language, settings.DiscoveredModels);
         }
 
         /// <summary>Finds a backend by id; null when unknown.</summary>

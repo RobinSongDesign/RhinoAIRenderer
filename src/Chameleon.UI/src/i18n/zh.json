@@ -241,5 +241,9 @@
   "balance.unlimited": "不限额（已用 {used}）",
   "balance.refresh": "刷新余额",
   "balance.failed": "余额暂时无法获取",
-  "balance.topUp": "充值"
+  "balance.topUp": "充值",
+  "settings.discoverModels": "检测可用模型",
+  "settings.discoverNeedsKey": "请先保存 API Key",
+  "settings.modelsUpdated": "模型已更新：共 {count} 个（新增：{added}；下线：{removed}）",
+  "settings.modelsUnchanged": "模型已是最新（共 {count} 个）"
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -90,6 +91,61 @@ namespace Chameleon.Core.Providers
             HttpRequestMessage message = CreateRequest(context, modelId);
             message.Content = new StringContent(payload.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
             return message;
+        }
+
+        /// <inheritdoc />
+        public HttpRequestMessage BuildListModelsRequest(AdapterContext context)
+        {
+            // One page is plenty: Google allows 1000 per page and offers far fewer models.
+            return CreateRequest(context, HttpMethod.Get, "/v1beta/models?pageSize=1000");
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<string>> ParseListModelsResponseAsync(
+            AdapterContext context,
+            HttpResponseMessage response,
+            CancellationToken cancellationToken)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                throw await ParseErrorAsync(context, response, cancellationToken).ConfigureAwait(false);
+            }
+
+            JObject? json = await ProviderResponseReader.ReadJsonObjectAsync(response, cancellationToken).ConfigureAwait(false);
+            if (!(json?["models"] is JArray models))
+            {
+                throw new RenderException(RenderErrorCode.ProviderError, "The model list has no \"models\" array.", (int)response.StatusCode, null);
+            }
+
+            var ids = new List<string>();
+            // Entries that are not objects are skipped rather than failing the whole listing.
+            foreach (JObject model in models.OfType<JObject>())
+            {
+                // Google names models "models/{id}"; relays such as new-api give the bare id.
+                string id = ((string?)model["name"] ?? string.Empty).Trim();
+                if (id.StartsWith("models/", StringComparison.Ordinal))
+                {
+                    id = id.Substring("models/".Length);
+                }
+
+                if (IsImageModel(id, model["supportedGenerationMethods"] as JArray) && !ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            return ids;
+        }
+
+        // Image output through generateContent: the Gemini image family ("...-image", "nano-banana").
+        // Imagen models use a different method (predict) and are left out, as are models that
+        // explicitly do not support generateContent.
+        private static bool IsImageModel(string id, JArray? methods)
+        {
+            string lower = id.ToLowerInvariant();
+            bool imageFamily = (lower.Contains("image") || lower.Contains("banana")) && !lower.StartsWith("imagen", StringComparison.Ordinal);
+            bool generates = methods == null || methods.Any(m => string.Equals((string?)m, "generateContent", StringComparison.Ordinal));
+            return lower.Length > 0 && imageFamily && generates;
         }
 
         /// <inheritdoc />
@@ -237,10 +293,12 @@ namespace Chameleon.Core.Providers
 
         private static HttpRequestMessage CreateRequest(AdapterContext context, string modelId)
         {
-            string url = context.Profile.BaseUrl.TrimEnd('/') + "/v1beta/models/" +
-                         Uri.EscapeDataString(modelId ?? string.Empty) + ":generateContent";
+            return CreateRequest(context, HttpMethod.Post, "/v1beta/models/" + Uri.EscapeDataString(modelId ?? string.Empty) + ":generateContent");
+        }
 
-            var message = new HttpRequestMessage(HttpMethod.Post, url);
+        private static HttpRequestMessage CreateRequest(AdapterContext context, HttpMethod method, string pathAndQuery)
+        {
+            var message = new HttpRequestMessage(method, context.Profile.BaseUrl.TrimEnd('/') + pathAndQuery);
             if (string.Equals(context.Profile.AuthType, AuthTypes.Goog, StringComparison.OrdinalIgnoreCase))
             {
                 message.Headers.TryAddWithoutValidation(GoogApiKeyHeader, context.ApiKey);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -81,6 +82,45 @@ namespace Chameleon.Core.Providers
         {
             // Listing models is free and fails with 401 when the key is rejected.
             return CreateRequest(context, HttpMethod.Get, "/v1/models");
+        }
+
+        /// <inheritdoc />
+        public HttpRequestMessage BuildListModelsRequest(AdapterContext context)
+        {
+            return CreateRequest(context, HttpMethod.Get, "/v1/models");
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<string>> ParseListModelsResponseAsync(
+            AdapterContext context,
+            HttpResponseMessage response,
+            CancellationToken cancellationToken)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                throw await ParseErrorAsync(context, response, cancellationToken).ConfigureAwait(false);
+            }
+
+            JObject? json = await ProviderResponseReader.ReadJsonObjectAsync(response, cancellationToken).ConfigureAwait(false);
+            if (!(json?["data"] is JArray models))
+            {
+                throw new RenderException(RenderErrorCode.ProviderError, "The model list has no \"data\" array.", (int)response.StatusCode, null);
+            }
+
+            // The Images API is served by the "gpt-image" and "dall-e" families; relays list every
+            // chat model too, so anything else is left out.
+            var ids = new List<string>();
+            foreach (JObject model in models.OfType<JObject>())
+            {
+                string id = ((string?)model["id"] ?? string.Empty).Trim();
+                string lower = id.ToLowerInvariant();
+                if ((lower.Contains("image") || lower.StartsWith("dall-e", StringComparison.Ordinal)) && !ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            return ids;
         }
 
         /// <inheritdoc />

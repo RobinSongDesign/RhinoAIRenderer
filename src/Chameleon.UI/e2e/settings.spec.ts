@@ -230,3 +230,24 @@ test('a relay provider shows its balance and points to its top-up page when it r
   await page.getByTestId('provider-delete-confirm').click();
   await page.getByTestId('settings-close').click();
 });
+
+test('detects the models a provider offers', async ({ page }) => {
+  await openApp(page);
+  await openSettings(page);
+  await addProvider(page, 'Detect Relay', 'https://detect.example.com', 'old-model');
+  await expect(page.getByTestId('provider-discover')).toBeDisabled();
+  await page.getByTestId('key-input').fill(GOOD_KEY);
+  await page.getByTestId('key-save').click();
+  await expect(page.getByTestId('settings-message')).toHaveText('API key saved');
+
+  await page.getByTestId('provider-discover').click();
+
+  await expect(page.getByTestId('settings-message')).toContainText('Models updated: 4 available');
+  await expect(page.getByTestId('provider-detail-models')).toHaveText(
+    'gemini-nano-banana-2.1, gemini-3.1-flash-image, gemini-3-pro-image, gemini-3.1-flash-lite-image',
+  );
+
+  await page.getByTestId('provider-delete').click();
+  await page.getByTestId('provider-delete-confirm').click();
+  await page.getByTestId('settings-close').click();
+});

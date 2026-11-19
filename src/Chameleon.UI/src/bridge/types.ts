@@ -301,6 +301,7 @@ export interface RpcMethods {
   'providers.setKey': { params: { id: string; key: string }; result: { hasKey: boolean } };
   'providers.testKey': { params: { id: string; key?: string; modelId?: string }; result: { ok: true } };
   'providers.balance': { params: { id: string }; result: ProviderBalance };
+  'providers.discoverModels': { params: { id: string }; result: { models: string[]; added: string[]; removed: string[] } };
   'rhino.captureActiveView': { params: { width?: number; height?: number } | void; result: AssetRef };
   'rhino.listNamedViews': { params: void; result: { name: string }[] };
   'rhino.captureNamedView': { params: { name: string; width?: number; height?: number }; result: AssetRef };

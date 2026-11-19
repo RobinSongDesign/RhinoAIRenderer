@@ -37,6 +37,16 @@ export function ProviderDetails() {
         <Button size="small" data-testid="provider-edit" onClick={() => store.startEdit()}>
           {t('settings.edit')}
         </Button>
+        <Button
+          size="small"
+          data-testid="provider-discover"
+          busy={busy}
+          disabled={!provider.hasKey}
+          title={provider.hasKey ? undefined : t('settings.discoverNeedsKey')}
+          onClick={() => void store.discoverModels()}
+        >
+          {t('settings.discoverModels')}
+        </Button>
         {provider.isBuiltIn ? (
           provider.isOverridden && (
             <Button

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,19 @@ namespace Chameleon.Core.Providers
         /// <summary>Turns a generation response into a result.</summary>
         /// <exception cref="RenderException">The response is an error or carries no image.</exception>
         Task<GenerationResult> ParseGenerateResponseAsync(
+            AdapterContext context,
+            HttpResponseMessage response,
+            CancellationToken cancellationToken);
+
+        /// <summary>Builds the request that lists the models the endpoint offers to this credential.</summary>
+        HttpRequestMessage BuildListModelsRequest(AdapterContext context);
+
+        /// <summary>
+        /// Reads a model listing and keeps the ids of the image-generation models this format can
+        /// drive, in the order the endpoint gave them.
+        /// </summary>
+        /// <exception cref="RenderException">The response is an error or not a model listing.</exception>
+        Task<IReadOnlyList<string>> ParseListModelsResponseAsync(
             AdapterContext context,
             HttpResponseMessage response,
             CancellationToken cancellationToken);

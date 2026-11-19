@@ -21,6 +21,7 @@ namespace Chameleon.App.Services
         private readonly BackendRegistry _backends;
         private readonly BackendService _backendService;
         private readonly DirectBackendFactory _factory;
+        private readonly IModelDiscovery? _discovery;
 
         /// <summary>Creates the service.</summary>
         public ProviderService(
@@ -29,7 +30,8 @@ namespace Chameleon.App.Services
             ISecretStore secrets,
             BackendRegistry backends,
             BackendService backendService,
-            DirectBackendFactory factory)
+            DirectBackendFactory factory,
+            IModelDiscovery? discovery = null)
         {
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -37,6 +39,7 @@ namespace Chameleon.App.Services
             _backends = backends ?? throw new ArgumentNullException(nameof(backends));
             _backendService = backendService ?? throw new ArgumentNullException(nameof(backendService));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _discovery = discovery;
         }
 
         /// <summary>Registers this service's RPC methods.</summary>
@@ -233,6 +236,12 @@ namespace Chameleon.App.Services
             }
 
             await _backendService.PublishChangedAsync(cancellationToken).ConfigureAwait(false);
+            if (trimmed.Length > 0 && _catalog.FindProvider(id) != null)
+            {
+                // A new key may unlock other models (e.g. another account tier): look them up.
+                _discovery?.RefreshInBackground(id);
+            }
+
             return trimmed.Length > 0;
         }
 

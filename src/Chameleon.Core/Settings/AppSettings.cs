@@ -42,5 +42,13 @@ namespace Chameleon.Core.Settings
 
         /// <summary>Account mode options.</summary>
         public CloudSettings Cloud { get; set; } = new CloudSettings();
+
+        /// <summary>
+        /// Models built-in providers reported for the stored key, keyed by provider id. They replace
+        /// the catalog's list (an explicit override still wins), so models the endpoint added or
+        /// retired since this build show up without a new release.
+        /// </summary>
+        public Dictionary<string, DiscoveredModels> DiscoveredModels { get; set; } =
+            new Dictionary<string, DiscoveredModels>(StringComparer.Ordinal);
     }
 }

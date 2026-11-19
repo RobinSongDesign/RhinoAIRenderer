@@ -241,5 +241,9 @@
   "balance.unlimited": "No limit (used {used})",
   "balance.refresh": "Refresh balance",
   "balance.failed": "Balance unavailable",
-  "balance.topUp": "Top up"
+  "balance.topUp": "Top up",
+  "settings.discoverModels": "Detect models",
+  "settings.discoverNeedsKey": "Save an API key first",
+  "settings.modelsUpdated": "Models updated: {count} available (new: {added}; gone: {removed})",
+  "settings.modelsUnchanged": "Models are up to date ({count} available)"
 }

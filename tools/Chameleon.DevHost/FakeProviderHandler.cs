@@ -39,9 +39,15 @@ namespace Chameleon.DevHost
                 return Json(HttpStatusCode.Unauthorized, "{\"error\":{\"code\":\"invalid_api_key\",\"status\":\"UNAUTHENTICATED\",\"message\":\"The development host only accepts the key '" + GoodKey + "'.\"}}");
             }
 
+            // Model listings for discovery: the built-in catalog's Gemini models, and one Images API model.
+            if (path.EndsWith("/v1beta/models", StringComparison.Ordinal))
+            {
+                return Json(HttpStatusCode.OK, "{\"models\":[{\"name\":\"models/gemini-nano-banana-2.1\"},{\"name\":\"models/gemini-3.1-flash-image\"},{\"name\":\"models/gemini-3-pro-image\"},{\"name\":\"models/gemini-3.1-flash-lite-image\"},{\"name\":\"models/gemini-4-carbon\"}]}");
+            }
+
             if (path.EndsWith("/v1/models", StringComparison.Ordinal))
             {
-                return Json(HttpStatusCode.OK, "{\"data\":[]}");
+                return Json(HttpStatusCode.OK, "{\"data\":[{\"id\":\"gpt-image-2\"},{\"id\":\"gpt-5\"}]}");
             }
 
             // One API / new-api balance endpoints: $2 granted, 4 cents per generated image.

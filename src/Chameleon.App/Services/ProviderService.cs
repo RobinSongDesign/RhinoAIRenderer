@@ -203,6 +203,7 @@ namespace Chameleon.App.Services
             }
 
             _secrets.Delete(SecretNames.ForProvider(id));
+            _settings.Update(settings => settings.SignedInAccounts.Remove(id));
             await _backendService.PublishChangedAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -220,8 +221,12 @@ namespace Chameleon.App.Services
         }
 
         /// <summary>Stores or clears a provider's API key.</summary>
+        /// <param name="id">Provider id.</param>
+        /// <param name="key">The key; null or empty clears it.</param>
+        /// <param name="cancellationToken">Cancels publishing the change.</param>
+        /// <param name="signedInAs">Account the key belongs to when it came from signing in; null for a pasted key.</param>
         /// <returns>True when a key is stored afterwards.</returns>
-        public async Task<bool> SetKeyAsync(string id, string? key, CancellationToken cancellationToken)
+        public async Task<bool> SetKeyAsync(string id, string? key, CancellationToken cancellationToken, string? signedInAs = null)
         {
             Require(id);
             string name = SecretNames.ForProvider(id);
@@ -234,6 +239,18 @@ namespace Chameleon.App.Services
             {
                 _secrets.Set(name, trimmed);
             }
+
+            _settings.Update(settings =>
+            {
+                if (trimmed.Length > 0 && signedInAs != null)
+                {
+                    settings.SignedInAccounts[id] = signedInAs;
+                }
+                else
+                {
+                    settings.SignedInAccounts.Remove(id);
+                }
+            });
 
             await _backendService.PublishChangedAsync(cancellationToken).ConfigureAwait(false);
             if (trimmed.Length > 0 && _catalog.FindProvider(id) != null)
@@ -268,6 +285,11 @@ namespace Chameleon.App.Services
             return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri.Scheme == Uri.UriSchemeHttps;
         }
 
+        private string? SignedInAs(string id)
+        {
+            return _settings.Read().SignedInAccounts.TryGetValue(id, out string? name) ? name : null;
+        }
+
         private ProviderDto Require(string id)
         {
             ProviderProfile? profile = _backends.GetProviders().FirstOrDefault(p => p.Id == id);
@@ -291,7 +313,9 @@ namespace Chameleon.App.Services
                 EnableSearchGrounding = profile.EnableSearchGrounding,
                 HasKey = _secrets.Contains(SecretNames.ForProvider(profile.Id)),
                 BalanceApi = profile.BalanceApi,
-                TopUpUrl = profile.TopUpUrl
+                TopUpUrl = profile.TopUpUrl,
+                SupportsSignIn = profile.SignInApi != null,
+                SignedInAs = SignedInAs(profile.Id)
             };
         }
     }

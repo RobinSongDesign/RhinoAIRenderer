@@ -74,6 +74,10 @@ export interface BackendInfo {
   /** Direct backends whose provider reports a balance through "providers.balance". */
   supportsBalance?: boolean;
   topUpUrl?: string;
+  /** Direct backends whose account can be signed in to with "providers.signIn". */
+  supportsSignIn?: boolean;
+  /** Account name while the stored key came from signing in. */
+  signedInAs?: string | null;
 }
 
 export interface BackendSelection {
@@ -172,7 +176,16 @@ export interface ProviderDto {
   balanceApi?: BalanceApi | null;
   /** https page where the user tops up or redeems credit. */
   topUpUrl?: string | null;
+  /** True when the user can sign in to the provider's account instead of pasting a key. */
+  supportsSignIn?: boolean;
+  /** Account name while the stored key came from signing in. */
+  signedInAs?: string | null;
 }
+
+/** Outcome of "providers.signIn" / "providers.signInVerify" (bridge-protocol.md §4.2). */
+export type SignInResult =
+  | { status: 'signedIn'; username: string }
+  | { status: 'needsTwoFactor'; flowToken: string };
 
 /** Balance protocols the host understands: "oneapi" is One API / new-api's dashboard endpoints. */
 export type BalanceApi = 'oneapi';
@@ -301,6 +314,9 @@ export interface RpcMethods {
   'providers.setKey': { params: { id: string; key: string }; result: { hasKey: boolean } };
   'providers.testKey': { params: { id: string; key?: string; modelId?: string }; result: { ok: true } };
   'providers.balance': { params: { id: string }; result: ProviderBalance };
+  'providers.signIn': { params: { id: string; username: string; password: string }; result: SignInResult };
+  'providers.signInVerify': { params: { id: string; flowToken: string; code: string }; result: SignInResult };
+  'providers.signOut': { params: { id: string }; result: null };
   'providers.discoverModels': { params: { id: string }; result: { models: string[]; added: string[]; removed: string[] } };
   'rhino.captureActiveView': { params: { width?: number; height?: number } | void; result: AssetRef };
   'rhino.listNamedViews': { params: void; result: { name: string }[] };

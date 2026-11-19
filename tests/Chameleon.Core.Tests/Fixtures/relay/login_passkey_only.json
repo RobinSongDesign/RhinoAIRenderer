@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "require_verification": true,
+    "flow_token": "test-flow-123",
+    "methods": [
+      { "method": "2fa", "available": false, "reason": "not_configured" },
+      { "method": "passkey", "available": true, "reason": "" }
+    ]
+  }
+}

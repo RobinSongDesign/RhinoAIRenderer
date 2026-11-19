@@ -97,7 +97,8 @@ test('storing a key makes the provider ready, and it can then generate', async (
   await page.getByTestId('backend-select').selectOption('direct:Chameleon');
   await expect(page.getByTestId('backend-not-ready')).toBeVisible();
 
-  await page.getByTestId('backend-not-ready').getByRole('button').click();
+  // The relay offers signing in; this test takes the "paste a key" way.
+  await page.getByTestId('backend-use-key').click();
   await expect(page.getByTestId('provider-details')).toHaveAttribute('data-provider', 'Chameleon');
   await page.getByTestId('key-input').fill(GOOD_KEY);
   await page.getByTestId('key-save').click();

@@ -12,6 +12,7 @@ import { createSessionStore, type SessionStoreState } from '../features/history/
 import { createBatchStore, type BatchStoreState } from '../features/batch/batchStore';
 import { createSettingsStore, type SettingsStoreState } from '../features/settings/settingsStore';
 import { createAccountStore, type AccountStoreState } from '../features/account/accountStore';
+import { createRelaySignInStore, type RelaySignInStoreState } from '../features/relaySignIn/relaySignInStore';
 import { BitmapCache } from '../features/canvas/bitmapCache';
 import { decodeImage, type CanvasBitmap } from '../features/canvas/decode';
 
@@ -27,6 +28,7 @@ export interface Services {
   batch: StoreApi<BatchStoreState>;
   settings: StoreApi<SettingsStoreState>;
   account: StoreApi<AccountStoreState>;
+  relaySignIn: StoreApi<RelaySignInStoreState>;
   /** Decoded images shared by every canvas. */
   bitmaps: BitmapCache<CanvasBitmap>;
 }
@@ -39,6 +41,7 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
   const session = createSessionStore(bridge, app);
   const single = createSingleStore({ bridge, app, jobs, params, session });
   const batch = createBatchStore({ bridge, app, jobs, params });
+  const settings = createSettingsStore(bridge);
   return {
     bridge,
     app,
@@ -48,8 +51,10 @@ export function createServices(bridge: Bridge, initialLanguage: Language): Servi
     single,
     session,
     batch,
-    settings: createSettingsStore(bridge),
+    settings,
     account: createAccountStore({ bridge, app, statusSources: [single, batch] }),
+    // The backend list follows by itself ("backends.changed"); the settings dialog caches providers.
+    relaySignIn: createRelaySignInStore({ bridge, onChanged: () => void settings.getState().refresh() }),
     bitmaps: new BitmapCache<CanvasBitmap>((assetId) => decodeImage(bridge.assetUrl(assetId))),
   };
 }
@@ -102,6 +107,10 @@ export function useSettingsStore<T>(selector: (state: SettingsStoreState) => T):
 
 export function useAccountStore<T>(selector: (state: AccountStoreState) => T): T {
   return useStore(useServices().account, selector);
+}
+
+export function useRelaySignInStore<T>(selector: (state: RelaySignInStoreState) => T): T {
+  return useStore(useServices().relaySignIn, selector);
 }
 
 export function useSessionStore<T>(selector: (state: SessionStoreState) => T): T {

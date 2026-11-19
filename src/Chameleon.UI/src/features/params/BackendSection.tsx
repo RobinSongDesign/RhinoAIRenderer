@@ -5,12 +5,12 @@ import { Select } from '../../components/Select';
 import { selectActiveBackend } from '../../state/appStore';
 import { useAppStore, useServices, useT } from '../../state/services';
 import { Section } from '../shell/Section';
-import { BalanceLine } from './BalanceLine';
+import { BalanceLine, providerIdOf } from './BalanceLine';
 
 /** Which backend and model generate the image; warns when the backend still needs a key. */
 export function BackendSection() {
   const t = useT();
-  const { app, ui, account } = useServices();
+  const { app, ui, account, relaySignIn } = useServices();
   const backends = useAppStore((s) => s.backends);
   const activeBackendId = useAppStore((s) => s.activeBackendId);
   const activeModelId = useAppStore((s) => s.activeModelId);
@@ -33,6 +33,21 @@ export function BackendSection() {
               {t('backend.signInRequired')}{' '}
               <Button size="small" onClick={() => void account.getState().startLogin()}>
                 {t('account.signIn')}
+              </Button>
+            </>
+          ) : backend.supportsSignIn ? (
+            <>
+              {t('backend.signInPrompt', { name: backend.displayName })}{' '}
+              <Button
+                size="small"
+                variant="primary"
+                data-testid="backend-signin"
+                onClick={() => void relaySignIn.getState().open(providerIdOf(backend.id))}
+              >
+                {t('signIn.action')}
+              </Button>{' '}
+              <Button size="small" variant="ghost" data-testid="backend-use-key" onClick={() => ui.getState().openSettings()}>
+                {t('backend.useKey')}
               </Button>
             </>
           ) : (

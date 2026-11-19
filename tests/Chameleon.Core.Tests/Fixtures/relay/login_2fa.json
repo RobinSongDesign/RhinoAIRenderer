@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "require_verification": true,
+    "flow_token": "test-flow-123",
+    "expires_at": 1795000000,
+    "methods": [
+      { "method": "2fa", "available": true, "reason": "" },
+      { "method": "passkey", "available": false, "reason": "not_configured" }
+    ]
+  }
+}

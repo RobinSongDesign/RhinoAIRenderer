@@ -8,7 +8,7 @@ import styles from './settings.module.css';
 /** The selected provider: its endpoint, its API key and the key test. */
 export function ProviderDetails() {
   const t = useT();
-  const { settings } = useServices();
+  const { settings, relaySignIn, ui } = useServices();
   const provider = useSettingsStore((s) => s.providers.find((p) => p.id === s.selectedId));
   const keyInput = useSettingsStore((s) => s.keyInput);
   const testModel = useSettingsStore((s) => s.testModel);
@@ -87,6 +87,37 @@ export function ProviderDetails() {
           </Button>
         )}
       </div>
+
+      {provider.supportsSignIn && (
+        <Field label={t('settings.account')}>
+          <div className={styles.actions} data-testid="provider-account">
+            {provider.signedInAs ? (
+              <>
+                <span data-testid="provider-signed-in-as">{t('settings.signedInAs', { name: provider.signedInAs })}</span>
+                <Button size="small" data-testid="provider-signout" onClick={() => void relaySignIn.getState().signOut(provider.id)}>
+                  {t('signIn.signOut')}
+                </Button>
+              </>
+            ) : (
+              <>
+                <span className={styles.grow}>{t('settings.notSignedIn')}</span>
+                <Button
+                  size="small"
+                  variant="primary"
+                  data-testid="provider-signin"
+                  onClick={() => {
+                    // One dialog at a time: the sign-in replaces the settings.
+                    ui.getState().closeSettings();
+                    void relaySignIn.getState().open(provider.id);
+                  }}
+                >
+                  {t('signIn.action')}
+                </Button>
+              </>
+            )}
+          </div>
+        </Field>
+      )}
 
       <Field label={t('settings.apiKey')}>
         <div className={styles.actions}>

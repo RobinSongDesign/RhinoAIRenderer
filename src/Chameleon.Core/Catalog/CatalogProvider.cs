@@ -35,5 +35,8 @@ namespace Chameleon.Core.Catalog
         /// <summary>Web page where the user tops up or redeems credit for this provider (https only).</summary>
         public string? TopUpUrl { get; set; }
 
+        /// <summary>How users can sign in from the plug-in instead of pasting a key; see <see cref="Providers.Accounts.SignInApis"/>.</summary>
+        public string? SignInApi { get; set; }
+
     }
 }

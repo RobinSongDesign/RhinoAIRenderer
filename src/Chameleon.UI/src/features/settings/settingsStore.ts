@@ -27,6 +27,8 @@ export interface SettingsStoreState {
   message: StatusMessage | null;
 
   open(preferredId?: string): Promise<void>;
+  /** Reloads the providers, keeping the selection; for changes made outside the dialog. */
+  refresh(): Promise<void>;
   select(id: string): void;
   startAdd(): void;
   startEdit(): void;
@@ -63,6 +65,12 @@ export function createSettingsStore(bridge: Bridge): StoreApi<SettingsStoreState
     async open(preferredId) {
       set({ draft: null, keyInput: '', testState: 'idle', confirmingDelete: false, message: null });
       await reload(preferredId ?? get().selectedId);
+    },
+
+    async refresh() {
+      if (get().providers.length > 0) {
+        await reload(get().selectedId).catch(() => undefined);
+      }
     },
 
     select(id) {

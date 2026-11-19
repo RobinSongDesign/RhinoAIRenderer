@@ -38,7 +38,9 @@ namespace Chameleon.Core.Backends
         /// </summary>
         public static HttpClient CreateSharedHttpClient(HttpMessageHandler? handler = null)
         {
-            HttpClient client = handler != null ? new HttpClient(handler) : new HttpClient();
+            // No cookie jar: every API here authenticates per request, and a gateway's login cookie
+            // must not ride along on later calls.
+            HttpClient client = handler != null ? new HttpClient(handler) : new HttpClient(new HttpClientHandler { UseCookies = false });
             client.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
             return client;
         }

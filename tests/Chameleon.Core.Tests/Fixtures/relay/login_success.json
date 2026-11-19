@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "access_token": "test-session-123",
+    "token_type": "Bearer",
+    "access_expires_at": 1795000000,
+    "session": { "id": "s1" },
+    "user": { "id": 7, "username": "alice", "display_name": "alice", "role": 1, "status": 1, "group": "default" }
+  }
+}

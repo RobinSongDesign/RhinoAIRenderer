@@ -38,5 +38,11 @@ namespace Chameleon.App.Bridge.Dto
 
         /// <summary>Page where the user tops up or redeems credit, if the provider has one (https).</summary>
         public string? TopUpUrl { get; set; }
+
+        /// <summary>True when the user can sign in to the provider's account instead of pasting a key.</summary>
+        public bool SupportsSignIn { get; set; }
+
+        /// <summary>Account name when the stored key came from signing in.</summary>
+        public string? SignedInAs { get; set; }
     }
 }

@@ -125,6 +125,7 @@ namespace Chameleon.App.Services
         public async Task<IReadOnlyList<BackendInfoDto>> DescribeAsync(CancellationToken cancellationToken)
         {
             var result = new List<BackendInfoDto>();
+            Dictionary<string, string> signedInAccounts = _settings.Read().SignedInAccounts;
             foreach (IRenderBackend backend in GetAll())
             {
                 result.Add(new BackendInfoDto
@@ -135,6 +136,8 @@ namespace Chameleon.App.Services
                     Ready = IsReady(backend),
                     SupportsBalance = backend is DirectBackend withBalance && withBalance.Profile.BalanceApi != null,
                     TopUpUrl = (backend as DirectBackend)?.Profile.TopUpUrl,
+                    SupportsSignIn = (backend as DirectBackend)?.Profile.SignInApi != null,
+                    SignedInAs = backend is DirectBackend signedIn && signedInAccounts.TryGetValue(signedIn.Profile.Id, out string? account) ? account : null,
                     Models = await backend.ListModelsAsync(cancellationToken).ConfigureAwait(false),
                     DefaultModel = await GetDefaultModelAsync(backend, cancellationToken).ConfigureAwait(false)
                 });

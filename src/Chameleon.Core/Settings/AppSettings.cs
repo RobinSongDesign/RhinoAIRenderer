@@ -50,5 +50,12 @@ namespace Chameleon.Core.Settings
         /// </summary>
         public Dictionary<string, DiscoveredModels> DiscoveredModels { get; set; } =
             new Dictionary<string, DiscoveredModels>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Account names of providers the user signed in to from the plug-in, keyed by provider id.
+        /// Only present while the stored key came from that sign-in; a pasted key removes the entry.
+        /// </summary>
+        public Dictionary<string, string> SignedInAccounts { get; set; } =
+            new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }

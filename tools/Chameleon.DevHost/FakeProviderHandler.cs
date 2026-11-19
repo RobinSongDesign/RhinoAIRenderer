@@ -13,12 +13,14 @@ namespace Chameleon.DevHost
     /// <summary>
     /// Answers provider HTTP calls locally so bring-your-own-key flows work offline: any request
     /// carrying the well-known development key succeeds, every other key is rejected with 401.
+    /// Relay sign-in is served by <see cref="FakeRelayAccounts"/>.
     /// </summary>
     public sealed class FakeProviderHandler : HttpMessageHandler
     {
         /// <summary>The only key the fake providers accept.</summary>
         public const string GoodKey = "dev-good-key";
 
+        private readonly FakeRelayAccounts _accounts = new FakeRelayAccounts();
         private readonly IReadOnlyList<string> _resultPaths;
         private readonly TimeSpan _delay;
         private int _counter;
@@ -34,6 +36,13 @@ namespace Chameleon.DevHost
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string path = request.RequestUri?.AbsolutePath ?? string.Empty;
+            // A relay's account API authenticates with a session, not with a key.
+            HttpResponseMessage? account = await _accounts.TryHandleAsync(request).ConfigureAwait(false);
+            if (account != null)
+            {
+                return account;
+            }
+
             if (!HasGoodKey(request))
             {
                 return Json(HttpStatusCode.Unauthorized, "{\"error\":{\"code\":\"invalid_api_key\",\"status\":\"UNAUTHENTICATED\",\"message\":\"The development host only accepts the key '" + GoodKey + "'.\"}}");
@@ -88,7 +97,9 @@ namespace Chameleon.DevHost
 
         private static bool HasGoodKey(HttpRequestMessage request)
         {
-            if (request.Headers.Authorization?.Parameter == GoodKey)
+            // Keys obtained by signing in to a relay carry new-api's "sk-" prefix.
+            string? bearer = request.Headers.Authorization?.Parameter;
+            if (bearer == GoodKey || bearer == "sk-" + GoodKey)
             {
                 return true;
             }

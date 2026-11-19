@@ -13,6 +13,7 @@ using Chameleon.Core.Catalog;
 using Chameleon.Core.Jobs;
 using Chameleon.Core.Prompts;
 using Chameleon.Core.Providers;
+using Chameleon.Core.Providers.Accounts;
 using Chameleon.Core.Providers.Balance;
 using Chameleon.Core.Settings;
 
@@ -131,7 +132,9 @@ namespace Chameleon.App
             accountService.Register(router);
             var discovery = new ModelDiscoveryService(catalog, backends, settings, secrets, backendService, log: host.Log);
             discovery.Register(router);
-            new ProviderService(catalog, settings, secrets, backends, backendService, factory, discovery).Register(router);
+            var providers = new ProviderService(catalog, settings, secrets, backends, backendService, factory, discovery);
+            providers.Register(router);
+            new ProviderSignInService(backends, providers, new NewApiAccountClient(httpClient), ProviderSignInService.KeyNameFor(environment.MachineName)).Register(router);
             // Pick up models the providers added or retired since the last run, without delaying start-up.
             _ = discovery.RefreshStaleAsync(ModelDiscoveryService.DefaultMaxAge, System.Threading.CancellationToken.None);
             new BalanceService(backends, secrets, new OneApiBalanceClient(httpClient)).Register(router);

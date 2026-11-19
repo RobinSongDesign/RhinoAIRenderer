@@ -87,7 +87,8 @@ namespace Chameleon.Core.Providers
                 EnableSearchGrounding = ov?.EnableSearchGrounding ?? true,
                 // Like the key page, these describe the service itself and are not overridable.
                 BalanceApi = KnownBalanceApi(builtIn.BalanceApi),
-                TopUpUrl = HttpsOrNull(builtIn.TopUpUrl)
+                TopUpUrl = HttpsOrNull(builtIn.TopUpUrl),
+                SignInApi = Accounts.SignInApis.IsKnown(builtIn.SignInApi) ? builtIn.SignInApi : null
             };
         }
 

@@ -10,6 +10,7 @@ using Chameleon.App.Bridge;
 using Chameleon.App.Hosting;
 using Chameleon.App.Platform;
 using Chameleon.App.Server;
+using Chameleon.App.Services;
 using Chameleon.Core.Backends;
 using Chameleon.Core.Imaging;
 using Chameleon.Core.Settings;
@@ -24,6 +25,9 @@ namespace Chameleon.App.Tests.Services
     internal sealed class TestApp : IDisposable
     {
         public const string GoodKey = "test-key-123";
+
+        /// <summary>Password of the stubbed relay accounts "alice" and "bob" (bob has two-factor code 654321).</summary>
+        public const string AccountPassword = "test-password-123";
 
         private readonly TempDirectory _directory = new TempDirectory();
         private readonly HttpClient _client = new HttpClient();
@@ -159,7 +163,7 @@ namespace Chameleon.App.Tests.Services
             public System.IO.Stream? Open(string relativePath) => null;
         }
 
-        /// <summary>Provider endpoint that accepts exactly one key.</summary>
+        /// <summary>Provider endpoint that accepts exactly one key, plus a minimal new-api account API.</summary>
         private sealed class ProviderStub : HttpMessageHandler
         {
             private readonly TestApp _owner;
@@ -176,7 +180,14 @@ namespace Chameleon.App.Tests.Services
                     _owner.ProviderRequests.Add(request);
                 }
 
+                if (request.RequestUri!.AbsolutePath.StartsWith("/api/", StringComparison.Ordinal))
+                {
+                    return AccountApiAsync(request);
+                }
+
+                // Keys obtained by signing in carry new-api's "sk-" prefix.
                 bool authorized = request.Headers.Authorization?.Parameter == GoodKey ||
+                                  request.Headers.Authorization?.Parameter == "sk-" + GoodKey ||
                                   (request.Headers.TryGetValues("x-goog-api-key", out var values) && string.Join(",", values) == GoodKey);
                 if (!authorized)
                 {
@@ -212,6 +223,63 @@ namespace Chameleon.App.Tests.Services
                     Content = new StringContent(
                         "{\"candidates\":[{\"content\":{\"parts\":[{\"inlineData\":{\"mimeType\":\"image/webp\",\"data\":\"" + image + "\"}}]}}]}")
                 });
+            }
+
+            /// <summary>Login, two-factor and key endpoints of a new-api gateway.</summary>
+            private static async Task<HttpResponseMessage> AccountApiAsync(HttpRequestMessage request)
+            {
+                string path = request.RequestUri!.AbsolutePath;
+                string body = request.Content == null ? string.Empty : await request.Content.ReadAsStringAsync();
+                JObject input = body.Length > 0 ? JObject.Parse(body) : new JObject();
+                var session = new JObject
+                {
+                    ["success"] = true,
+                    ["data"] = new JObject { ["access_token"] = "test-session-123", ["user"] = new JObject { ["id"] = 7 } }
+                };
+                JObject answer;
+                if (path == "/api/user/login")
+                {
+                    string? user = (string?)input["username"];
+                    if ((string?)input["password"] != AccountPassword || (user != "alice" && user != "bob"))
+                    {
+                        answer = new JObject { ["success"] = false, ["message"] = "wrong password" };
+                    }
+                    else if (user == "bob")
+                    {
+                        answer = JObject.Parse("{\"success\":true,\"data\":{\"require_verification\":true,\"flow_token\":\"test-flow-123\",\"methods\":[{\"method\":\"2fa\",\"available\":true}]}}");
+                    }
+                    else
+                    {
+                        answer = session;
+                        answer["data"]!["user"]!["username"] = user;
+                    }
+                }
+                else if (path == "/api/user/login/2fa")
+                {
+                    answer = (string?)input["code"] == "654321" && (string?)input["flow_token"] == "test-flow-123"
+                        ? session
+                        : new JObject { ["success"] = false, ["message"] = "wrong code" };
+                    if ((bool)answer["success"]!)
+                    {
+                        answer["data"]!["user"]!["username"] = "bob";
+                    }
+                }
+                else if (path == "/api/token/" && request.Method == HttpMethod.Get)
+                {
+                    // This installation's key already exists on the account.
+                    string name = ProviderSignInService.KeyNameFor(new SystemEnvironmentInfo().MachineName);
+                    answer = new JObject { ["success"] = true, ["data"] = new JObject { ["items"] = new JArray(new JObject { ["id"] = 4, ["name"] = name }) } };
+                }
+                else if (path == "/api/token/4/key")
+                {
+                    answer = new JObject { ["success"] = true, ["data"] = new JObject { ["key"] = GoodKey } };
+                }
+                else
+                {
+                    answer = new JObject { ["success"] = false, ["message"] = "unexpected " + path };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(answer.ToString()) };
             }
         }
     }

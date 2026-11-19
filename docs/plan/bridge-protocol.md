@@ -94,6 +94,8 @@ interface BackendInfo {
   defaultModel: string;
   supportsBalance: boolean;        // direct backends whose provider reports a balance ("providers.balance")
   topUpUrl?: string;               // https page where the user tops up or redeems credit
+  supportsSignIn: boolean;         // direct backends whose account can be signed in to ("providers.signIn")
+  signedInAs?: string;             // account name while the stored key came from signing in
 }
 
 interface GenerateParams {
@@ -188,16 +190,19 @@ interface JobInfo {
 
 | 方法 | 参数 | 返回 | 阶段 |
 |---|---|---|---|
-| `providers.list` | — | `ProviderDto[]`（含 `hasKey: boolean`，不含 Key；P4-R2 起另含 `balanceApi: 'oneapi' \| null` 与 `topUpUrl?`，只有用户新增的服务商可设置这两项） | P2 |
+| `providers.list` | — | `ProviderDto[]`（含 `hasKey: boolean`，不含 Key；P4-R2 起另含 `balanceApi: 'oneapi' \| null` 与 `topUpUrl?`，只有用户新增的服务商可设置这两项；另含 `supportsSignIn: boolean` 与 `signedInAs?`，登录能力只来自内置目录的 `signInApi`） | P2 |
 | `providers.save` | `ProviderDto`（无 `id` 表示新增；`isBuiltIn` 的项保存为覆盖配置） | `ProviderDto` | P2 |
 | `providers.delete` | `{ id }`（内置项不可删，返回 `invalid_request`） | — | P2 |
 | `providers.resetBuiltIn` | `{ id }` | `ProviderDto` | P2 |
 | `providers.setKey` | `{ id, key }`（`key` 为空字符串表示清除） | `{ hasKey }`；为内置服务商保存 Key 后，宿主在后台自动检测一次模型（见 `providers.discoverModels`），启动时也会刷新超过一天未检测的内置服务商 | P2 |
 | `providers.testKey` | `{ id, key?, modelId? }`（`key` 省略时用已保存的） | `{ ok: true }` 或抛 `auth_failed` / `network` 等 | P2 |
 | `providers.discoverModels` | `{ id }` | `{ models: string[], added: string[], removed: string[] }`：向服务商查询它当前提供的图片模型并替换该服务商的模型列表（内置服务商存为「已检测模型」，仍可被覆盖配置取代；用户新增的服务商直接改写其模型列表）。返回空列表时不做改动。未保存 Key 抛 `not_ready` | P4-R2 |
+| `providers.signIn` | `{ id, username, password }` | `{ status: 'signedIn', username }` 或 `{ status: 'needsTwoFactor', flowToken }`。宿主用账号密码登录服务商网站（目前只有 new-api，`signInApi: "newapi"`），在账号下查找或创建本机专用令牌（名为 `Chameleon for Rhino (机器名)`，不限额度，消耗账号余额），把令牌当作该服务商的 Key 保存。密码只用于这一次请求，不保存、不写日志；登录会话用完即弃。账号密码错误等由网站拒绝的情况抛 `auth_failed`，`message` 为网站的原话；服务商不支持登录抛 `invalid_request` | P4-R2 |
+| `providers.signInVerify` | `{ id, flowToken, code }` | 同 `providers.signIn`；`code` 为两步验证码或备用码 | P4-R2 |
+| `providers.signOut` | `{ id }` | —；删除本机保存的令牌与登录名，令牌在网站上保留，下次登录复用 | P4-R2 |
 | `providers.balance` | `{ id }` | `{ remaining: number \| null, used: number, total: number \| null, currency: 'USD' }`（`null` 表示不限额）；未保存 Key 抛 `not_ready`，服务商不支持抛 `invalid_request` | P4-R2 |
 
-Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI。
+Key 只有写入方向：没有任何方法会把已保存的 Key 返回给 UI。`providers.setKey` 保存手动粘贴的 Key 时清除 `signedInAs`。
 
 ### 4.3 Rhino
 

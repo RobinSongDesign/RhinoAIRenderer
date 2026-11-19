@@ -1,5 +1,6 @@
 import { AccountDialogs } from './features/account/AccountDialogs';
 import { useBatchView } from './features/batch/useBatchView';
+import { RelaySignInDialog } from './features/relaySignIn/RelaySignInDialog';
 import { SettingsDialog } from './features/settings/SettingsDialog';
 import { AppShell, type ModeView } from './features/shell/AppShell';
 import { useSingleView } from './features/single/useSingleView';
@@ -15,6 +16,7 @@ export function App() {
         <>
           <SettingsDialog />
           <AccountDialogs />
+          <RelaySignInDialog />
         </>
       }
     />

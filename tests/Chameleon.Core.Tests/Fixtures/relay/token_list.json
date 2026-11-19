@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "page": 1,
+    "page_size": 100,
+    "total": 3,
+    "items": [
+      { "id": 3, "name": "my script", "key": "abcd****wxyz", "status": 1, "unlimited_quota": false },
+      { "id": 5, "name": "Chameleon for Rhino (TEST-PC)", "key": "efgh****stuv", "status": 1, "unlimited_quota": true },
+      { "id": 9, "name": "Chameleon for Rhino (TEST-PC)", "key": "ijkl****opqr", "status": 1, "unlimited_quota": true }
+    ]
+  }
+}

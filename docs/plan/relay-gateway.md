@@ -55,7 +55,7 @@ docker compose logs -f new-api   # 看到 "Local: http://..." 即启动成功
 
 浏览器打开 `https://你的域名`，按向导创建管理员账号。之后：
 
-1. **渠道**：渠道管理 → 添加渠道。类型选 Gemini，地址填中转服务商的接口地址，Key 填你在该服务商的 Key，模型填要开放的模型 ID（如 `gemini-nano-banana-2.1`，以上游实际提供的为准）。至少再加一个其他上游的渠道作备份（原内置的柏拉图 AI 已停止运营，2026-11 从插件中移除）。
+1. **渠道**：渠道管理 → 添加渠道。类型选 Gemini，地址填中转服务商的接口地址，Key 填你在该服务商的 Key，模型填要开放的模型 ID（如 `gemini-nano-banana-2.1`，以上游实际提供的为准）。至少再加一个其他上游的渠道作备份（原内置的柏拉图 AI 已停止运营，2026-11 从插件中移除）。上游是 APIMart 时，渠道地址填桥接服务，见第 7 节。
 2. **定价**：系统设置 → 分组与模型定价。图片模型改用「表达式计费」，例如：
 
    ```
@@ -125,3 +125,103 @@ dotnet tools/Chameleon.Cli/bin/Release/net8.0/chameleon-cli.dll generate \
   --prompt "test" --source a.png --ref b.png:style --size 4K --aspect 16:9 --out out.png
 # 对比 upstream.log 中收到的图片与参数
 ```
+
+## 7. 上游：APIMart（2026-11）
+
+[APIMart](https://apimart.ai) 提供 Nano Banana 系列模型，有按张计价的「Ext」版本，价格远低于官方。它本身也是 new-api 搭建的。
+
+### 7.1 为什么需要桥接服务
+
+APIMart 的图片模型**只能**用它自己的异步任务接口：`POST /v1/images/generations` 提交，`GET /v1/tasks/{id}` 轮询，结果是 24–72 小时有效的图片链接。它的 Google 原生格式（`/v1beta/models/...:generateContent`）只开放了文字模型。2026-11-20 实测，用图片模型调用时返回 500「ratio or price is not configured」或「does not support pricing_mode image_modalities」，失败请求不扣费。
+
+插件和 new-api 的 Gemini 渠道都只会同步调用，因此在服务器上增加了一个桥接服务 `deploy/relay/apimart-bridge/apimart_bridge.py`：
+
+```
+插件 ──Gemini 同步请求──▶ new-api（账号、按尺寸计费）──Gemini 渠道──▶ apimart-bridge ──提交、轮询、下载──▶ APIMart
+```
+
+桥接服务的工作：
+- 把请求里的文字合并为 `prompt`。
+- 图片按原顺序转成 `image_urls`（base64 Data URL）。
+- `aspectRatio` 转成 `size`，`imageSize` 转成 `resolution`。
+- 每 3 秒查询一次任务，完成后下载图片，以 Gemini 的格式（`inlineData`）原样返回。
+
+插件和 new-api 都不用改，按尺寸计价的表达式照常生效。
+
+其他特点：
+- 只用 Python 标准库，在 `python:3.12-alpine` 官方镜像里直接运行，不需要构建，占用约 30 MB 内存。
+- 不对外开放端口。
+- APIMart 的 Key 就是 new-api 渠道的 Key，由 new-api 每次请求带过来，桥接服务不保存、不记录。
+- 提示词也不记录。
+
+模型对应关系（插件中的模型 ID → APIMart 模型），可用环境变量 `BRIDGE_MODEL_MAP` 覆盖：
+
+| 插件模型 | APIMart 模型 | 支持尺寸 | APIMart 成本（每张，2026-11-20） | Google 官方价 |
+|---|---|---|---|---|
+| `gemini-nano-banana-2.1` | `gemini-nano-banana-2.1-ext` | 1K / 2K / 4K | $0.012 / $0.014 / $0.018 | $0.0336 / $0.0504 / $0.1134 |
+| `gemini-3.1-flash-image` | `gemini-3.1-flash-image-preview`（nano-banana-2-ext） | 0.5K–4K | 0.5K $0.015，1K–4K 同上 | $0.045–$0.151 |
+| `gemini-3-pro-image` | `gemini-3-pro-image-preview`（nano-banana-pro-ext） | 1K / 2K / 4K | 1K–2K $0.02，4K $0.03 | $0.134 / $0.24 |
+| `gemini-3.1-flash-lite-image` | `gemini-3.1-flash-lite-image-ext` | 仅 1K | $0.008 | $0.0336 |
+
+请求的尺寸不受支持时，向上取最近的一档；超过上限时用最大一档。
+
+### 7.2 实测（2026-11-20）
+
+- 直连 APIMart 异步接口，1K、一张源图：30 秒完成，扣费 $0.012，与价格表一致。
+- 插件 CLI → 本地桥接服务 → 真实 APIMart，1K、16:9，带源图和风格参考图：64 秒，返回 1376×768 的 JPEG，画面保留了源图的构图。
+- 插件 CLI → 本地 new-api `v1.0.0-rc.51` → 桥接服务 → 模拟的 APIMart：2K 与 4K 各一次。按表达式分别扣 $0.04 和 $0.06，插件读到的余额同步减少。请求中两张图片的顺序、16:9 与尺寸都正确传到 APIMart。
+- 桥接服务有 18 个单元测试（`python3 -m unittest discover -s deploy/relay/apimart-bridge`），CI 中运行。
+
+未验证：在正式服务器上运行；2K、4K 与 Pro 模型的真实生成；Ext 版本的长期稳定性。
+
+### 7.3 部署（在已有的 `/opt/chameleon-relay` 上增加）
+
+```bash
+cd /opt/chameleon-relay
+mkdir -p apimart-bridge
+BASE=https://raw.githubusercontent.com/RobinSongDesign/RhinoAIRenderer/claude/rhinoairender-dev-plan-lkoak6/deploy/relay
+curl -fsSL -o apimart-bridge/apimart_bridge.py $BASE/apimart-bridge/apimart_bridge.py
+cp docker-compose.nginx.yml docker-compose.nginx.yml.bak   # 新文件只多了 apimart-bridge 一段
+curl -fsSL -o docker-compose.nginx.yml $BASE/docker-compose.nginx.yml
+sudo docker compose -f docker-compose.nginx.yml up -d
+sudo docker compose -f docker-compose.nginx.yml ps          # apimart-bridge 显示 healthy
+sudo docker compose -f docker-compose.nginx.yml logs apimart-bridge | tail -3
+```
+
+new-api 后台：
+1. **渠道**：类型 Gemini，代理地址 `http://apimart-bridge:8080`，密钥填 APIMart 的 Key。模型填 `gemini-nano-banana-2.1,gemini-3.1-flash-image,gemini-3-pro-image,gemini-3.1-flash-lite-image`（只开放你要卖的）。
+2. **定价**：每个模型都用「表达式计费」，按尺寸设价，例如 Nano Banana 2.1：
+
+   ```
+   param("generationConfig.imageConfig.imageSize") == "4K" ? tier("4k", fixed(0.06))
+     : (param("generationConfig.imageConfig.imageSize") == "2K" ? tier("2k", fixed(0.04))
+     : tier("1k", fixed(0.03)))
+   ```
+
+   必须用表达式按次计价：桥接服务报告的 token 数是固定的名义值，按 token 计价会算错。
+
+### 7.4 设置项（`.env`）
+
+| 变量 | 默认 | 说明 |
+|---|---|---|
+| `BRIDGE_OFFICIAL_FALLBACK` | `false` | Ext 任务失败时改走 APIMart 官方通道。成功率更高，但按 token 计费，单价是 Ext 的数倍，而 new-api 只按表达式收用户的钱 |
+| `BRIDGE_ERROR_LANGUAGE` | `zh` | APIMart 任务失败原因的语言，会显示给插件用户 |
+| `BRIDGE_TASK_TIMEOUT_SECONDS` | `240` | 等待任务的上限。要小于插件每次请求的 5 分钟上限，否则插件已放弃、new-api 仍会扣费 |
+| `BRIDGE_MODEL_MAP` | — | JSON，覆盖或增加模型对应关系，例如 `{"gemini-3-pro-image": {"upstream": "gemini-3-pro-image-preview-official", "resolutions": ["1K","2K","4K"], "supportsFallback": false}}` |
+
+### 7.5 错误与费用
+
+| 情况 | 桥接服务返回 | new-api 向用户扣费 | APIMart 向你扣费 |
+|---|---|---|---|
+| 成功 | 200 | 是 | 是 |
+| 任务失败，原因在请求（内容安全、图片无效） | 400，附 APIMart 的原因 | 否 | 否（全额退款） |
+| 任务失败，原因在上游 | 502（new-api 会尝试其他渠道） | 否 | 否 |
+| 你的 APIMart 余额不足 | 503「上游账户余额不足」 | 否 | 否 |
+| 超过 240 秒未完成 | 504 | 否 | **可能是**：任务之后仍可能完成并扣费 |
+
+### 7.6 风险
+
+- 「Ext」是 APIMart 的非官方通道，价格低但来源与稳定性无法核实。保留官方版或其他上游作为备用渠道。
+- 尚未阅读 APIMart 的服务条款，不确定是否允许转售。收费前请先确认。
+- 每张图片要等 30–65 秒（实测），比直连 Google 慢。
+

@@ -20,6 +20,9 @@ jobs:
       - name: Version is consistent
         run: python3 tools/scripts/set_version.py --check
 
+      - name: Test the APIMart bridge
+        run: python3 -m unittest discover -s deploy/relay/apimart-bridge
+
       - name: Lint the cloud API contract
         run: npx -y @redocly/cli@2.72.1 lint contracts/cloud-api.openapi.yaml
 

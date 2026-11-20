@@ -123,6 +123,7 @@ P4 分两个阶段：先用开源的 new-api 做中转网关（P4-R，见 [`rela
 | P4-R1 | 验证 new-api 能完整转发插件请求，编写部署方案 | — | agent | done |
 | P4-R2 | 插件端「中转账号」：内置服务商、插件内账号登录、模型自动检测、余额显示、额度不足提示 | P4-R1、P2-T08 | agent | done |
 | P4-R3 | 部署上线并用真实上游验收 | P4-R0、P4-R1 | human | todo |
+| P4-R4 | 接入 APIMart 上游：Gemini 同步请求 → APIMart 异步任务的桥接服务（`deploy/relay/apimart-bridge`） | P4-R1 | agent | done |
 | P4-T00 | 准备私有仓库、服务器、域名、邮件服务、上游 Key | — | human | todo |
 | P4-T01 | OpenAPI 契约定稿 | P1-T03 | agent | done |
 | P4-T02 | 服务端骨架 | P4-T00、P4-T01 | agent | todo |

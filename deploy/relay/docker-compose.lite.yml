@@ -44,6 +44,38 @@ services:
       timeout: 10s
       retries: 3
 
+
+  # Turns new-api's Gemini requests into APIMart's asynchronous image tasks (apimart-bridge/).
+  # In new-api, add a Gemini channel with base URL http://apimart-bridge:8080 and the APIMart key.
+  apimart-bridge:
+    image: python:3.12-alpine
+    restart: always
+    command: ["python", "-u", "/app/apimart_bridge.py"]
+    # Not published: only new-api talks to it, over the compose network.
+    expose:
+      - "8080"
+    volumes:
+      - ./apimart-bridge/apimart_bridge.py:/app/apimart_bridge.py:ro
+    environment:
+      - BRIDGE_OFFICIAL_FALLBACK=${BRIDGE_OFFICIAL_FALLBACK:-false}
+      - BRIDGE_ERROR_LANGUAGE=${BRIDGE_ERROR_LANGUAGE:-zh}
+      - BRIDGE_TASK_TIMEOUT_SECONDS=${BRIDGE_TASK_TIMEOUT_SECONDS:-240}
+      - BRIDGE_MODEL_MAP=${BRIDGE_MODEL_MAP:-}
+      - TZ=Asia/Shanghai
+    read_only: true
+    # Each waiting request holds its images in memory (a 4K result is about 20 MB as base64).
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/healthz | grep -q ok || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
 volumes:
   caddy_data:
   caddy_config:

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using Chameleon.App.Assets;
 using Chameleon.App.Bridge;
@@ -114,6 +115,7 @@ namespace Chameleon.App
             }
 
             var backends = new BackendRegistry(catalog, settings, secrets, factory, extraBackends);
+            RemoveRetiredProviders(settings, secrets, backends.DefaultBackendId, host);
             var queue = new GenerationQueue(backends.Find);
 
             var cache = new DiskAssetStore(Path.Combine(paths.CacheDirectory, "assets"));
@@ -160,6 +162,20 @@ namespace Chameleon.App
             server.Start();
 
             return new ChameleonApp(server, queue, httpClient, projects, router, events, assets, settingsStore, secrets);
+        }
+
+        /// <summary>Drops providers of services that shut down, for settings imported before they were retired.</summary>
+        private static void RemoveRetiredProviders(SettingsEditor settings, ISecretStore secrets, string fallbackBackendId, IRhinoHost host)
+        {
+            if (!RetiredProviders.HasAny(settings.Read(), secrets))
+            {
+                // Nothing to do: avoid rewriting the settings file on every start.
+                return;
+            }
+
+            System.Collections.Generic.IReadOnlyList<string> removed = System.Array.Empty<string>();
+            settings.Update(s => removed = RetiredProviders.Prune(s, secrets, fallbackBackendId));
+            host.Log("Removed providers of services that shut down: " + string.Join(", ", removed) + ".");
         }
 
         private static async System.Threading.Tasks.Task RefreshAccountAsync(CloudServices cloud, IRhinoHost host)

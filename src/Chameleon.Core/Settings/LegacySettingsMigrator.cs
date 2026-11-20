@@ -20,10 +20,6 @@ namespace Chameleon.Core.Settings
         // Names of the legacy ApiProvider enum, by numeric value.
         private static readonly string[] LegacyProviderNames = { "Gemini", "BltAI" };
 
-        // Built-in providers of the WPF version that no longer exist (the service shut down):
-        // their keys, overrides and selection are left behind instead of pointing at a dead endpoint.
-        private static readonly HashSet<string> RetiredProviderIds = new HashSet<string>(StringComparer.Ordinal) { "BltAI" };
-
         /// <summary>Migrates legacy settings when they exist and no current settings were saved yet.</summary>
         /// <param name="legacyFilePath">Path of the WPF version's settings.json.</param>
         /// <param name="settingsStore">Destination for non-secret settings.</param>
@@ -63,10 +59,16 @@ namespace Chameleon.Core.Settings
             AppSettings settings = settingsStore.Load();
             int keys = 0;
 
+            // Retired services (see RetiredProviders) are left behind with their keys and selection
+            // instead of pointing at a dead endpoint, whether built in or added by the user.
+            List<UserProviderConfig> customProviders = ReadCustomProviders(legacy["CustomProviders"]);
+            var retired = new HashSet<string>(RetiredProviders.BuiltInIds, StringComparer.Ordinal);
+            retired.UnionWith(customProviders.Where(RetiredProviders.IsRetired).Select(p => p.Id));
+
             foreach (KeyValuePair<string, string> entry in ReadStringMap(legacy["ApiKeys"]))
             {
                 string id = NormalizeProviderName(entry.Key);
-                if (!RetiredProviderIds.Contains(id))
+                if (!retired.Contains(id))
                 {
                     keys += StoreKey(secretStore, id, entry.Value);
                 }
@@ -74,14 +76,17 @@ namespace Chameleon.Core.Settings
 
             foreach (KeyValuePair<string, string> entry in ReadStringMap(legacy["CustomApiKeys"]))
             {
-                keys += StoreKey(secretStore, entry.Key, entry.Value);
+                if (!retired.Contains(entry.Key))
+                {
+                    keys += StoreKey(secretStore, entry.Key, entry.Value);
+                }
             }
 
-            settings.UserProviders = ReadCustomProviders(legacy["CustomProviders"]);
+            settings.UserProviders = customProviders.Where(p => !retired.Contains(p.Id)).ToList();
             settings.BuiltInOverrides = ReadOverrides(legacy["BuiltInOverrides"]);
-            foreach (string retired in RetiredProviderIds)
+            foreach (string id in RetiredProviders.BuiltInIds)
             {
-                settings.BuiltInOverrides.Remove(retired);
+                settings.BuiltInOverrides.Remove(id);
             }
             settings.Language = ReadInt(legacy["LanguageIndex"]) == 1 ? Languages.English : Languages.Chinese;
 
@@ -92,7 +97,7 @@ namespace Chameleon.Core.Settings
             }
 
             // A retired provider keeps the default selection of a fresh install.
-            if (!RetiredProviderIds.Contains(providerId))
+            if (!retired.Contains(providerId))
             {
                 settings.ActiveBackendId = BackendIds.Direct(providerId);
                 string? model = (string?)legacy["SelectedModel"];

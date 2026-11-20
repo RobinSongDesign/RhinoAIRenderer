@@ -96,6 +96,26 @@ namespace Chameleon.Core.Tests.Settings
         }
 
         [Fact]
+        public void UserCopiesOfTheRetiredService_AreLeftBehind_WithTheirKeysAndSelection()
+        {
+            LegacyMigrationResult result = Migrate(@"{
+              ""CustomApiKeys"": { ""blt123"": ""test-blt-key"", ""ok456"": ""test-relay-key"" },
+              ""CustomProviders"": [
+                { ""Id"": ""blt123"", ""DisplayName"": ""柏拉图Gemini"", ""BaseUrl"": ""https://hk-api.gptbest.vip"", ""AuthType"": ""bearer"", ""ApiFormat"": ""gemini"", ""Models"": [""m""], ""DefaultModel"": ""m"" },
+                { ""Id"": ""ok456"", ""DisplayName"": ""My Relay"", ""BaseUrl"": ""https://relay.example.com"", ""AuthType"": ""bearer"", ""ApiFormat"": ""gemini"", ""Models"": [""m""], ""DefaultModel"": ""m"" } ],
+              ""SelectedProvider"": 1,
+              ""SelectedProviderId"": ""blt123"",
+              ""SelectedModel"": ""m""
+            }");
+
+            AppSettings settings = Store().Load();
+            Assert.Equal(1, result.KeysMigrated);
+            Assert.Equal("ok456", Assert.Single(settings.UserProviders).Id);
+            Assert.False(_secrets.Contains("provider:blt123"));
+            Assert.Equal("direct:Chameleon", settings.ActiveBackendId);
+        }
+
+        [Fact]
         public void BuiltInOverrides_AreKept_ExceptForTheRetiredBltAi()
         {
             Migrate(@"{

@@ -383,5 +383,24 @@ namespace Chameleon.App.Tests.Services
             Assert.False(File.Exists(paths.LegacySettingsFile));
             Assert.Contains(app.Host.LogLines, l => l.Contains("Imported settings"));
         }
+
+        [Fact]
+        public async Task Start_RemovesCopiesOfTheRetiredServiceFromSettingsImportedEarlier()
+        {
+            using var root = new TempDirectory();
+            var paths = AppPaths.UnderRoot(root.Path);
+            Directory.CreateDirectory(Path.GetDirectoryName(paths.SettingsFile)!);
+            File.WriteAllText(paths.SettingsFile, "{\"schemaVersion\":2,\"language\":\"zh\",\"activeBackendId\":\"direct:blt123\"," +
+                "\"userProviders\":[{\"id\":\"blt123\",\"displayName\":\"柏拉图Gemini\",\"baseUrl\":\"https://hk-api.gptbest.vip\"," +
+                "\"apiFormat\":\"gemini\",\"authType\":\"bearer\",\"models\":[\"m\"],\"defaultModel\":\"m\"}]}");
+
+            using var app = new TestApp(paths: paths);
+            JToken state = await app.CallAsync("app.getState");
+
+            Assert.DoesNotContain(state["backends"]!, b => (string)b["id"]! == "direct:blt123");
+            Assert.Equal("direct:Chameleon", (string)state["activeBackendId"]!);
+            Assert.DoesNotContain("gptbest", File.ReadAllText(paths.SettingsFile));
+            Assert.Contains(app.Host.LogLines, l => l.Contains("blt123"));
+        }
     }
 }

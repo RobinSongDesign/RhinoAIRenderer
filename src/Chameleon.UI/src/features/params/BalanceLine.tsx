@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { BackendInfo, ProviderBalance } from '../../bridge/types';
 import { useAppStore, useBridge, useJobsStore, useServices, useT } from '../../state/services';
+import { balanceText } from './balanceText';
 import styles from './params.module.css';
 
 const DIRECT_PREFIX = 'direct:';
@@ -10,14 +11,6 @@ export function providerIdOf(backendId: string): string {
   return backendId.startsWith(DIRECT_PREFIX) ? backendId.slice(DIRECT_PREFIX.length) : '';
 }
 
-/** Formats an amount of a currency for the UI language. */
-function money(amount: number, currency: string, language: string): string {
-  return new Intl.NumberFormat(language === 'zh' ? 'zh-CN' : 'en-US', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
 
 /**
  * For relays that report it: what is left on the key, refreshed when the backend changes and
@@ -57,17 +50,7 @@ export function BalanceLine({ backend }: { backend: BackendInfo }) {
     return null;
   }
 
-  const balance = result?.balance;
-  let text: string | null = null;
-  if (enabled && result) {
-    if (!balance) {
-      text = t('balance.failed');
-    } else if (balance.remaining === null) {
-      text = t('balance.unlimited', { used: money(balance.used, balance.currency, language) });
-    } else {
-      text = t('balance.label', { amount: money(balance.remaining, balance.currency, language) });
-    }
-  }
+  const text = enabled && result ? balanceText(result.balance, t, language) : null;
 
   return (
     <div className={styles.balance} data-testid="balance-line">

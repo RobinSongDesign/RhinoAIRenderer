@@ -267,8 +267,25 @@ namespace Chameleon.App.Tests.Services
             Assert.True((bool)ok["ok"]!);
             Assert.Equal("auth_failed", rejected);
             Assert.False(_app.Secrets.Contains("provider:Chameleon"));
-            Assert.Equal(2, _app.ProviderRequests.Count);
-            Assert.EndsWith(":generateContent", _app.ProviderRequests[0].RequestUri!.AbsolutePath);
+            // The relay bills per request: its keys are checked through the free balance query.
+            Assert.EndsWith("/dashboard/billing/subscription", _app.ProviderRequests[0].RequestUri!.AbsolutePath);
+            Assert.DoesNotContain(_app.ProviderRequests, r => r.RequestUri!.AbsolutePath.EndsWith(":generateContent", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task TestKey_ForProvidersWithoutABalance_SendsATinyRequest()
+        {
+            JToken ok = await _app.CallAsync("providers.testKey", new { id = "Gemini", key = TestApp.GoodKey });
+
+            Assert.True((bool)ok["ok"]!);
+            Assert.EndsWith(":generateContent", Assert.Single(_app.ProviderRequests).RequestUri!.AbsolutePath);
+        }
+
+        [Fact]
+        public async Task TestKey_ForARelayWithoutAKey_IsNotReady()
+        {
+            Assert.Equal("not_ready", await _app.ErrorCodeAsync("providers.testKey", new { id = "Chameleon" }));
+            Assert.Empty(_app.ProviderRequests);
         }
 
         [Fact]

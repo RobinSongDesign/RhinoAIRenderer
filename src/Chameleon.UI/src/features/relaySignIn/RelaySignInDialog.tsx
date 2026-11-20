@@ -41,7 +41,12 @@ export function RelaySignInDialog() {
     <Dialog title={t('signIn.title', { name: target.displayName })} testId="relay-signin-dialog" onClose={close}>
       <form className={styles.form} onSubmit={submit}>
         {error &&
-          (error.code === 'auth_failed' ? (
+          (error.code === 'rate_limited' ? (
+            // Gateways limit sign-in attempts per address; retrying at once only extends the lock.
+            <div className={styles.error} data-testid="signin-error" role="alert">
+              {t('signIn.tooMany')}
+            </div>
+          ) : error.code === 'auth_failed' ? (
             // The gateway's own words ("wrong password", "account banned") say why; they come in its language.
             <div className={styles.error} data-testid="signin-error" role="alert">
               <div>{t('signIn.failed')}</div>

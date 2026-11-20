@@ -264,5 +264,6 @@
   "backend.useKey": "填写令牌",
   "settings.account": "账号",
   "settings.signedInAs": "已登录：{name}",
-  "settings.notSignedIn": "未登录。登录后自动获取令牌，也可以在下方直接粘贴令牌。"
+  "settings.notSignedIn": "未登录。登录后自动获取令牌，也可以在下方直接粘贴令牌。",
+  "signIn.tooMany": "登录尝试次数过多，网站暂时拒绝登录。请过 20 分钟再试，期间不要反复点击登录。"
 }

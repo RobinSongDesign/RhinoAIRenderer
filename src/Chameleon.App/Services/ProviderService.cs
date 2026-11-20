@@ -8,6 +8,7 @@ using Chameleon.App.Bridge.Dto;
 using Chameleon.Core.Backends;
 using Chameleon.Core.Catalog;
 using Chameleon.Core.Providers;
+using Chameleon.Core.Providers.Balance;
 using Chameleon.Core.Settings;
 
 namespace Chameleon.App.Services
@@ -22,6 +23,7 @@ namespace Chameleon.App.Services
         private readonly BackendService _backendService;
         private readonly DirectBackendFactory _factory;
         private readonly IModelDiscovery? _discovery;
+        private readonly IBalanceClient? _balance;
 
         /// <summary>Creates the service.</summary>
         public ProviderService(
@@ -31,7 +33,8 @@ namespace Chameleon.App.Services
             BackendRegistry backends,
             BackendService backendService,
             DirectBackendFactory factory,
-            IModelDiscovery? discovery = null)
+            IModelDiscovery? discovery = null,
+            IBalanceClient? balance = null)
         {
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -40,6 +43,7 @@ namespace Chameleon.App.Services
             _backendService = backendService ?? throw new ArgumentNullException(nameof(backendService));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _discovery = discovery;
+            _balance = balance;
         }
 
         /// <summary>Registers this service's RPC methods.</summary>
@@ -262,11 +266,29 @@ namespace Chameleon.App.Services
             return trimmed.Length > 0;
         }
 
-        /// <summary>Checks a key against the provider. A key passed in is tested without being stored.</summary>
+        /// <summary>
+        /// Checks a key against the provider. A key passed in is tested without being stored.
+        /// Relays that report a balance are checked through that free query: they bill each request
+        /// at an image price, so a test generation would cost the user money.
+        /// </summary>
         public async Task TestKeyAsync(TestKeyParams parameters, CancellationToken cancellationToken)
         {
             ProviderProfile profile = _backends.GetProviders().FirstOrDefault(p => p.Id == parameters.Id)
                                       ?? throw BridgeException.NotFound("Unknown provider '" + parameters.Id + "'.");
+
+            if (profile.BalanceApi != null && _balance != null)
+            {
+                string? key = string.IsNullOrWhiteSpace(parameters.Key)
+                    ? _secrets.Get(SecretNames.ForProvider(profile.Id))
+                    : parameters.Key!.Trim();
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new BridgeException(BridgeErrorCodes.NotReady, "No API key is stored for '" + profile.DisplayName + "'.");
+                }
+
+                await _balance.GetBalanceAsync(profile, key!, cancellationToken).ConfigureAwait(false);
+                return;
+            }
 
             ISecretStore secrets = _secrets;
             if (!string.IsNullOrWhiteSpace(parameters.Key))

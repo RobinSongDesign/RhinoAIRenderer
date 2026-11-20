@@ -264,5 +264,6 @@
   "backend.useKey": "Enter a key",
   "settings.account": "Account",
   "settings.signedInAs": "Signed in as {name}",
-  "settings.notSignedIn": "Not signed in. Signing in fetches a key for you; you can also paste a key below."
+  "settings.notSignedIn": "Not signed in. Signing in fetches a key for you; you can also paste a key below.",
+  "signIn.tooMany": "Too many sign-in attempts; the website is refusing sign-ins for now. Wait 20 minutes before trying again."
 }

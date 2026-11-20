@@ -64,3 +64,14 @@ test('signs in with a two-factor code from the settings', async ({ page }) => {
   await expect(page.getByTestId('key-clear')).toHaveCount(0);
   await page.getByTestId('settings-close').click();
 });
+
+test('explains the sign-in rate limit of the website instead of blaming the balance', async ({ page }) => {
+  await openApp(page);
+  await page.getByTestId('backend-select').selectOption('direct:Chameleon');
+  await page.getByTestId('backend-signin').click();
+
+  await fillCredentials(page, 'dev-limited', PASSWORD);
+
+  await expect(page.getByTestId('signin-error')).toContainText('Too many sign-in attempts');
+  await page.getByTestId('relay-signin-dialog').getByRole('button', { name: 'Close' }).click();
+});

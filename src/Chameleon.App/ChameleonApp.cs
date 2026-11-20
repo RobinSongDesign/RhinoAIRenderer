@@ -132,12 +132,13 @@ namespace Chameleon.App
             accountService.Register(router);
             var discovery = new ModelDiscoveryService(catalog, backends, settings, secrets, backendService, log: host.Log);
             discovery.Register(router);
-            var providers = new ProviderService(catalog, settings, secrets, backends, backendService, factory, discovery);
+            var balanceClient = new OneApiBalanceClient(httpClient);
+            var providers = new ProviderService(catalog, settings, secrets, backends, backendService, factory, discovery, balanceClient);
             providers.Register(router);
             new ProviderSignInService(backends, providers, new NewApiAccountClient(httpClient), ProviderSignInService.KeyNameFor(environment.MachineName)).Register(router);
             // Pick up models the providers added or retired since the last run, without delaying start-up.
             _ = discovery.RefreshStaleAsync(ModelDiscoveryService.DefaultMaxAge, System.Threading.CancellationToken.None);
-            new BalanceService(backends, secrets, new OneApiBalanceClient(httpClient)).Register(router);
+            new BalanceService(backends, secrets, balanceClient).Register(router);
             new CaptureService(host, assets).Register(router);
             new JobService(queue, backends, assets, settings, catalog, events, projects, host.Log).Register(router);
             new SessionService(projects, assets, events).Register(router);

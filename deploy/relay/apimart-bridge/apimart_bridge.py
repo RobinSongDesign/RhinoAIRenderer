@@ -182,6 +182,10 @@ class GeminiRequestTranslator:
             raise BridgeError(400, "INVALID_ARGUMENT", "The request has no text prompt.")
 
         generation = body.get("generationConfig") or body.get("generation_config") or {}
+        modalities = generation.get("responseModalities") or generation.get("response_modalities")
+        if isinstance(modalities, list) and not any(str(m).upper() == "IMAGE" for m in modalities):
+            # A text-only request (e.g. a key check) would otherwise become a billed image task.
+            raise BridgeError(400, "INVALID_ARGUMENT", "This channel only generates images.")
         image_config = generation.get("imageConfig") or generation.get("image_config") or {}
         route = self._config.route_for(model)
         aspect = image_config.get("aspectRatio") or image_config.get("aspect_ratio")

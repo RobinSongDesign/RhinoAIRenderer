@@ -15,7 +15,7 @@ namespace Chameleon.DevHost
     /// The parts of a new-api gateway's account API the plug-in's sign-in uses: password login,
     /// the two-factor step, and listing, creating and reading keys. Two accounts exist:
     /// "dev" and "dev-2fa" (two-factor code <see cref="TwoFactorCode"/>), both with password
-    /// <see cref="Password"/>. Every key reads as <see cref="FakeProviderHandler.GoodKey"/>.
+    /// <see cref="Password"/>; signing in as "dev-limited" hits the sign-in rate limit. Every key reads as <see cref="FakeProviderHandler.GoodKey"/>.
     /// </summary>
     public sealed class FakeRelayAccounts
     {
@@ -75,6 +75,12 @@ namespace Chameleon.DevHost
 
         private HttpResponseMessage Login(string? username, string? password)
         {
+            if (username == "dev-limited")
+            {
+                // What new-api's sign-in rate limit answers: 429 with an empty body.
+                return new HttpResponseMessage((HttpStatusCode)429);
+            }
+
             if (username == null || !_userIds.ContainsKey(username) || password != Password)
             {
                 return Fail("Username or password is incorrect, or user has been banned");

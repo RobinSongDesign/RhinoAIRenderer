@@ -87,7 +87,11 @@ docker compose logs -f new-api   # 看到 "Local: http://..." 即启动成功
 
 ## 5. 插件端对接（P4-R2，已完成）
 
-- **账号登录**（推荐）：内置的 `Chameleon` 服务商带 `"signInApi": "newapi"`。用户在主面板或设置里点「登录账号」，输入网站的用户名（或邮箱）和密码，开了两步验证的再输入验证码。插件随即在该账号下查找或创建名为 `Chameleon for Rhino (机器名)` 的令牌（不限额度、永不过期），把它当作 Key 保存在系统钥匙串中；密码不保存。登录框里有「注册账号」「忘记密码」链接，分别打开网站的 `/sign-up` 与 `/forgot-password`。「退出」只删除本机保存的令牌，网站上的令牌保留，下次登录复用；要彻底作废，到网站「令牌管理」删除。插件内不支持微信扫码、Passkey 登录。2026-11-19 用本地运行的 new-api `v1.0.0-rc.51` 实测通过：错误密码被拒、普通登录、开启两步验证后的登录（错误验证码被拒）、再次登录复用同一个令牌（不重复创建）、关闭 `DisplayTokenStatEnabled` 前显示「不限额」与关闭后显示账号余额。尚未在正式站点 `api.robinsong.top` 上验证。注意：new-api 的登录错误信息固定为英文，插件在其上方显示本地化的「登录失败」提示。
+- **账号登录**（推荐）：内置的 `Chameleon` 服务商带 `"signInApi": "newapi"`。用户在主面板或设置里点「登录账号」，输入网站的用户名（或邮箱）和密码，开了两步验证的再输入验证码。插件随即在该账号下查找或创建名为 `Chameleon for Rhino (机器名)` 的令牌（不限额度、永不过期），把它当作 Key 保存在系统钥匙串中；密码不保存。登录框里有「注册账号」「忘记密码」链接，分别打开网站的 `/sign-up` 与 `/forgot-password`。「退出」只删除本机保存的令牌，网站上的令牌保留，下次登录复用；要彻底作废，到网站「令牌管理」删除。插件内不支持微信扫码、Passkey 登录。
+
+  new-api 限制同一 IP 每 20 分钟最多 20 次登录（含网页登录；环境变量 `CRITICAL_RATE_LIMIT` / `CRITICAL_RATE_LIMIT_DURATION`）。超过后返回空内容的 429，插件提示「登录尝试次数过多」。没有 Redis 时，计数存在内存里，`docker compose restart new-api` 可立即清除。
+
+  在设置里对这类中转服务商点「测试」，插件只查一次余额（免费），不发生成请求：中转按次计价，测试生成也会扣用户的钱。2026-11-19 用本地运行的 new-api `v1.0.0-rc.51` 实测通过：错误密码被拒、普通登录、开启两步验证后的登录（错误验证码被拒）、再次登录复用同一个令牌（不重复创建）、关闭 `DisplayTokenStatEnabled` 前显示「不限额」与关闭后显示账号余额。尚未在正式站点 `api.robinsong.top` 上验证。注意：new-api 的登录错误信息固定为英文，插件在其上方显示本地化的「登录失败」提示。
 
 - **用户自己添加**：设置 → 添加服务商，接口格式选 Gemini，地址填你的域名，模型填你开放的模型 ID；勾选「显示剩余额度（兼容 One API / new-api 的中转）」，「充值页面」填你网站的充值或兑换地址（必须 https）。保存后填入令牌。
 - **随版本预置**（推荐，用户只需填令牌；当前版本已预置 `Chameleon` 服务商，指向 `https://api.robinsong.top`，域名变化时改这一项）：在 `src/Chameleon.Core/Catalog/catalog.json` 的 `providers` 中增加一项，`balanceApi` 设为 `"oneapi"`，`topUpUrl` 设为充值页面，`apiKeyUrl` 设为用户获取令牌的页面，然后发布新版本。例如：
@@ -165,6 +169,8 @@ APIMart 的图片模型**只能**用它自己的异步任务接口：`POST /v1/i
 
 请求的尺寸不受支持时，向上取最近的一档；超过上限时用最大一档。
 
+只要文字、不要图片的请求（`responseModalities` 中没有 `IMAGE`，例如密钥测试）直接返回 400，不转给 APIMart。否则一句 "Hi" 也会变成一次按张计费的出图任务。
+
 ### 7.2 实测（2026-11-20）
 
 - 直连 APIMart 异步接口，1K、一张源图：30 秒完成，扣费 $0.012，与价格表一致。
@@ -176,17 +182,20 @@ APIMart 的图片模型**只能**用它自己的异步任务接口：`POST /v1/i
 
 ### 7.3 部署（在已有的 `/opt/chameleon-relay` 上增加）
 
+服务器上的 `docker-compose.yml` 不动，在同一目录新建 `docker-compose.override.yml`。只用默认文件名时，`docker compose` 会自动合并两个文件。内容与 `deploy/relay/docker-compose.nginx.yml` 中的 `apimart-bridge` 一段相同（`services:` 下只有这一个服务）。目录属于 root，命令要加 `sudo`。2026-11-21 在东京服务器上按此部署成功。
+
 ```bash
 cd /opt/chameleon-relay
-mkdir -p apimart-bridge
+sudo mkdir -p apimart-bridge
 BASE=https://raw.githubusercontent.com/RobinSongDesign/RhinoAIRenderer/claude/rhinoairender-dev-plan-lkoak6/deploy/relay
-curl -fsSL -o apimart-bridge/apimart_bridge.py $BASE/apimart-bridge/apimart_bridge.py
-cp docker-compose.nginx.yml docker-compose.nginx.yml.bak   # 新文件只多了 apimart-bridge 一段
-curl -fsSL -o docker-compose.nginx.yml $BASE/docker-compose.nginx.yml
-sudo docker compose -f docker-compose.nginx.yml up -d
-sudo docker compose -f docker-compose.nginx.yml ps          # apimart-bridge 显示 healthy
-sudo docker compose -f docker-compose.nginx.yml logs apimart-bridge | tail -3
+sudo curl -fsSL -o apimart-bridge/apimart_bridge.py $BASE/apimart-bridge/apimart_bridge.py
+sudo nano docker-compose.override.yml        # 写入 services: 与 apimart-bridge 一段
+sudo docker compose config -q && sudo docker compose up -d
+sudo docker compose ps                       # apimart-bridge 显示 healthy
+sudo docker compose exec new-api wget -q -O - http://apimart-bridge:8080/healthz   # {"ok": true}
 ```
+
+更新桥接服务：重新执行上面的 `curl` 下载 `apimart_bridge.py`，然后 `sudo docker compose restart apimart-bridge`。
 
 new-api 后台：
 1. **渠道**：类型 Gemini，代理地址 `http://apimart-bridge:8080`，密钥填 APIMart 的 Key。模型填 `gemini-nano-banana-2.1,gemini-3.1-flash-image,gemini-3-pro-image,gemini-3.1-flash-lite-image`（只开放你要卖的）。

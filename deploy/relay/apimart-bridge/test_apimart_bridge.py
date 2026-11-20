@@ -145,6 +145,14 @@ class TranslatorTests(unittest.TestCase):
         self.assertEqual("4K", task.resolution)
         self.assertFalse(task.official_fallback)
 
+    def test_text_only_requests_are_refused_before_reaching_apimart(self):
+        body = {"contents": [{"parts": [{"text": "Hi"}]}], "generationConfig": {"responseModalities": ["TEXT"]}}
+        with self.assertRaises(bridge.BridgeError) as caught:
+            self.translator.translate("gemini-nano-banana-2.1", body)
+        self.assertEqual(400, caught.exception.status)
+        # Requests that do not say which modalities they want are image requests.
+        self.assertEqual("1K", self.translator.translate("gemini-nano-banana-2.1", {"contents": [{"parts": [{"text": "Hi"}]}]}).resolution)
+
     def test_a_request_without_text_is_rejected(self):
         with self.assertRaises(bridge.BridgeError) as caught:
             self.translator.translate("gemini-nano-banana-2.1", {"contents": [{"parts": [{"inlineData": {"data": "x"}}]}]})

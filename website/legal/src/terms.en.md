@@ -78,7 +78,7 @@ This agreement is governed by the laws of the People's Republic of China, exclud
 
 ## 10. Language versions
 
-This agreement is provided in several languages. If the versions differ, the Simplified Chinese version prevails.
+This agreement is provided in English and Chinese. If the two differ, the Chinese version prevails.
 
 ## 11. Contact
 

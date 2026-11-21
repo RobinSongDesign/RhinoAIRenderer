@@ -26,13 +26,18 @@
 
 ## 1.2 关于、用户协议、隐私政策
 
-- 三份文档提供 new-api 的全部 7 种界面语言：简体中文、繁体中文、英语、日语、法语、俄语、越南语。原文是 `website/legal/src/<文档>.<语言>.md`（Markdown 子集：标题、段落、列表、表格、粗体、链接、`~ ` 开头的说明行）。繁体中文由 `build.py` 用 OpenCC（`s2twp`，台湾用词）从简体转换，不单独维护。
-- `python3 website/legal/build.py` 生成 `website/legal/{about,terms,privacy}.html`。每份都是独立的 HTML 片段，包含全部语言，顶部用纯 CSS 的语言标签切换（单选框 + `:checked`）。之所以不用脚本，是因为 new-api 会删除这些设置里的脚本，也不会把界面语言写到页面的 `lang` 属性上。生成需要 `pip install opencc-python-reimplemented`；CI 用 `--check` 确认生成结果与原文一致。
-- 运营者名称、联系邮箱、生效日期写在 `website/legal/legal.json`，留空时显示各语言的占位符。
-- new-api 后台「关于」「用户协议」「隐私政策」三栏分别粘贴对应 HTML 文件的全文。已用 new-api `v1.0.0-rc.51` 的 DOMPurify 3.4.17 与相同的清理参数实测：用户协议、隐私政策（隔离显示）完整保留；「关于」（直接嵌入）只去掉链接的 `target` 属性，链接改为在当前页打开。语言切换在亮色、暗色主题下都正常；文字颜色继承 new-api 主题，不写死。
-- 网站上的 `/docs/about`、`/docs/terms`、`/docs/privacy` 显示同一份 HTML，并按 `?lang=` 或浏览器语言自动选中标签（不支持的语言显示简体中文）。
-- 改了原文或 `legal.json` 后：运行 `build.py`，提交，服务器上 `git pull`，并把新的 HTML 重新粘贴到 new-api 后台。
-- 这些文本不是法律意见，正式收费前建议请律师审阅。各语言版本声明以简体中文版为准。
+- 三份文档都是英文在前、中文在后，不做语言切换。之前试过多语言加 CSS 标签切换，在 new-api 里会和导航栏重叠，按钮也不好用，所以改成现在这样。
+- 原文是 `website/legal/src/<文档>.<en|zh-CN>.md`。支持的 Markdown 写法：标题、段落、列表、表格、粗体、链接，以及以 `~ ` 开头的说明行。
+- 运行 `python3 website/legal/build.py`，生成 `website/legal/{about,terms,privacy}.html`，只用 Python 标准库。CI 会用 `--check` 确认生成结果和原文一致。
+- 运营者名称、联系邮箱、生效日期写在 `website/legal/legal.json`。
+- new-api（`v1.0.0-rc.51`）显示这三栏的方式，以及我们的对策：
+  - HTML 放在隔离的 Shadow DOM 里，脚本会被删掉。
+  - 页面没有外层容器，内容紧贴在 3.5rem 高的固定导航栏下面，所以片段顶部留出了 `3.5rem + 32px` 的空白。
+  - new-api 会把自己的样式表（包括 Tailwind 的样式重置）复制进隔离区域，所以片段里写死了列表符号、标题字重等样式。
+  - 文字颜色跟随 new-api 的亮色、暗色主题。
+- 网站上的 `/docs/about`、`/docs/terms`、`/docs/privacy` 显示同一份 HTML，并去掉了为导航栏预留的空白。
+- 改了原文或 `legal.json` 后：运行 `build.py`，提交；服务器上 `git pull`；再把新的 HTML 重新粘贴到 new-api 后台对应的三栏。
+- 这些文本不是法律意见，正式收费前建议请律师审阅。中英文如有不一致，以中文版为准。
 
 ## 2. 部署（东京服务器，2026-11）
 

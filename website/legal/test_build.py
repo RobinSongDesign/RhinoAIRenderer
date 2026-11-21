@@ -1,5 +1,4 @@
 """Tests of the legal page generator. Run: python3 -m unittest discover -s website/legal"""
-import re
 import unittest
 
 import build
@@ -40,29 +39,25 @@ class FillTests(unittest.TestCase):
 
 
 class BuildDocTests(unittest.TestCase):
-    def setUp(self):
-        self._convert = build.to_traditional
-        build.to_traditional = lambda text: "TW:" + text  # OpenCC is not needed to test the layout.
-
-    def tearDown(self):
-        build.to_traditional = self._convert
-
-    def test_one_fragment_with_every_language_and_css_tabs(self):
-        sources = {code: "# %s\n\nBody {{email}}" % code for code, _ in build.LANGUAGES}
+    def test_english_then_chinese_without_language_switching(self):
+        sources = {"en": "# Terms\n\nMail {{email}}", "zh-CN": "# 协议\n\n邮箱 {{email}}"}
         out = build.build_doc("terms", sources, {"email": "a@example.com"})
 
         self.assertTrue(out.startswith('<div class="cm-doc">'))
-        self.assertEqual(len(build.LANGUAGES), out.count('<section class="cm-lang'))
-        self.assertEqual(1, out.count(" checked>"))
-        self.assertIn('id="cm-terms-zh-cn" checked', out)
-        # Every tab has a rule that shows its section; no script is involved.
-        for code, _ in build.LANGUAGES:
-            self.assertIn("#cm-terms-%s:checked ~ .cm-lang-%s { display: block; }" % (code.lower(), code.lower()), out)
+        self.assertLess(out.index('<section lang="en">'), out.index('<section lang="zh-CN">'))
+        self.assertEqual(1, out.count('<hr class="cm-sep">'))
+        self.assertIn("<p>Mail a@example.com</p>", out)
+        self.assertIn("<p>邮箱 a@example.com</p>", out)
         self.assertNotIn("<script", out)
-        # Traditional Chinese is converted from the Simplified Chinese source, values filled in first.
-        tw = re.search(r'<section class="cm-lang cm-lang-zh-tw" lang="zh-TW">(.*?)</section>', out, re.S).group(1)
-        self.assertIn("<p>TW:# zh-CN</p>", tw)
-        self.assertIn("a@example.com", tw)
+        self.assertNotIn("<input", out)
+
+    def test_styles_survive_the_reset_new_api_copies_into_the_fragment(self):
+        out = build.build_doc("about", {"en": "# A", "zh-CN": "# B"}, {})
+        # new-api puts the fragment under its fixed header and applies Tailwind's reset inside it.
+        self.assertIn("padding: calc(3.5rem + 32px)", out)
+        self.assertIn("list-style: disc", out)
+        self.assertIn("list-style: decimal", out)
+        self.assertRegex(out, r"\.cm-doc h2 \{[^}]*font-weight: 700")
 
 
 if __name__ == "__main__":

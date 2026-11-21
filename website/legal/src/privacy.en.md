@@ -72,7 +72,7 @@ The Service is intended for adults. Users under 18 should use it only with the c
 
 ## 9. Updates
 
-Updates to this policy are published on the website; significant changes to the purposes, means or scope of processing will be pointed out by a website notice. If the language versions of this policy differ, the Simplified Chinese version prevails.
+Updates to this policy are published on the website; significant changes to the purposes, means or scope of processing will be pointed out by a website notice. If the English and Chinese versions of this policy differ, the Chinese version prevails.
 
 ## 10. Contact
 

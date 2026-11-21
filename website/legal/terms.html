@@ -1,136 +1,27 @@
 <div class="cm-doc">
 <style>
-.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: 8px 4px 32px; }
-.cm-doc .cm-lang-input { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
-.cm-doc .cm-lang-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
-.cm-doc .cm-lang-tabs label { cursor: pointer; padding: 4px 14px; border-radius: 999px; border: 1px solid rgba(128, 128, 128, 0.35); font-size: 13px; opacity: 0.8; user-select: none; }
-.cm-doc .cm-lang-tabs label:hover { opacity: 1; }
-.cm-doc .cm-lang { display: none; }
-.cm-doc h1 { font-size: 28px; line-height: 1.3; margin: 0 0 8px; }
-.cm-doc h2 { font-size: 19px; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
-.cm-doc h3 { font-size: 16px; margin: 20px 0 6px; }
-.cm-doc p, .cm-doc ul, .cm-doc ol { margin: 0 0 12px; }
-.cm-doc ul, .cm-doc ol { padding-left: 1.4em; }
-.cm-doc li { margin: 4px 0; }
+/* Clears new-api's fixed header (3.5rem); the website resets this padding. */
+.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: calc(3.5rem + 32px) 20px 48px; }
+/* Explicit styles: new-api's Tailwind reset reaches into the fragment. */
+.cm-doc h1 { font-size: 28px; line-height: 1.3; font-weight: 700; margin: 0 0 8px; }
+.cm-doc h2 { font-size: 19px; line-height: 1.4; font-weight: 700; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
+.cm-doc h3 { font-size: 16px; font-weight: 700; margin: 20px 0 6px; }
+.cm-doc p { margin: 0 0 12px; }
+.cm-doc ul, .cm-doc ol { margin: 0 0 12px; padding-left: 1.5em; }
+.cm-doc ul { list-style: disc outside; }
+.cm-doc ol { list-style: decimal outside; }
+.cm-doc li { display: list-item; margin: 4px 0; }
+.cm-doc strong { font-weight: 700; }
 .cm-doc .cm-meta { opacity: 0.7; font-size: 14px; margin-bottom: 20px; }
 .cm-doc a { color: inherit; text-decoration: underline; text-decoration-color: #e6007e; text-underline-offset: 3px; }
 .cm-doc code { font-size: 0.92em; padding: 1px 6px; border-radius: 6px; background: rgba(128, 128, 128, 0.15); }
 .cm-doc table { border-collapse: collapse; width: 100%; margin: 0 0 16px; display: block; overflow-x: auto; }
 .cm-doc th, .cm-doc td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 8px 10px; text-align: left; vertical-align: top; }
-.cm-doc th { background: rgba(128, 128, 128, 0.1); }
-.cm-doc .cm-brand { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
-#cm-terms-zh-cn:checked ~ .cm-lang-zh-cn { display: block; }
-#cm-terms-zh-cn:checked ~ .cm-lang-tabs label[for="cm-terms-zh-cn"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-terms-zh-tw:checked ~ .cm-lang-zh-tw { display: block; }
-#cm-terms-zh-tw:checked ~ .cm-lang-tabs label[for="cm-terms-zh-tw"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-terms-en:checked ~ .cm-lang-en { display: block; }
-#cm-terms-en:checked ~ .cm-lang-tabs label[for="cm-terms-en"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-terms-ja:checked ~ .cm-lang-ja { display: block; }
-#cm-terms-ja:checked ~ .cm-lang-tabs label[for="cm-terms-ja"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-terms-fr:checked ~ .cm-lang-fr { display: block; }
-#cm-terms-fr:checked ~ .cm-lang-tabs label[for="cm-terms-fr"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-terms-ru:checked ~ .cm-lang-ru { display: block; }
-#cm-terms-ru:checked ~ .cm-lang-tabs label[for="cm-terms-ru"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-terms-vi:checked ~ .cm-lang-vi { display: block; }
-#cm-terms-vi:checked ~ .cm-lang-tabs label[for="cm-terms-vi"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+.cm-doc th { font-weight: 700; background: rgba(128, 128, 128, 0.1); }
+.cm-doc .cm-brand { display: block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
+.cm-doc .cm-sep { border: 0; height: 2px; margin: 56px 0 48px; background: linear-gradient(90deg, #00c8e0, #e6007e); opacity: 0.6; }
 </style>
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-zh-cn" checked>
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-zh-tw">
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-en">
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-ja">
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-fr">
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-ru">
-<input type="radio" class="cm-lang-input" name="cm-terms-lang" id="cm-terms-vi">
-<div class="cm-lang-tabs"><label for="cm-terms-zh-cn" lang="zh-CN">简体中文</label><label for="cm-terms-zh-tw" lang="zh-TW">繁體中文</label><label for="cm-terms-en" lang="en">English</label><label for="cm-terms-ja" lang="ja">日本語</label><label for="cm-terms-fr" lang="fr">Français</label><label for="cm-terms-ru" lang="ru">Русский</label><label for="cm-terms-vi" lang="vi">Tiếng Việt</label></div>
-<section class="cm-lang cm-lang-zh-cn" lang="zh-CN">
-<div class="cm-brand"></div>
-<h1>用户协议</h1>
-<p class="cm-meta">生效日期：2026-11-21</p>
-<p>欢迎使用 Chameleon。本协议是你与 Chameleon 运营者 Robin（以下称「我们」）之间关于使用 Chameleon Rhino 插件、网站 rhchameleon.top 与账号服务 api.rhchameleon.top（以下合称「本服务」）的约定。注册、登录或使用本服务，即表示你已阅读并同意本协议与《<a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">隐私政策</a>》。</p>
-<h2>1. 服务内容</h2>
-<p>1.1 本服务把你在 Rhino 中截取的画面、上传的参考图和填写的提示词，发送给第三方图像生成模型，生成图片并返回给你。生成由人工智能完成，结果具有不确定性，我们不保证生成结果符合你的预期，也不保证其准确、完整或适用于特定用途。</p>
-<p>1.2 本服务使用的模型由第三方提供，我们可能根据可用性、质量与成本调整可选的模型、价格和功能，并在网站或插件中公布。</p>
-<h2>2. 账号</h2>
-<p>2.1 你应提供真实、有效的注册信息，并妥善保管账号、密码与令牌。通过你的账号或令牌进行的操作视为你本人的行为。</p>
-<p>2.2 插件登录时只使用一次你的密码，不会保存；插件会在你的账号下创建一个专用令牌并保存在你电脑的系统钥匙串中。发现账号或令牌被他人使用，请立即修改密码、在网站上删除相关令牌，并联系我们。</p>
-<p>2.3 未满十八周岁的用户，应在监护人同意和指导下使用本服务。</p>
-<h2>3. 费用、充值与退款</h2>
-<p>3.1 本服务按次计费，每次成功生成按所选模型与图片尺寸扣除账号余额，价格以<a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">价格页</a>公布的为准。生成失败（包括内容审核未通过、超时、服务异常）不扣费。</p>
-<p>3.2 你可以通过兑换码或网站提供的支付方式为账号充值。余额仅可用于本服务，不可转让或提现。</p>
-<p>3.3 除法律法规另有规定外，已充值或兑换的余额不予退款。因我们的原因导致本服务连续无法使用超过七日的，你可以联系我们申请退还未使用的余额。</p>
-<p>3.4 我们调整价格时会提前在网站公布，调整前已扣除的费用不受影响。</p>
-<h2>4. 使用规范</h2>
-<p>4.1 你应遵守中华人民共和国法律法规，包括《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》等。你不得利用本服务输入、生成或传播以下内容：</p>
-<ul><li>违反法律法规、危害国家安全与社会公共利益的内容；</li><li>淫秽、色情、暴力、恐怖或教唆犯罪的内容；</li><li>侵犯他人肖像权、名誉权、隐私权、著作权、商标权等合法权益的内容；</li><li>冒充他人，或用于诈骗、虚假宣传等误导公众的内容；</li><li>其他违反公序良俗或第三方模型提供者使用政策的内容。</li></ul>
-<p>4.2 你应确保上传的源图、参考图与提示词由你创作或已取得合法授权。</p>
-<p>4.3 公开发布、传播生成的图片时，你应按照有关规定标明其为人工智能生成，不得删除、篡改或隐匿生成内容中的标识。</p>
-<p>4.4 你不得对本服务进行破解、反向工程、恶意请求、转售令牌或以其他方式干扰本服务的正常运行。</p>
-<p>4.5 违反本节约定的，我们可以视情节拒绝相应请求、暂停或终止你的账号，并依法向有关部门报告。</p>
-<h2>5. 内容与知识产权</h2>
-<p>5.1 你上传的内容的权利仍归你或原权利人所有。你授权我们在提供本服务所必需的范围内处理这些内容（包括传输给第三方模型提供者）。</p>
-<p>5.2 在法律允许的范围内，生成的图片可由你自由使用，包括商业用途。人工智能生成内容能否受著作权保护取决于法律规定与个案情况，我们不对此作出保证；你应自行判断生成内容是否可能与他人作品相似并承担使用后果。</p>
-<p>5.3 插件、网站及其中的文字、界面、标识等的知识产权归我们或相关权利人所有。</p>
-<h2>6. 服务变更、中断与终止</h2>
-<p>6.1 本服务依赖第三方模型、云服务与网络，可能因维护、升级、第三方原因或不可抗力而中断。我们会尽力提前通知并尽快恢复。</p>
-<p>6.2 你可以随时停止使用本服务，并联系我们注销账号。账号注销后，未使用的余额按第 3 条处理。</p>
-<p>6.3 我们决定停止运营本服务的，将提前三十日在网站公告，并退还用户未使用的余额。</p>
-<h2>7. 责任限制</h2>
-<p>7.1 在法律允许的最大范围内，我们对因使用或无法使用本服务造成的间接损失不承担责任；我们对你承担的赔偿总额不超过你在损失发生前三个月内为本服务支付的费用。</p>
-<p>7.2 生成的图片仅供参考，不能替代专业的设计、工程或法律意见。</p>
-<h2>8. 协议修改</h2>
-<p>我们可能修改本协议，修改后的协议在网站公布后生效；涉及你重大权益的修改，我们会以网站公告或站内消息等方式提示。修改生效后继续使用本服务，即视为接受修改后的协议。</p>
-<h2>9. 法律适用与争议解决</h2>
-<p>本协议适用中华人民共和国法律（不含冲突法规则）。因本协议产生的争议，双方应友好协商；协商不成的，任何一方均可向我们所在地有管辖权的人民法院提起诉讼。</p>
-<h2>10. 语言版本</h2>
-<p>本协议提供多种语言版本，各版本如有不一致，以简体中文版本为准。</p>
-<h2>11. 联系我们</h2>
-<p>如对本协议有任何疑问，请联系：songqizhen006@gmail.com</p>
-</section>
-<section class="cm-lang cm-lang-zh-tw" lang="zh-TW">
-<div class="cm-brand"></div>
-<h1>使用者協議</h1>
-<p class="cm-meta">生效日期：2026-11-21</p>
-<p>歡迎使用 Chameleon。本協議是你與 Chameleon 運營者 Robin（以下稱「我們」）之間關於使用 Chameleon Rhino 外掛、網站 rhchameleon.top 與帳號服務 api.rhchameleon.top（以下合稱「本服務」）的約定。註冊、登入或使用本服務，即表示你已閱讀並同意本協議與《<a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">隱私政策</a>》。</p>
-<h2>1. 服務內容</h2>
-<p>1.1 本服務把你在 Rhino 中擷取的畫面、上傳的參考圖和填寫的提示詞，傳送給第三方影象生成模型，生成圖片並返回給你。生成由人工智慧完成，結果具有不確定性，我們不保證生成結果符合你的預期，也不保證其準確、完整或適用於特定用途。</p>
-<p>1.2 本服務使用的模型由第三方提供，我們可能根據可用性、質量與成本調整可選的模型、價格和功能，並在網站或外掛中公佈。</p>
-<h2>2. 帳號</h2>
-<p>2.1 你應提供真實、有效的註冊資訊，並妥善保管帳號、密碼與令牌。透過你的帳號或令牌進行的操作視為你本人的行為。</p>
-<p>2.2 外掛登入時只使用一次你的密碼，不會儲存；外掛會在你的帳號下建立一個專用令牌並儲存在你電腦的系統鑰匙串中。發現帳號或令牌被他人使用，請立即修改密碼、在網站上刪除相關令牌，並聯系我們。</p>
-<p>2.3 未滿十八週歲的使用者，應在監護人同意和指導下使用本服務。</p>
-<h2>3. 費用、充值與退款</h2>
-<p>3.1 本服務按次計費，每次成功生成按所選模型與圖片尺寸扣除帳號餘額，價格以<a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">價格頁</a>公佈的為準。生成失敗（包括內容稽核未透過、超時、服務異常）不扣費。</p>
-<p>3.2 你可以透過兌換碼或網站提供的支付方式為帳號充值。餘額僅可用於本服務，不可轉讓或提現。</p>
-<p>3.3 除法律法規另有規定外，已充值或兌換的餘額不予退款。因我們的原因導致本服務連續無法使用超過七日的，你可以聯絡我們申請退還未使用的餘額。</p>
-<p>3.4 我們調整價格時會提前在網站公佈，調整前已扣除的費用不受影響。</p>
-<h2>4. 使用規範</h2>
-<p>4.1 你應遵守中華人民共和國法律法規，包括《生成式人工智慧服務管理暫行辦法》《人工智慧生成合成內容標識辦法》等。你不得利用本服務輸入、生成或傳播以下內容：</p>
-<ul><li>違反法律法規、危害國家安全與社會公共利益的內容；</li><li>淫穢、色情、暴力、恐怖或教唆犯罪的內容；</li><li>侵犯他人肖像權、名譽權、隱私權、著作權、商標權等合法權益的內容；</li><li>冒充他人，或用於詐騙、虛假宣傳等誤導公眾的內容；</li><li>其他違反公序良俗或第三方模型提供者使用政策的內容。</li></ul>
-<p>4.2 你應確保上傳的源圖、參考圖與提示詞由你創作或已取得合法授權。</p>
-<p>4.3 公開發布、傳播生成的圖片時，你應按照有關規定標明其為人工智慧生成，不得刪除、篡改或隱匿生成內容中的標識。</p>
-<p>4.4 你不得對本服務進行破解、反向工程、惡意請求、轉售令牌或以其他方式干擾本服務的正常執行。</p>
-<p>4.5 違反本節約定的，我們可以視情節拒絕相應請求、暫停或終止你的帳號，並依法向有關部門報告。</p>
-<h2>5. 內容與智慧財產權</h2>
-<p>5.1 你上傳的內容的權利仍歸你或原權利人所有。你授權我們在提供本服務所必需的範圍內處理這些內容（包括傳輸給第三方模型提供者）。</p>
-<p>5.2 在法律允許的範圍內，生成的圖片可由你自由使用，包括商業用途。人工智慧生成內容能否受著作權保護取決於法律規定與個案情況，我們不對此作出保證；你應自行判斷生成內容是否可能與他人作品相似並承擔使用後果。</p>
-<p>5.3 外掛、網站及其中的文字、介面、標識等的智慧財產權歸我們或相關權利人所有。</p>
-<h2>6. 服務變更、中斷與終止</h2>
-<p>6.1 本服務依賴第三方模型、雲服務與網路，可能因維護、升級、第三方原因或不可抗力而中斷。我們會盡力提前通知並儘快恢復。</p>
-<p>6.2 你可以隨時停止使用本服務，並聯系我們登出帳號。帳號登出後，未使用的餘額按第 3 條處理。</p>
-<p>6.3 我們決定停止運營本服務的，將提前三十日在網站公告，並退還使用者未使用的餘額。</p>
-<h2>7. 責任限制</h2>
-<p>7.1 在法律允許的最大範圍內，我們對因使用或無法使用本服務造成的間接損失不承擔責任；我們對你承擔的賠償總額不超過你在損失發生前三個月內為本服務支付的費用。</p>
-<p>7.2 生成的圖片僅供參考，不能替代專業的設計、工程或法律意見。</p>
-<h2>8. 協議修改</h2>
-<p>我們可能修改本協議，修改後的協議在網站公佈後生效；涉及你重大權益的修改，我們會以網站公告或站內訊息等方式提示。修改生效後繼續使用本服務，即視為接受修改後的協議。</p>
-<h2>9. 法律適用與爭議解決</h2>
-<p>本協議適用中華人民共和國法律（不含衝突法規則）。因本協議產生的爭議，雙方應友好協商；協商不成的，任何一方均可向我們所在地有管轄權的人民法院提起訴訟。</p>
-<h2>10. 語言版本</h2>
-<p>本協議提供多種語言版本，各版本如有不一致，以簡體中文版本為準。</p>
-<h2>11. 聯絡我們</h2>
-<p>如對本協議有任何疑問，請聯絡：songqizhen006@gmail.com</p>
-</section>
-<section class="cm-lang cm-lang-en" lang="en">
+<section lang="en">
 <div class="cm-brand"></div>
 <h1>User Agreement</h1>
 <p class="cm-meta">Effective date: 2026-11-21</p>
@@ -170,184 +61,53 @@
 <h2>9. Governing law and disputes</h2>
 <p>This agreement is governed by the laws of the People's Republic of China, excluding conflict-of-law rules. Disputes shall first be settled by negotiation; failing that, either party may bring the dispute before the competent people's court at our place of business.</p>
 <h2>10. Language versions</h2>
-<p>This agreement is provided in several languages. If the versions differ, the Simplified Chinese version prevails.</p>
+<p>This agreement is provided in English and Chinese. If the two differ, the Chinese version prevails.</p>
 <h2>11. Contact</h2>
 <p>Questions about this agreement: songqizhen006@gmail.com</p>
 </section>
-<section class="cm-lang cm-lang-ja" lang="ja">
+<hr class="cm-sep">
+<section lang="zh-CN">
 <div class="cm-brand"></div>
-<h1>利用規約</h1>
-<p class="cm-meta">施行日：2026-11-21</p>
-<p>Chameleon をご利用いただきありがとうございます。本規約は、Chameleon の運営者 Robin（以下「当方」）とお客様との間で、Rhino 用プラグイン Chameleon、ウェブサイト rhchameleon.top およびアカウントサービス api.rhchameleon.top（以下総称して「本サービス」）の利用について定めるものです。登録、ログインまたは本サービスの利用により、お客様は本規約および<a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">プライバシーポリシー</a>を読み、同意したものとみなされます。</p>
-<h2>1. サービス内容</h2>
-<p>1.1 本サービスは、お客様が Rhino でキャプチャした画像、追加した参考画像および入力したプロンプトを第三者の画像生成モデルに送信し、生成した画像をお返しします。生成は人工知能によって行われ、結果には不確実性があります。当方は、生成結果がお客様の期待に沿うこと、正確・完全であること、特定の目的に適合することを保証しません。</p>
-<p>1.2 モデルは第三者が提供します。当方は、提供状況、品質およびコストに応じて利用可能なモデル、価格および機能を変更することがあり、その場合はウェブサイトまたはプラグインでお知らせします。</p>
-<h2>2. アカウント</h2>
-<p>2.1 お客様は真実かつ有効な登録情報を提供し、アカウント、パスワードおよびトークンを適切に管理するものとします。お客様のアカウントまたはトークンによる操作は、お客様ご本人の行為とみなします。</p>
-<p>2.2 プラグインからのログイン時、パスワードは一度だけ使用され、保存されません。プラグインはお客様のアカウントに専用トークンを作成し、コンピューターのシステムキーチェーンに保存します。第三者による不正利用に気付いた場合は、直ちにパスワードを変更し、ウェブサイトで該当トークンを削除のうえ、当方にご連絡ください。</p>
-<p>2.3 18 歳未満の方は、保護者の同意と指導のもとでご利用ください。</p>
-<h2>3. 料金、チャージおよび返金</h2>
-<p>3.1 本サービスは生成ごとの従量課金です。生成に成功するたびに、選択したモデルと画像サイズに応じて残高から差し引かれます。価格は<a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">料金ページ</a>の表示に従います。生成に失敗した場合（コンテンツ審査で拒否された場合、タイムアウト、サービス障害を含む）は課金されません。</p>
-<p>3.2 引き換えコードまたはウェブサイトが提供する決済方法でチャージできます。残高は本サービスにのみ使用でき、譲渡や払い戻し（現金化）はできません。</p>
-<p>3.3 法令に別段の定めがある場合を除き、チャージまたは引き換え済みの残高は返金されません。当方の責めに帰すべき事由により本サービスが連続して 7 日を超えて利用できない場合、未使用残高の返金を請求できます。</p>
-<p>3.4 価格を変更する場合は事前にウェブサイトでお知らせします。変更前に差し引かれた料金には影響しません。</p>
-<h2>4. 利用ルール</h2>
-<p>4.1 お客様は、中華人民共和国の法令（「生成式人工知能サービス管理暫定弁法」「人工知能生成合成コンテンツ表示弁法」等）およびお客様の所在地の法令を遵守するものとします。本サービスを利用して、次の内容を入力、生成または拡散してはなりません。</p>
-<ul><li>法令に違反し、国家の安全や公共の利益を害する内容</li><li>わいせつ、ポルノ、暴力、テロ、または犯罪を教唆する内容</li><li>他人の肖像権、名誉権、プライバシー、著作権、商標権その他の権利を侵害する内容</li><li>他人へのなりすまし、詐欺や虚偽広告など公衆を誤認させる内容</li><li>その他、公序良俗または第三者モデル提供者の利用ポリシーに反する内容</li></ul>
-<p>4.2 お客様は、送信する元画像、参考画像およびプロンプトがご自身の創作物であるか、必要な権利を取得済みであることを保証するものとします。</p>
-<p>4.3 生成画像を公開・配布する際は、規定に従い AI 生成である旨を表示し、生成コンテンツに含まれる表示を削除・改変・隠蔽してはなりません。</p>
-<p>4.4 本サービスのクラッキング、リバースエンジニアリング、過剰なリクエスト、トークンの転売その他本サービスの正常な運営を妨げる行為をしてはなりません。</p>
-<p>4.5 本条に違反した場合、当方は状況に応じて該当リクエストの拒否、アカウントの停止または解約を行い、法令に基づき関係当局に報告することがあります。</p>
-<h2>5. コンテンツと知的財産</h2>
-<p>5.1 お客様が送信したコンテンツの権利は、お客様または原権利者に帰属します。お客様は、本サービスの提供に必要な範囲で（第三者モデル提供者への送信を含む）当方がこれを処理することを許諾します。</p>
-<p>5.2 法令で認められる範囲で、生成画像は商用を含め自由にご利用いただけます。AI 生成コンテンツが著作権で保護されるかは法令と個別の事情によるため、当方は保証しません。生成画像が他者の作品と類似していないかの判断と、その利用の結果についてはお客様の責任となります。</p>
-<p>5.3 プラグイン、ウェブサイトおよびそれらの文章、インターフェース、標章等の知的財産権は、当方または各権利者に帰属します。</p>
-<h2>6. サービスの変更、中断および終了</h2>
-<p>6.1 本サービスは第三者のモデル、クラウドサービスおよびネットワークに依存しており、保守、アップグレード、第三者の事情または不可抗力により中断することがあります。当方は可能な限り事前に通知し、速やかな復旧に努めます。</p>
-<p>6.2 お客様はいつでも本サービスの利用を停止し、アカウントの削除を当方に依頼できます。未使用残高は第 3 条に従って取り扱います。</p>
-<p>6.3 当方が本サービスの提供を終了する場合は、30 日前までにウェブサイトで告知し、未使用残高を返金します。</p>
-<h2>7. 責任の制限</h2>
-<p>7.1 法令で認められる最大限の範囲で、当方は本サービスの利用または利用不能による間接的な損害について責任を負いません。当方の賠償責任の総額は、損害発生前 3 か月間にお客様が本サービスに支払った料金を上限とします。</p>
-<p>7.2 生成画像は参考用であり、専門的な設計、エンジニアリングまたは法的助言に代わるものではありません。</p>
-<h2>8. 規約の変更</h2>
-<p>当方は本規約を変更することがあります。変更後の規約はウェブサイトでの公表をもって効力を生じ、お客様の重要な権利に関わる変更はウェブサイトでの告知またはメッセージでお知らせします。変更の効力発生後も本サービスを利用した場合、変更後の規約に同意したものとみなします。</p>
-<h2>9. 準拠法および紛争解決</h2>
-<p>本規約は中華人民共和国法（抵触法の規定を除く）に準拠します。本規約に関する紛争はまず協議により解決するものとし、協議が調わない場合は、いずれの当事者も当方所在地を管轄する人民法院に訴えを提起できます。</p>
-<h2>10. 言語版</h2>
-<p>本規約は複数の言語で提供されます。各言語版の間に相違がある場合は、簡体字中国語版が優先します。</p>
-<h2>11. お問い合わせ</h2>
-<p>本規約に関するお問い合わせ：songqizhen006@gmail.com</p>
-</section>
-<section class="cm-lang cm-lang-fr" lang="fr">
-<div class="cm-brand"></div>
-<h1>Conditions d’utilisation</h1>
-<p class="cm-meta">Date d’entrée en vigueur : 2026-11-21</p>
-<p>Bienvenue sur Chameleon. Le présent contrat est conclu entre vous et l’exploitant de Chameleon, Robin (« nous »), et régit votre utilisation du plug-in Chameleon pour Rhino, du site rhchameleon.top et du service de compte api.rhchameleon.top (ensemble, le « Service »). En vous inscrivant, en vous connectant ou en utilisant le Service, vous confirmez avoir lu et accepté le présent contrat et la <a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">Politique de confidentialité</a>.</p>
-<h2>1. Le Service</h2>
-<p>1.1 Le Service transmet les images que vous capturez dans Rhino, les images de référence que vous ajoutez et les instructions que vous rédigez à des modèles tiers de génération d’images, puis vous renvoie les images générées. La génération est réalisée par intelligence artificielle et ses résultats sont incertains. Nous ne garantissons pas que les résultats répondent à vos attentes, ni qu’ils soient exacts, complets ou adaptés à un usage particulier.</p>
-<p>1.2 Les modèles sont fournis par des tiers. Nous pouvons modifier les modèles, prix et fonctions proposés selon leur disponibilité, leur qualité et leur coût, et l’annoncerons sur le site ou dans le plug-in.</p>
-<h2>2. Votre compte</h2>
-<p>2.1 Vous devez fournir des informations d’inscription exactes et valides et protéger votre compte, votre mot de passe et vos jetons. Les actions effectuées avec votre compte ou vos jetons sont réputées être les vôtres.</p>
-<p>2.2 Lors de la connexion depuis le plug-in, votre mot de passe n’est utilisé qu’une fois et n’est jamais enregistré ; le plug-in crée un jeton dédié dans votre compte et le conserve dans le trousseau système de votre ordinateur. Si votre compte ou un jeton est utilisé par un tiers, changez immédiatement votre mot de passe, supprimez le jeton sur le site et contactez-nous.</p>
-<p>2.3 Les personnes de moins de 18 ans ne peuvent utiliser le Service qu’avec l’accord et sous la supervision d’un tuteur.</p>
-<h2>3. Tarifs, recharges et remboursements</h2>
-<p>3.1 Le Service est facturé à la génération. Chaque génération réussie est débitée de votre solde selon le modèle et la taille d’image, aux prix publiés sur la <a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">page des tarifs</a>. Les générations échouées (y compris celles refusées par la modération, expirées ou affectées par une panne) ne sont pas facturées.</p>
-<p>3.2 Vous pouvez recharger votre solde avec des codes ou les moyens de paiement proposés sur le site. Le solde n’est utilisable que pour le Service et ne peut être ni cédé ni retiré.</p>
-<p>3.3 Sauf disposition légale contraire, le solde rechargé ou obtenu par code n’est pas remboursable. Si le Service est indisponible plus de sept jours consécutifs pour une raison qui nous est imputable, vous pouvez demander le remboursement du solde non utilisé.</p>
-<p>3.4 Les changements de prix sont annoncés à l’avance sur le site et n’affectent pas les montants débités avant leur entrée en vigueur.</p>
-<h2>4. Règles d’utilisation</h2>
-<p>4.1 Vous devez respecter les lois et règlements de la République populaire de Chine, notamment les Mesures provisoires sur la gestion des services d’IA générative et les Mesures sur l’étiquetage des contenus synthétiques générés par IA, ainsi que les lois de votre pays. Vous ne devez pas utiliser le Service pour soumettre, générer ou diffuser :</p>
-<ul><li>des contenus illégaux ou portant atteinte à la sécurité nationale ou à l’intérêt public ;</li><li>des contenus obscènes, pornographiques, violents, terroristes ou incitant au crime ;</li><li>des contenus portant atteinte au droit à l’image, à la réputation, à la vie privée, au droit d’auteur, aux marques ou à d’autres droits d’autrui ;</li><li>des contenus usurpant l’identité d’autrui ou trompant le public, tels que fraudes ou publicités mensongères ;</li><li>tout autre contenu contraire à l’ordre public, aux bonnes mœurs ou aux politiques d’utilisation des fournisseurs de modèles.</li></ul>
-<p>4.2 Vous garantissez que les images source, images de référence et instructions soumises sont votre œuvre ou que vous disposez des droits nécessaires.</p>
-<p>4.3 Lorsque vous publiez ou diffusez des images générées, vous devez les signaler comme générées par IA lorsque la réglementation l’exige et ne pas supprimer, modifier ou dissimuler les marquages qu’elles contiennent.</p>
-<p>4.4 Vous ne devez pas pirater, décompiler, surcharger le Service, revendre des jetons ni perturber d’une autre manière son fonctionnement.</p>
-<p>4.5 En cas de manquement au présent article, nous pouvons refuser la demande concernée, suspendre ou résilier votre compte et en informer les autorités lorsque la loi l’exige.</p>
-<h2>5. Contenus et propriété intellectuelle</h2>
-<p>5.1 Les contenus que vous soumettez restent votre propriété ou celle de leur titulaire. Vous nous autorisez à les traiter dans la mesure nécessaire à la fourniture du Service, y compris leur transmission aux fournisseurs de modèles.</p>
-<p>5.2 Dans les limites permises par la loi, vous pouvez utiliser librement les images générées, y compris à des fins commerciales. La protection par le droit d’auteur des contenus générés par IA dépend de la loi et de chaque cas, et nous ne donnons aucune garantie à ce sujet ; il vous appartient d’apprécier si une image générée peut ressembler à l’œuvre d’autrui et d’assumer les conséquences de son utilisation.</p>
-<p>5.3 Le plug-in, le site ainsi que leurs textes, interfaces et signes distinctifs nous appartiennent ou appartiennent à leurs titulaires respectifs.</p>
-<h2>6. Modifications, interruptions et résiliation</h2>
-<p>6.1 Le Service dépend de modèles, de services cloud et de réseaux tiers et peut être interrompu pour maintenance, mise à niveau, du fait de tiers ou en cas de force majeure. Nous nous efforcerons de prévenir à l’avance et de rétablir le Service au plus vite.</p>
-<p>6.2 Vous pouvez cesser d’utiliser le Service à tout moment et nous demander de fermer votre compte. Le solde non utilisé est alors traité conformément à l’article 3.</p>
-<p>6.3 Si nous décidons de cesser le Service, nous l’annoncerons sur le site au moins trente jours à l’avance et rembourserons les soldes non utilisés.</p>
-<h2>7. Limitation de responsabilité</h2>
-<p>7.1 Dans toute la mesure permise par la loi, nous ne sommes pas responsables des pertes indirectes liées à l’utilisation ou à l’impossibilité d’utiliser le Service, et notre responsabilité totale envers vous est limitée aux sommes que vous avez payées pour le Service au cours des trois mois précédant le dommage.</p>
-<p>7.2 Les images générées sont fournies à titre indicatif et ne remplacent pas un avis professionnel de conception, d’ingénierie ou juridique.</p>
-<h2>8. Modification du contrat</h2>
-<p>Nous pouvons modifier le présent contrat. Les modifications prennent effet à leur publication sur le site ; celles qui affectent de manière importante vos droits seront signalées par un avis sur le site ou un message. Continuer à utiliser le Service après leur entrée en vigueur vaut acceptation.</p>
-<h2>9. Droit applicable et litiges</h2>
-<p>Le présent contrat est régi par le droit de la République populaire de Chine, à l’exclusion des règles de conflit de lois. Les litiges sont d’abord réglés à l’amiable ; à défaut, chaque partie peut saisir le tribunal populaire compétent du lieu de notre établissement.</p>
-<h2>10. Versions linguistiques</h2>
-<p>Le présent contrat est disponible en plusieurs langues. En cas de divergence, la version en chinois simplifié prévaut.</p>
-<h2>11. Contact</h2>
-<p>Questions sur ce contrat : songqizhen006@gmail.com</p>
-</section>
-<section class="cm-lang cm-lang-ru" lang="ru">
-<div class="cm-brand"></div>
-<h1>Пользовательское соглашение</h1>
-<p class="cm-meta">Дата вступления в силу: 2026-11-21</p>
-<p>Добро пожаловать в Chameleon. Настоящее соглашение заключается между вами и оператором Chameleon — Robin («мы») — и регулирует использование плагина Chameleon для Rhino, сайта rhchameleon.top и сервиса аккаунтов api.rhchameleon.top (вместе — «Сервис»). Регистрируясь, входя в аккаунт или используя Сервис, вы подтверждаете, что прочитали и принимаете настоящее соглашение и <a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">Политику конфиденциальности</a>.</p>
-<h2>1. Сервис</h2>
-<p>1.1 Сервис отправляет изображения, захваченные вами в Rhino, добавленные референсы и написанные вами запросы сторонним моделям генерации изображений и возвращает вам сгенерированные изображения. Генерацию выполняет искусственный интеллект, и её результаты непредсказуемы. Мы не гарантируем, что результаты оправдают ваши ожидания, будут точными, полными или пригодными для конкретной цели.</p>
-<p>1.2 Модели предоставляются третьими лицами. Мы можем менять доступные модели, цены и функции в зависимости от доступности, качества и стоимости и будем сообщать об этом на сайте или в плагине.</p>
-<h2>2. Аккаунт</h2>
-<p>2.1 Вы обязаны указывать достоверные данные при регистрации и обеспечивать сохранность аккаунта, пароля и токенов. Действия, совершённые с вашего аккаунта или токенов, считаются вашими.</p>
-<p>2.2 При входе из плагина пароль используется один раз и не сохраняется; плагин создаёт в вашем аккаунте отдельный токен и хранит его в системной связке ключей компьютера. Если вашим аккаунтом или токеном воспользовался кто-то другой, немедленно смените пароль, удалите токен на сайте и свяжитесь с нами.</p>
-<p>2.3 Лица младше 18 лет могут пользоваться Сервисом только с согласия и под руководством законного представителя.</p>
-<h2>3. Оплата, пополнение и возврат средств</h2>
-<p>3.1 Сервис оплачивается за каждую генерацию. За каждую успешную генерацию с баланса списывается сумма в зависимости от модели и размера изображения по ценам, опубликованным на <a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">странице цен</a>. Неудачные генерации (в том числе отклонённые модерацией, прерванные по тайм-ауту или из-за сбоя) не оплачиваются.</p>
-<p>3.2 Баланс можно пополнить кодами активации или способами оплаты, доступными на сайте. Баланс используется только для Сервиса и не может быть передан или выведен.</p>
-<p>3.3 Если иное не предусмотрено законом, пополненный или активированный баланс не возвращается. Если Сервис недоступен более семи дней подряд по нашей вине, вы можете запросить возврат неиспользованного баланса.</p>
-<p>3.4 Об изменении цен мы заранее сообщаем на сайте; изменения не затрагивают суммы, списанные до их вступления в силу.</p>
-<h2>4. Правила использования</h2>
-<p>4.1 Вы обязаны соблюдать законодательство Китайской Народной Республики, в том числе Временные меры по управлению сервисами генеративного ИИ и Меры по маркировке контента, созданного ИИ, а также законы вашей страны. Запрещается использовать Сервис для отправки, создания или распространения:</p>
-<ul><li>контента, нарушающего закон или угрожающего национальной безопасности и общественным интересам;</li><li>непристойного, порнографического, насильственного, террористического контента или подстрекательства к преступлению;</li><li>контента, нарушающего права других лиц на изображение, честь, частную жизнь, авторские права, товарные знаки и иные права;</li><li>контента, выдающего себя за других лиц или вводящего общество в заблуждение, например мошенничества или ложной рекламы;</li><li>иного контента, противоречащего общественному порядку, морали или правилам использования поставщиков моделей.</li></ul>
-<p>4.2 Вы гарантируете, что отправляемые исходные изображения, референсы и запросы созданы вами или что у вас есть необходимые права.</p>
-<p>4.3 Публикуя или распространяя сгенерированные изображения, вы обязаны в установленных случаях указывать, что они созданы ИИ, и не удалять, не изменять и не скрывать содержащуюся в них маркировку.</p>
-<p>4.4 Запрещается взламывать Сервис, выполнять его обратную разработку, перегружать запросами, перепродавать токены или иным образом нарушать его работу.</p>
-<p>4.5 При нарушении настоящего раздела мы можем отклонить соответствующий запрос, приостановить или закрыть ваш аккаунт и сообщить в уполномоченные органы, если это требуется по закону.</p>
-<h2>5. Контент и интеллектуальная собственность</h2>
-<p>5.1 Права на отправленный вами контент остаются за вами или исходным правообладателем. Вы разрешаете нам обрабатывать его в объёме, необходимом для работы Сервиса, включая передачу сторонним поставщикам моделей.</p>
-<p>5.2 В пределах, допускаемых законом, вы можете свободно использовать сгенерированные изображения, в том числе в коммерческих целях. Охраняется ли контент, созданный ИИ, авторским правом, зависит от закона и обстоятельств дела, и мы этого не гарантируем; вы сами оцениваете, не похоже ли изображение на чужие произведения, и несёте ответственность за его использование.</p>
-<p>5.3 Плагин, сайт, их тексты, интерфейс и обозначения принадлежат нам или соответствующим правообладателям.</p>
-<h2>6. Изменение, приостановка и прекращение работы</h2>
-<p>6.1 Сервис зависит от сторонних моделей, облачных услуг и сетей и может прерываться из-за обслуживания, обновлений, действий третьих лиц или обстоятельств непреодолимой силы. Мы постараемся заранее предупреждать об этом и как можно быстрее восстанавливать работу.</p>
-<p>6.2 Вы можете в любой момент прекратить пользоваться Сервисом и попросить нас закрыть аккаунт. Неиспользованный баланс в этом случае обрабатывается согласно разделу 3.</p>
-<p>6.3 Если мы решим прекратить работу Сервиса, мы объявим об этом на сайте не менее чем за тридцать дней и вернём неиспользованные балансы.</p>
-<h2>7. Ограничение ответственности</h2>
-<p>7.1 В максимальной степени, допускаемой законом, мы не несём ответственности за косвенные убытки, связанные с использованием или невозможностью использования Сервиса, а наша общая ответственность перед вами ограничена суммой, уплаченной вами за Сервис в течение трёх месяцев до возникновения убытков.</p>
-<p>7.2 Сгенерированные изображения носят справочный характер и не заменяют профессиональных консультаций в области проектирования, инженерии или права.</p>
-<h2>8. Изменение соглашения</h2>
-<p>Мы можем изменять настоящее соглашение. Изменения вступают в силу с момента публикации на сайте; о существенных изменениях, затрагивающих ваши права, мы сообщим объявлением на сайте или сообщением. Продолжая пользоваться Сервисом после вступления изменений в силу, вы их принимаете.</p>
-<h2>9. Применимое право и споры</h2>
-<p>Настоящее соглашение регулируется законодательством Китайской Народной Республики без учёта коллизионных норм. Споры разрешаются путём переговоров, а при недостижении согласия любая из сторон вправе обратиться в компетентный народный суд по месту нашего нахождения.</p>
-<h2>10. Языковые версии</h2>
-<p>Соглашение предоставляется на нескольких языках. При расхождениях преимущественную силу имеет версия на упрощённом китайском языке.</p>
-<h2>11. Контакты</h2>
-<p>Вопросы по настоящему соглашению: songqizhen006@gmail.com</p>
-</section>
-<section class="cm-lang cm-lang-vi" lang="vi">
-<div class="cm-brand"></div>
-<h1>Thỏa thuận người dùng</h1>
-<p class="cm-meta">Ngày hiệu lực: 2026-11-21</p>
-<p>Chào mừng bạn đến với Chameleon. Thỏa thuận này được ký kết giữa bạn và đơn vị vận hành Chameleon là Robin (sau đây gọi là "chúng tôi"), điều chỉnh việc bạn sử dụng plug-in Chameleon cho Rhino, trang web rhchameleon.top và dịch vụ tài khoản api.rhchameleon.top (gọi chung là "Dịch vụ"). Khi đăng ký, đăng nhập hoặc sử dụng Dịch vụ, bạn xác nhận đã đọc và đồng ý với thỏa thuận này cùng <a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">Chính sách quyền riêng tư</a>.</p>
-<h2>1. Dịch vụ</h2>
-<p>1.1 Dịch vụ gửi hình ảnh bạn chụp trong Rhino, ảnh tham chiếu bạn thêm và câu lệnh bạn viết tới các mô hình tạo ảnh của bên thứ ba, rồi trả lại ảnh được tạo cho bạn. Việc tạo ảnh do trí tuệ nhân tạo thực hiện nên kết quả có tính không chắc chắn. Chúng tôi không bảo đảm kết quả đáp ứng kỳ vọng của bạn, chính xác, đầy đủ hay phù hợp với một mục đích cụ thể.</p>
-<p>1.2 Các mô hình do bên thứ ba cung cấp. Chúng tôi có thể thay đổi mô hình, giá và tính năng tùy theo khả năng cung cấp, chất lượng và chi phí, và sẽ thông báo trên trang web hoặc trong plug-in.</p>
-<h2>2. Tài khoản</h2>
-<p>2.1 Bạn phải cung cấp thông tin đăng ký trung thực, hợp lệ và giữ an toàn tài khoản, mật khẩu và token. Mọi thao tác thực hiện bằng tài khoản hoặc token của bạn được coi là của chính bạn.</p>
-<p>2.2 Khi đăng nhập từ plug-in, mật khẩu chỉ được dùng một lần và không được lưu; plug-in tạo một token riêng trong tài khoản của bạn và lưu trong chuỗi khóa hệ thống của máy tính. Nếu phát hiện tài khoản hoặc token bị người khác sử dụng, hãy đổi mật khẩu ngay, xóa token đó trên trang web và liên hệ với chúng tôi.</p>
-<p>2.3 Người dưới 18 tuổi chỉ được sử dụng Dịch vụ khi có sự đồng ý và hướng dẫn của người giám hộ.</p>
-<h2>3. Phí, nạp tiền và hoàn tiền</h2>
-<p>3.1 Dịch vụ tính phí theo từng lần tạo ảnh. Mỗi lần tạo thành công sẽ trừ số dư theo mô hình và kích thước ảnh, với giá công bố trên <a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">trang giá</a>. Lần tạo thất bại (kể cả bị kiểm duyệt nội dung từ chối, hết thời gian chờ hoặc do sự cố dịch vụ) không bị tính phí.</p>
-<p>3.2 Bạn có thể nạp tiền bằng mã đổi thưởng hoặc các phương thức thanh toán có trên trang web. Số dư chỉ dùng cho Dịch vụ, không thể chuyển nhượng hay rút ra.</p>
-<p>3.3 Trừ khi pháp luật có quy định khác, số dư đã nạp hoặc đổi mã không được hoàn lại. Nếu Dịch vụ không thể sử dụng liên tục quá bảy ngày vì lý do từ phía chúng tôi, bạn có thể yêu cầu hoàn lại số dư chưa sử dụng.</p>
-<p>3.4 Khi điều chỉnh giá, chúng tôi sẽ thông báo trước trên trang web; khoản phí đã trừ trước thời điểm điều chỉnh không bị ảnh hưởng.</p>
-<h2>4. Quy tắc sử dụng</h2>
-<p>4.1 Bạn phải tuân thủ pháp luật nước Cộng hòa Nhân dân Trung Hoa, bao gồm Biện pháp tạm thời quản lý dịch vụ AI tạo sinh và Biện pháp gắn nhãn nội dung tổng hợp do AI tạo ra, cũng như pháp luật nơi bạn sinh sống. Bạn không được dùng Dịch vụ để gửi, tạo hoặc phát tán:</p>
-<ul><li>nội dung vi phạm pháp luật, gây hại cho an ninh quốc gia và lợi ích công cộng;</li><li>nội dung dâm ô, khiêu dâm, bạo lực, khủng bố hoặc xúi giục phạm tội;</li><li>nội dung xâm phạm quyền hình ảnh, danh dự, quyền riêng tư, quyền tác giả, nhãn hiệu hoặc các quyền hợp pháp khác của người khác;</li><li>nội dung mạo danh người khác hoặc gây hiểu lầm cho công chúng như lừa đảo, quảng cáo sai sự thật;</li><li>nội dung khác trái với trật tự công cộng, thuần phong mỹ tục hoặc chính sách sử dụng của nhà cung cấp mô hình.</li></ul>
-<p>4.2 Bạn bảo đảm ảnh nguồn, ảnh tham chiếu và câu lệnh gửi lên là do bạn sáng tạo hoặc bạn đã có đủ quyền sử dụng.</p>
-<p>4.3 Khi công bố hoặc phát tán ảnh được tạo, bạn phải ghi rõ đó là nội dung do AI tạo ra theo quy định và không được xóa, sửa hoặc che giấu nhãn có trong nội dung được tạo.</p>
-<p>4.4 Bạn không được bẻ khóa, dịch ngược, gửi yêu cầu ồ ạt, bán lại token hoặc làm gián đoạn hoạt động bình thường của Dịch vụ theo bất kỳ cách nào khác.</p>
-<p>4.5 Nếu vi phạm mục này, tùy mức độ, chúng tôi có thể từ chối yêu cầu liên quan, tạm ngưng hoặc chấm dứt tài khoản của bạn và báo cáo cơ quan có thẩm quyền theo quy định của pháp luật.</p>
-<h2>5. Nội dung và sở hữu trí tuệ</h2>
-<p>5.1 Quyền đối với nội dung bạn gửi lên vẫn thuộc về bạn hoặc chủ sở hữu ban đầu. Bạn cho phép chúng tôi xử lý nội dung đó trong phạm vi cần thiết để cung cấp Dịch vụ, bao gồm việc chuyển tới các nhà cung cấp mô hình.</p>
-<p>5.2 Trong phạm vi pháp luật cho phép, bạn được tự do sử dụng ảnh được tạo, kể cả cho mục đích thương mại. Việc nội dung do AI tạo ra có được bảo hộ quyền tác giả hay không tùy thuộc vào pháp luật và từng trường hợp, chúng tôi không bảo đảm điều này; bạn tự đánh giá liệu ảnh được tạo có giống tác phẩm của người khác hay không và tự chịu trách nhiệm về việc sử dụng.</p>
-<p>5.3 Plug-in, trang web cùng văn bản, giao diện và nhãn hiệu trong đó thuộc quyền sở hữu trí tuệ của chúng tôi hoặc của chủ sở hữu tương ứng.</p>
-<h2>6. Thay đổi, gián đoạn và chấm dứt dịch vụ</h2>
-<p>6.1 Dịch vụ phụ thuộc vào mô hình, dịch vụ đám mây và mạng của bên thứ ba nên có thể bị gián đoạn do bảo trì, nâng cấp, nguyên nhân từ bên thứ ba hoặc sự kiện bất khả kháng. Chúng tôi sẽ cố gắng thông báo trước và khôi phục sớm nhất.</p>
-<p>6.2 Bạn có thể ngừng sử dụng Dịch vụ bất cứ lúc nào và yêu cầu chúng tôi xóa tài khoản. Số dư chưa sử dụng khi đó được xử lý theo Mục 3.</p>
-<p>6.3 Nếu chúng tôi quyết định ngừng vận hành Dịch vụ, chúng tôi sẽ thông báo trên trang web trước ít nhất ba mươi ngày và hoàn lại số dư chưa sử dụng.</p>
-<h2>7. Giới hạn trách nhiệm</h2>
-<p>7.1 Trong phạm vi tối đa pháp luật cho phép, chúng tôi không chịu trách nhiệm về thiệt hại gián tiếp phát sinh từ việc sử dụng hoặc không thể sử dụng Dịch vụ; tổng mức bồi thường của chúng tôi không vượt quá số tiền bạn đã trả cho Dịch vụ trong ba tháng trước khi xảy ra thiệt hại.</p>
-<p>7.2 Ảnh được tạo chỉ mang tính tham khảo, không thay thế ý kiến chuyên môn về thiết kế, kỹ thuật hoặc pháp lý.</p>
-<h2>8. Sửa đổi thỏa thuận</h2>
-<p>Chúng tôi có thể sửa đổi thỏa thuận này. Bản sửa đổi có hiệu lực khi được công bố trên trang web; những thay đổi ảnh hưởng đáng kể đến quyền lợi của bạn sẽ được thông báo trên trang web hoặc qua tin nhắn. Việc tiếp tục sử dụng Dịch vụ sau khi bản sửa đổi có hiệu lực đồng nghĩa với việc bạn chấp nhận.</p>
-<h2>9. Luật áp dụng và giải quyết tranh chấp</h2>
-<p>Thỏa thuận này được điều chỉnh bởi pháp luật nước Cộng hòa Nhân dân Trung Hoa (không bao gồm quy tắc xung đột pháp luật). Tranh chấp trước hết được giải quyết bằng thương lượng; nếu không thành, mỗi bên có quyền khởi kiện tại tòa án nhân dân có thẩm quyền nơi chúng tôi đặt trụ sở.</p>
-<h2>10. Phiên bản ngôn ngữ</h2>
-<p>Thỏa thuận này được cung cấp bằng nhiều ngôn ngữ. Nếu có khác biệt giữa các phiên bản, bản tiếng Trung giản thể được ưu tiên áp dụng.</p>
-<h2>11. Liên hệ</h2>
-<p>Câu hỏi về thỏa thuận này: songqizhen006@gmail.com</p>
+<h1>用户协议</h1>
+<p class="cm-meta">生效日期：2026-11-21</p>
+<p>欢迎使用 Chameleon。本协议是你与 Chameleon 运营者 Robin（以下称「我们」）之间关于使用 Chameleon Rhino 插件、网站 rhchameleon.top 与账号服务 api.rhchameleon.top（以下合称「本服务」）的约定。注册、登录或使用本服务，即表示你已阅读并同意本协议与《<a href="https://rhchameleon.top/docs/privacy" target="_blank" rel="noopener">隐私政策</a>》。</p>
+<h2>1. 服务内容</h2>
+<p>1.1 本服务把你在 Rhino 中截取的画面、上传的参考图和填写的提示词，发送给第三方图像生成模型，生成图片并返回给你。生成由人工智能完成，结果具有不确定性，我们不保证生成结果符合你的预期，也不保证其准确、完整或适用于特定用途。</p>
+<p>1.2 本服务使用的模型由第三方提供，我们可能根据可用性、质量与成本调整可选的模型、价格和功能，并在网站或插件中公布。</p>
+<h2>2. 账号</h2>
+<p>2.1 你应提供真实、有效的注册信息，并妥善保管账号、密码与令牌。通过你的账号或令牌进行的操作视为你本人的行为。</p>
+<p>2.2 插件登录时只使用一次你的密码，不会保存；插件会在你的账号下创建一个专用令牌并保存在你电脑的系统钥匙串中。发现账号或令牌被他人使用，请立即修改密码、在网站上删除相关令牌，并联系我们。</p>
+<p>2.3 未满十八周岁的用户，应在监护人同意和指导下使用本服务。</p>
+<h2>3. 费用、充值与退款</h2>
+<p>3.1 本服务按次计费，每次成功生成按所选模型与图片尺寸扣除账号余额，价格以<a href="https://api.rhchameleon.top/pricing" target="_blank" rel="noopener">价格页</a>公布的为准。生成失败（包括内容审核未通过、超时、服务异常）不扣费。</p>
+<p>3.2 你可以通过兑换码或网站提供的支付方式为账号充值。余额仅可用于本服务，不可转让或提现。</p>
+<p>3.3 除法律法规另有规定外，已充值或兑换的余额不予退款。因我们的原因导致本服务连续无法使用超过七日的，你可以联系我们申请退还未使用的余额。</p>
+<p>3.4 我们调整价格时会提前在网站公布，调整前已扣除的费用不受影响。</p>
+<h2>4. 使用规范</h2>
+<p>4.1 你应遵守中华人民共和国法律法规，包括《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》等。你不得利用本服务输入、生成或传播以下内容：</p>
+<ul><li>违反法律法规、危害国家安全与社会公共利益的内容；</li><li>淫秽、色情、暴力、恐怖或教唆犯罪的内容；</li><li>侵犯他人肖像权、名誉权、隐私权、著作权、商标权等合法权益的内容；</li><li>冒充他人，或用于诈骗、虚假宣传等误导公众的内容；</li><li>其他违反公序良俗或第三方模型提供者使用政策的内容。</li></ul>
+<p>4.2 你应确保上传的源图、参考图与提示词由你创作或已取得合法授权。</p>
+<p>4.3 公开发布、传播生成的图片时，你应按照有关规定标明其为人工智能生成，不得删除、篡改或隐匿生成内容中的标识。</p>
+<p>4.4 你不得对本服务进行破解、反向工程、恶意请求、转售令牌或以其他方式干扰本服务的正常运行。</p>
+<p>4.5 违反本节约定的，我们可以视情节拒绝相应请求、暂停或终止你的账号，并依法向有关部门报告。</p>
+<h2>5. 内容与知识产权</h2>
+<p>5.1 你上传的内容的权利仍归你或原权利人所有。你授权我们在提供本服务所必需的范围内处理这些内容（包括传输给第三方模型提供者）。</p>
+<p>5.2 在法律允许的范围内，生成的图片可由你自由使用，包括商业用途。人工智能生成内容能否受著作权保护取决于法律规定与个案情况，我们不对此作出保证；你应自行判断生成内容是否可能与他人作品相似并承担使用后果。</p>
+<p>5.3 插件、网站及其中的文字、界面、标识等的知识产权归我们或相关权利人所有。</p>
+<h2>6. 服务变更、中断与终止</h2>
+<p>6.1 本服务依赖第三方模型、云服务与网络，可能因维护、升级、第三方原因或不可抗力而中断。我们会尽力提前通知并尽快恢复。</p>
+<p>6.2 你可以随时停止使用本服务，并联系我们注销账号。账号注销后，未使用的余额按第 3 条处理。</p>
+<p>6.3 我们决定停止运营本服务的，将提前三十日在网站公告，并退还用户未使用的余额。</p>
+<h2>7. 责任限制</h2>
+<p>7.1 在法律允许的最大范围内，我们对因使用或无法使用本服务造成的间接损失不承担责任；我们对你承担的赔偿总额不超过你在损失发生前三个月内为本服务支付的费用。</p>
+<p>7.2 生成的图片仅供参考，不能替代专业的设计、工程或法律意见。</p>
+<h2>8. 协议修改</h2>
+<p>我们可能修改本协议，修改后的协议在网站公布后生效；涉及你重大权益的修改，我们会以网站公告或站内消息等方式提示。修改生效后继续使用本服务，即视为接受修改后的协议。</p>
+<h2>9. 法律适用与争议解决</h2>
+<p>本协议适用中华人民共和国法律（不含冲突法规则）。因本协议产生的争议，双方应友好协商；协商不成的，任何一方均可向我们所在地有管辖权的人民法院提起诉讼。</p>
+<h2>10. 语言版本</h2>
+<p>本协议提供中文和英文版本，两者如有不一致，以中文版本为准。</p>
+<h2>11. 联系我们</h2>
+<p>如对本协议有任何疑问，请联系：songqizhen006@gmail.com</p>
 </section>
 </div>

@@ -26,7 +26,6 @@ jobs:
       - name: Legal pages are built from their sources
         run: |
           python3 -m unittest discover -s website/legal
-          pip install opencc-python-reimplemented==0.1.7
           python3 website/legal/build.py --check
 
       - name: Lint the cloud API contract

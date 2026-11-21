@@ -111,6 +111,8 @@ a { color: var(--accent); }
 .doc blockquote p { margin: 4px 0; }
 .doc img { max-width: 100%; }
 .doc .missing { color: var(--muted); }
+/* The legal fragments leave room for new-api's fixed header; this page has no such header. */
+.doc .cm-doc { padding: 0 0 24px; max-width: none; }
 
 @media (max-width: 760px) {
   .site-header .wrap { height: auto; min-height: 56px; gap: 12px; }

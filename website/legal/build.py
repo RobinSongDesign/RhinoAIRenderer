@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-Builds the multilingual About, user agreement and privacy policy pages.
+Builds the About, user agreement and privacy policy pages in English and Chinese.
 
-Sources are Markdown per language in src/<doc>.<lang>.md (Traditional Chinese is converted from
-Simplified with OpenCC, so it is never edited by hand). Each output <doc>.html is one
-self-contained HTML fragment holding every language, switched by CSS-only tabs: new-api strips
-scripts from these settings and never sets the page language, so the reader picks the language.
-The same fragment is pasted into new-api (About / user agreement / privacy policy) and shown on
-rhchameleon.top.
+Sources are Markdown in src/<doc>.<lang>.md. Each output <doc>.html is one self-contained HTML
+fragment with the English text followed by the Chinese text. The same fragment is pasted into
+new-api (About / user agreement / privacy policy) and shown on rhchameleon.top.
+
+new-api renders these settings in a shadow root without a page container, directly under its
+fixed 3.5rem header, and copies its own stylesheets (including Tailwind's reset) into that root.
+The fragment therefore keeps clear of the header and sets list markers and heading weights
+explicitly instead of relying on browser defaults.
 
 Operator details come from legal.json; empty values show a placeholder in each language.
 
-Usage: python3 website/legal/build.py [--check]   (needs: pip install opencc-python-reimplemented)
+Usage: python3 website/legal/build.py [--check]
 """
 from __future__ import annotations
 
@@ -24,49 +26,37 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 DOCS = ("about", "terms", "privacy")
 
-# new-api's interface languages, in its own order of preference for Chinese users.
-LANGUAGES = (
-    ("zh-CN", "简体中文"),
-    ("zh-TW", "繁體中文"),
-    ("en", "English"),
-    ("ja", "日本語"),
-    ("fr", "Français"),
-    ("ru", "Русский"),
-    ("vi", "Tiếng Việt"),
-)
-DEFAULT_LANGUAGE = "zh-CN"
+# Languages in the order they appear on the page.
+LANGUAGES = ("en", "zh-CN")
 
 PLACEHOLDERS = {
-    "operator": {"zh-CN": "〔运营者名称〕", "en": "[Operator name]", "ja": "〔運営者名〕", "fr": "[Nom de l’exploitant]", "ru": "[Наименование оператора]", "vi": "[Tên đơn vị vận hành]"},
-    "email": {"zh-CN": "〔联系邮箱〕", "en": "[Contact e-mail]", "ja": "〔連絡先メール〕", "fr": "[Adresse e-mail de contact]", "ru": "[Контактный e-mail]", "vi": "[Email liên hệ]"},
-    "effective": {"zh-CN": "〔生效日期〕", "en": "[Effective date]", "ja": "〔施行日〕", "fr": "[Date d’entrée en vigueur]", "ru": "[Дата вступления в силу]", "vi": "[Ngày hiệu lực]"},
+    "operator": {"zh-CN": "〔运营者名称〕", "en": "[Operator name]"},
+    "email": {"zh-CN": "〔联系邮箱〕", "en": "[Contact e-mail]"},
+    "effective": {"zh-CN": "〔生效日期〕", "en": "[Effective date]"},
 }
-
-# Mainland terms OpenCC's Taiwan phrase table leaves in a mainland form.
-TW_FIXES = {"賬號": "帳號", "賬戶": "帳戶", "賬": "帳"}
 
 STYLE = """
 <style>
-.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: 8px 4px 32px; }
-.cm-doc .cm-lang-input { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
-.cm-doc .cm-lang-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
-.cm-doc .cm-lang-tabs label { cursor: pointer; padding: 4px 14px; border-radius: 999px; border: 1px solid rgba(128, 128, 128, 0.35); font-size: 13px; opacity: 0.8; user-select: none; }
-.cm-doc .cm-lang-tabs label:hover { opacity: 1; }
-.cm-doc .cm-lang { display: none; }
-.cm-doc h1 { font-size: 28px; line-height: 1.3; margin: 0 0 8px; }
-.cm-doc h2 { font-size: 19px; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
-.cm-doc h3 { font-size: 16px; margin: 20px 0 6px; }
-.cm-doc p, .cm-doc ul, .cm-doc ol { margin: 0 0 12px; }
-.cm-doc ul, .cm-doc ol { padding-left: 1.4em; }
-.cm-doc li { margin: 4px 0; }
+/* Clears new-api's fixed header (3.5rem); the website resets this padding. */
+.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: calc(3.5rem + 32px) 20px 48px; }
+/* Explicit styles: new-api's Tailwind reset reaches into the fragment. */
+.cm-doc h1 { font-size: 28px; line-height: 1.3; font-weight: 700; margin: 0 0 8px; }
+.cm-doc h2 { font-size: 19px; line-height: 1.4; font-weight: 700; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
+.cm-doc h3 { font-size: 16px; font-weight: 700; margin: 20px 0 6px; }
+.cm-doc p { margin: 0 0 12px; }
+.cm-doc ul, .cm-doc ol { margin: 0 0 12px; padding-left: 1.5em; }
+.cm-doc ul { list-style: disc outside; }
+.cm-doc ol { list-style: decimal outside; }
+.cm-doc li { display: list-item; margin: 4px 0; }
+.cm-doc strong { font-weight: 700; }
 .cm-doc .cm-meta { opacity: 0.7; font-size: 14px; margin-bottom: 20px; }
 .cm-doc a { color: inherit; text-decoration: underline; text-decoration-color: #e6007e; text-underline-offset: 3px; }
 .cm-doc code { font-size: 0.92em; padding: 1px 6px; border-radius: 6px; background: rgba(128, 128, 128, 0.15); }
 .cm-doc table { border-collapse: collapse; width: 100%; margin: 0 0 16px; display: block; overflow-x: auto; }
 .cm-doc th, .cm-doc td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 8px 10px; text-align: left; vertical-align: top; }
-.cm-doc th { background: rgba(128, 128, 128, 0.1); }
-.cm-doc .cm-brand { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
-__SWITCH__
+.cm-doc th { font-weight: 700; background: rgba(128, 128, 128, 0.1); }
+.cm-doc .cm-brand { display: block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
+.cm-doc .cm-sep { border: 0; height: 2px; margin: 56px 0 48px; background: linear-gradient(90deg, #00c8e0, #e6007e); opacity: 0.6; }
 </style>
 """
 
@@ -145,46 +135,20 @@ def fill(text: str, lang: str, values: dict) -> str:
         if key not in PLACEHOLDERS:
             raise KeyError("Unknown field {{%s}}" % key)
         given = (values.get(key) or "").strip()
-        return given or PLACEHOLDERS[key].get(lang, PLACEHOLDERS[key]["en"])
+        return given or PLACEHOLDERS[key][lang]
     return re.sub(r"\{\{(\w+)\}\}", value, text)
 
 
-def to_traditional(text: str) -> str:
-    import opencc  # Only needed for zh-TW; imported here so tests run without it.
-    converted = opencc.OpenCC("s2twp").convert(text)
-    for wrong, right in TW_FIXES.items():
-        converted = converted.replace(wrong, right)
-    return converted
-
-
 def build_doc(doc: str, sources: dict[str, str], values: dict) -> str:
-    """One fragment with every language. sources maps language code to Markdown; Traditional
-    Chinese is always converted from the Simplified Chinese source, never taken from its own."""
-    ids = {code: "cm-%s-%s" % (doc, code.lower()) for code, _ in LANGUAGES}
-    switch = "\n".join(
-        "#%s:checked ~ .cm-lang-%s { display: block; }\n"
-        "#%s:checked ~ .cm-lang-tabs label[for=\"%s\"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }"
-        % (ids[c], c.lower(), ids[c], ids[c]) for c, _ in LANGUAGES)
-    parts = ['<div class="cm-doc">', STYLE.replace("__SWITCH__", switch).strip()]
-    for code, _ in LANGUAGES:
-        checked = " checked" if code == DEFAULT_LANGUAGE else ""
-        parts.append('<input type="radio" class="cm-lang-input" name="cm-%s-lang" id="%s"%s>' % (doc, ids[code], checked))
-    parts.append('<div class="cm-lang-tabs">%s</div>' % "".join(
-        '<label for="%s" lang="%s">%s</label>' % (ids[c], c, html.escape(n)) for c, n in LANGUAGES))
-    for code, _ in LANGUAGES:
-        if code == "zh-TW":
-            md = to_traditional(fill(sources["zh-CN"], "zh-CN", values))
-        else:
-            md = fill(sources[code], code, values)
-        parts.append('<section class="cm-lang cm-lang-%s" lang="%s">\n<div class="cm-brand"></div>\n%s\n</section>' % (code.lower(), code, markdown(md)))
-    parts.append("</div>")
-    return "\n".join(parts) + "\n"
+    """One fragment: each language in LANGUAGES order, separated by a rule."""
+    sections = ['<section lang="%s">\n<div class="cm-brand"></div>\n%s\n</section>'
+                % (code, markdown(fill(sources[code], code, values))) for code in LANGUAGES]
+    return '<div class="cm-doc">\n%s\n%s\n</div>\n' % (STYLE.strip(), '\n<hr class="cm-sep">\n'.join(sections))
 
 
 def load_sources(doc: str) -> dict[str, str]:
-    """Markdown sources of a document; there is none for zh-TW (see build_doc)."""
-    return {code: (HERE / "src" / ("%s.%s.md" % (doc, code))).read_text(encoding="utf-8")
-            for code, _ in LANGUAGES if code != "zh-TW"}
+    """Markdown sources of a document, by language."""
+    return {code: (HERE / "src" / ("%s.%s.md" % (doc, code))).read_text(encoding="utf-8") for code in LANGUAGES}
 
 
 def main(argv: list[str]) -> int:

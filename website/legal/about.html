@@ -1,74 +1,27 @@
 <div class="cm-doc">
 <style>
-.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: 8px 4px 32px; }
-.cm-doc .cm-lang-input { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
-.cm-doc .cm-lang-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
-.cm-doc .cm-lang-tabs label { cursor: pointer; padding: 4px 14px; border-radius: 999px; border: 1px solid rgba(128, 128, 128, 0.35); font-size: 13px; opacity: 0.8; user-select: none; }
-.cm-doc .cm-lang-tabs label:hover { opacity: 1; }
-.cm-doc .cm-lang { display: none; }
-.cm-doc h1 { font-size: 28px; line-height: 1.3; margin: 0 0 8px; }
-.cm-doc h2 { font-size: 19px; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
-.cm-doc h3 { font-size: 16px; margin: 20px 0 6px; }
-.cm-doc p, .cm-doc ul, .cm-doc ol { margin: 0 0 12px; }
-.cm-doc ul, .cm-doc ol { padding-left: 1.4em; }
-.cm-doc li { margin: 4px 0; }
+/* Clears new-api's fixed header (3.5rem); the website resets this padding. */
+.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: calc(3.5rem + 32px) 20px 48px; }
+/* Explicit styles: new-api's Tailwind reset reaches into the fragment. */
+.cm-doc h1 { font-size: 28px; line-height: 1.3; font-weight: 700; margin: 0 0 8px; }
+.cm-doc h2 { font-size: 19px; line-height: 1.4; font-weight: 700; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
+.cm-doc h3 { font-size: 16px; font-weight: 700; margin: 20px 0 6px; }
+.cm-doc p { margin: 0 0 12px; }
+.cm-doc ul, .cm-doc ol { margin: 0 0 12px; padding-left: 1.5em; }
+.cm-doc ul { list-style: disc outside; }
+.cm-doc ol { list-style: decimal outside; }
+.cm-doc li { display: list-item; margin: 4px 0; }
+.cm-doc strong { font-weight: 700; }
 .cm-doc .cm-meta { opacity: 0.7; font-size: 14px; margin-bottom: 20px; }
 .cm-doc a { color: inherit; text-decoration: underline; text-decoration-color: #e6007e; text-underline-offset: 3px; }
 .cm-doc code { font-size: 0.92em; padding: 1px 6px; border-radius: 6px; background: rgba(128, 128, 128, 0.15); }
 .cm-doc table { border-collapse: collapse; width: 100%; margin: 0 0 16px; display: block; overflow-x: auto; }
 .cm-doc th, .cm-doc td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 8px 10px; text-align: left; vertical-align: top; }
-.cm-doc th { background: rgba(128, 128, 128, 0.1); }
-.cm-doc .cm-brand { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
-#cm-about-zh-cn:checked ~ .cm-lang-zh-cn { display: block; }
-#cm-about-zh-cn:checked ~ .cm-lang-tabs label[for="cm-about-zh-cn"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-about-zh-tw:checked ~ .cm-lang-zh-tw { display: block; }
-#cm-about-zh-tw:checked ~ .cm-lang-tabs label[for="cm-about-zh-tw"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-about-en:checked ~ .cm-lang-en { display: block; }
-#cm-about-en:checked ~ .cm-lang-tabs label[for="cm-about-en"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-about-ja:checked ~ .cm-lang-ja { display: block; }
-#cm-about-ja:checked ~ .cm-lang-tabs label[for="cm-about-ja"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-about-fr:checked ~ .cm-lang-fr { display: block; }
-#cm-about-fr:checked ~ .cm-lang-tabs label[for="cm-about-fr"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-about-ru:checked ~ .cm-lang-ru { display: block; }
-#cm-about-ru:checked ~ .cm-lang-tabs label[for="cm-about-ru"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
-#cm-about-vi:checked ~ .cm-lang-vi { display: block; }
-#cm-about-vi:checked ~ .cm-lang-tabs label[for="cm-about-vi"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+.cm-doc th { font-weight: 700; background: rgba(128, 128, 128, 0.1); }
+.cm-doc .cm-brand { display: block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
+.cm-doc .cm-sep { border: 0; height: 2px; margin: 56px 0 48px; background: linear-gradient(90deg, #00c8e0, #e6007e); opacity: 0.6; }
 </style>
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-zh-cn" checked>
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-zh-tw">
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-en">
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-ja">
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-fr">
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-ru">
-<input type="radio" class="cm-lang-input" name="cm-about-lang" id="cm-about-vi">
-<div class="cm-lang-tabs"><label for="cm-about-zh-cn" lang="zh-CN">简体中文</label><label for="cm-about-zh-tw" lang="zh-TW">繁體中文</label><label for="cm-about-en" lang="en">English</label><label for="cm-about-ja" lang="ja">日本語</label><label for="cm-about-fr" lang="fr">Français</label><label for="cm-about-ru" lang="ru">Русский</label><label for="cm-about-vi" lang="vi">Tiếng Việt</label></div>
-<section class="cm-lang cm-lang-zh-cn" lang="zh-CN">
-<div class="cm-brand"></div>
-<h1>关于 Chameleon</h1>
-<p>Chameleon（变色龙）是一款 Rhino AI 渲染插件。它把 Rhino 视口里的模型交给图像生成模型，几十秒内得到写实的效果图，并支持参考图、局部修改、版本对比和批量渲染。</p>
-<h2>我们做什么</h2>
-<ul><li><strong>视口直接出图</strong>：保留构图和视角，支持 1K、2K、4K 与多种画幅比例。</li><li><strong>参考图控制风格</strong>：用风格、材质、物体参考图引导结果。</li><li><strong>历史与对比</strong>：每一版都记录在版本树里，可随时回到任意一版继续修改。</li><li><strong>按张计费</strong>：无需订阅，用多少扣多少。</li></ul>
-<h2>如何开始</h2>
-<ol><li>在 <a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a> 注册账号，并充值或兑换额度。</li><li>安装插件，在 Rhino 中运行 <code>Chameleon</code> 命令，用账号密码登录。</li><li>捕获视口，写下想要的效果，生成图片。</li></ol>
-<p>详细说明见 <a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">使用文档</a>。</p>
-<h2>联系我们</h2>
-<ul><li>官网：<a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>账号与充值：<a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>邮箱：songqizhen006@gmail.com</li></ul>
-<p>Chameleon 由 Robin 开发和运营。</p>
-</section>
-<section class="cm-lang cm-lang-zh-tw" lang="zh-TW">
-<div class="cm-brand"></div>
-<h1>關於 Chameleon</h1>
-<p>Chameleon（變色龍）是一款 Rhino AI 渲染外掛。它把 Rhino 視口裡的模型交給影象生成模型，幾十秒內得到寫實的效果圖，並支援參考圖、區域性修改、版本對比和批次渲染。</p>
-<h2>我們做什麼</h2>
-<ul><li><strong>視口直接出圖</strong>：保留構圖和視角，支援 1K、2K、4K 與多種畫幅比例。</li><li><strong>參考圖控制風格</strong>：用風格、材質、物體參考圖引導結果。</li><li><strong>歷史與對比</strong>：每一版都記錄在版本樹裡，可隨時回到任意一版繼續修改。</li><li><strong>按張計費</strong>：無需訂閱，用多少扣多少。</li></ul>
-<h2>如何開始</h2>
-<ol><li>在 <a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a> 註冊帳號，並充值或兌換額度。</li><li>安裝外掛，在 Rhino 中執行 <code>Chameleon</code> 命令，用帳號密碼登入。</li><li>捕獲視口，寫下想要的效果，生成圖片。</li></ol>
-<p>詳細說明見 <a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">使用文件</a>。</p>
-<h2>聯絡我們</h2>
-<ul><li>官網：<a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>帳號與充值：<a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>郵箱：songqizhen006@gmail.com</li></ul>
-<p>Chameleon 由 Robin 開發和運營。</p>
-</section>
-<section class="cm-lang cm-lang-en" lang="en">
+<section lang="en">
 <div class="cm-brand"></div>
 <h1>About Chameleon</h1>
 <p>Chameleon is an AI rendering plug-in for Rhino. It sends the model in your Rhino viewport to an image generation model and returns a photorealistic rendering within seconds, with reference images, targeted edits, version comparison and batch rendering.</p>
@@ -81,56 +34,18 @@
 <ul><li>Website: <a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>Account and top-up: <a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>E-mail: songqizhen006@gmail.com</li></ul>
 <p>Chameleon is developed and operated by Robin.</p>
 </section>
-<section class="cm-lang cm-lang-ja" lang="ja">
+<hr class="cm-sep">
+<section lang="zh-CN">
 <div class="cm-brand"></div>
-<h1>Chameleon について</h1>
-<p>Chameleon（カメレオン）は Rhino 用の AI レンダリングプラグインです。Rhino のビューポートのモデルを画像生成モデルに渡し、数十秒でフォトリアルなパースを生成します。参考画像、部分修正、バージョン比較、一括レンダリングにも対応しています。</p>
-<h2>できること</h2>
-<ul><li><strong>ビューポートから直接生成</strong>：構図と視点を保ったまま、1K・2K・4K と多様なアスペクト比で出力します。</li><li><strong>参考画像でスタイルを指定</strong>：スタイル・素材・オブジェクトの参考画像で結果を導きます。</li><li><strong>履歴と比較</strong>：すべてのバージョンをバージョンツリーに記録し、いつでも任意のバージョンから続けられます。</li><li><strong>1 枚ごとの課金</strong>：サブスクリプション不要、使った分だけお支払いいただきます。</li></ul>
-<h2>はじめ方</h2>
-<ol><li><a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a> でアカウントを作成し、チャージまたはコードの引き換えを行います。</li><li>プラグインをインストールし、Rhino で <code>Chameleon</code> コマンドを実行してアカウントでログインします。</li><li>ビューポートをキャプチャし、求めるイメージを入力して生成します。</li></ol>
-<p>詳しくは<a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">ドキュメント</a>をご覧ください。</p>
-<h2>お問い合わせ</h2>
-<ul><li>ウェブサイト：<a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>アカウントとチャージ：<a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>メール：songqizhen006@gmail.com</li></ul>
-<p>Chameleon は Robin が開発・運営しています。</p>
-</section>
-<section class="cm-lang cm-lang-fr" lang="fr">
-<div class="cm-brand"></div>
-<h1>À propos de Chameleon</h1>
-<p>Chameleon est un plug-in de rendu par IA pour Rhino. Il transmet le modèle de votre fenêtre Rhino à un modèle de génération d’images et produit en quelques secondes un rendu photoréaliste, avec images de référence, retouches ciblées, comparaison de versions et rendu par lots.</p>
-<h2>Ce que vous pouvez faire</h2>
-<ul><li><strong>Rendre directement depuis la fenêtre</strong> : la composition et le point de vue sont conservés, en 1K, 2K ou 4K et dans de nombreux formats.</li><li><strong>Guider le style avec des références</strong> : des images de style, de matériau et d’objet orientent le résultat.</li><li><strong>Historique et comparaison</strong> : chaque version est conservée dans une arborescence ; reprenez à partir de n’importe laquelle.</li><li><strong>Paiement à l’image</strong> : sans abonnement, vous ne payez que ce que vous générez.</li></ul>
-<h2>Pour commencer</h2>
-<ol><li>Créez un compte sur <a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a> et rechargez votre solde ou utilisez un code.</li><li>Installez le plug-in, lancez la commande <code>Chameleon</code> dans Rhino et connectez-vous avec votre compte.</li><li>Capturez la fenêtre, décrivez le rendu souhaité et lancez la génération.</li></ol>
-<p>Consultez la <a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">documentation</a> pour plus de détails.</p>
-<h2>Contact</h2>
-<ul><li>Site web : <a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>Compte et recharge : <a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>E-mail : songqizhen006@gmail.com</li></ul>
-<p>Chameleon est développé et exploité par Robin.</p>
-</section>
-<section class="cm-lang cm-lang-ru" lang="ru">
-<div class="cm-brand"></div>
-<h1>О Chameleon</h1>
-<p>Chameleon — плагин ИИ-рендеринга для Rhino. Он передаёт модель из видового окна Rhino модели генерации изображений и за несколько секунд создаёт фотореалистичную визуализацию. Поддерживаются референсы, точечные правки, сравнение версий и пакетный рендеринг.</p>
-<h2>Возможности</h2>
-<ul><li><strong>Рендер прямо из видового окна</strong>: композиция и ракурс сохраняются, разрешение 1K, 2K или 4K, множество соотношений сторон.</li><li><strong>Стиль по референсам</strong>: референсы стиля, материала и объектов направляют результат.</li><li><strong>История и сравнение</strong>: каждая версия хранится в дереве версий; можно продолжить с любой из них.</li><li><strong>Оплата за изображение</strong>: без подписки, вы платите только за сгенерированное.</li></ul>
-<h2>Как начать</h2>
-<ol><li>Зарегистрируйтесь на <a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a> и пополните баланс или активируйте код.</li><li>Установите плагин, выполните в Rhino команду <code>Chameleon</code> и войдите в свой аккаунт.</li><li>Захватите видовое окно, опишите желаемый результат и запустите генерацию.</li></ol>
-<p>Подробности — в <a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">документации</a>.</p>
-<h2>Контакты</h2>
-<ul><li>Сайт: <a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>Аккаунт и пополнение: <a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>E-mail: songqizhen006@gmail.com</li></ul>
-<p>Chameleon разрабатывается и поддерживается Robin.</p>
-</section>
-<section class="cm-lang cm-lang-vi" lang="vi">
-<div class="cm-brand"></div>
-<h1>Giới thiệu Chameleon</h1>
-<p>Chameleon là plug-in kết xuất bằng AI cho Rhino. Plug-in gửi mô hình trong khung nhìn Rhino tới mô hình tạo ảnh và trả về ảnh phối cảnh chân thực chỉ sau vài chục giây, hỗ trợ ảnh tham chiếu, chỉnh sửa cục bộ, so sánh phiên bản và kết xuất hàng loạt.</p>
-<h2>Bạn có thể làm gì</h2>
-<ul><li><strong>Kết xuất trực tiếp từ khung nhìn</strong>: giữ nguyên bố cục và góc nhìn, độ phân giải 1K, 2K, 4K với nhiều tỷ lệ khung hình.</li><li><strong>Định hướng phong cách bằng ảnh tham chiếu</strong>: ảnh tham chiếu về phong cách, vật liệu và vật thể dẫn hướng kết quả.</li><li><strong>Lịch sử và so sánh</strong>: mọi phiên bản được lưu trong cây phiên bản; có thể tiếp tục từ bất kỳ phiên bản nào.</li><li><strong>Trả tiền theo ảnh</strong>: không cần thuê bao, dùng bao nhiêu trả bấy nhiêu.</li></ul>
-<h2>Bắt đầu</h2>
-<ol><li>Tạo tài khoản tại <a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a>, sau đó nạp tiền hoặc đổi mã.</li><li>Cài plug-in, chạy lệnh <code>Chameleon</code> trong Rhino và đăng nhập bằng tài khoản.</li><li>Chụp khung nhìn, mô tả hiệu ứng mong muốn và bấm tạo ảnh.</li></ol>
-<p>Xem chi tiết trong <a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">tài liệu</a>.</p>
-<h2>Liên hệ</h2>
-<ul><li>Trang web: <a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>Tài khoản và nạp tiền: <a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>Email: songqizhen006@gmail.com</li></ul>
-<p>Chameleon do Robin phát triển và vận hành.</p>
+<h1>关于 Chameleon</h1>
+<p>Chameleon（变色龙）是一款 Rhino AI 渲染插件。它把 Rhino 视口里的模型交给图像生成模型，几十秒内得到写实的效果图，并支持参考图、局部修改、版本对比和批量渲染。</p>
+<h2>我们做什么</h2>
+<ul><li><strong>视口直接出图</strong>：保留构图和视角，支持 1K、2K、4K 与多种画幅比例。</li><li><strong>参考图控制风格</strong>：用风格、材质、物体参考图引导结果。</li><li><strong>历史与对比</strong>：每一版都记录在版本树里，可随时回到任意一版继续修改。</li><li><strong>按张计费</strong>：无需订阅，用多少扣多少。</li></ul>
+<h2>如何开始</h2>
+<ol><li>在 <a href="https://api.rhchameleon.top/sign-up" target="_blank" rel="noopener">api.rhchameleon.top</a> 注册账号，并充值或兑换额度。</li><li>安装插件，在 Rhino 中运行 <code>Chameleon</code> 命令，用账号密码登录。</li><li>捕获视口，写下想要的效果，生成图片。</li></ol>
+<p>详细说明见 <a href="https://rhchameleon.top/docs/" target="_blank" rel="noopener">使用文档</a>。</p>
+<h2>联系我们</h2>
+<ul><li>官网：<a href="https://rhchameleon.top" target="_blank" rel="noopener">https://rhchameleon.top</a></li><li>账号与充值：<a href="https://api.rhchameleon.top" target="_blank" rel="noopener">https://api.rhchameleon.top</a></li><li>邮箱：songqizhen006@gmail.com</li></ul>
+<p>Chameleon 由 Robin 开发和运营。</p>
 </section>
 </div>

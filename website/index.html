@@ -1,24 +1,27 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-title-zh="Chameleon · Rhino AI 渲染插件" data-title-en="Chameleon · AI rendering for Rhino">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chameleon · Rhino AI 渲染插件</title>
-  <meta name="description" content="Chameleon 是 Rhino 的 AI 渲染与改图插件：截取视口，一键生成写实效果图，在 Rhino 里直接修改和对比。">
+  <meta name="description" content="Chameleon is an AI rendering plug-in for Rhino. Chameleon 是 Rhino 的 AI 渲染与改图插件。">
   <link rel="icon" href="/assets/brand/logo.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/brand/logo-192.png">
   <link rel="stylesheet" href="/assets/site.css">
+  <script src="/assets/lang.js"></script>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
       <a class="brand" href="/"><img src="/assets/brand/logo.svg" alt="">Chameleon</a>
       <nav class="nav">
-        <a href="/docs/">文档</a>
-        <a href="https://api.rhchameleon.top/pricing">价格</a>
-        <a href="https://api.rhchameleon.top/sign-in">登录</a>
-        <a class="button" href="https://api.rhchameleon.top/sign-up">注册账号</a>
+        <a href="/docs/"><span class="l-zh">文档</span><span class="l-en">Docs</span></a>
+        <a href="https://api.rhchameleon.top/pricing"><span class="l-zh">价格</span><span class="l-en">Pricing</span></a>
+        <a href="https://api.rhchameleon.top/sign-in"><span class="l-zh">登录</span><span class="l-en">Sign in</span></a>
+        <a class="lang-toggle l-zh" href="?lang=en" data-set-lang="en" lang="en">English</a>
+        <a class="lang-toggle l-en" href="?lang=zh" data-set-lang="zh" lang="zh-CN">中文</a>
+        <a class="button" href="https://api.rhchameleon.top/sign-up"><span class="l-zh">注册账号</span><span class="l-en">Sign up</span></a>
       </nav>
     </div>
   </header>
@@ -26,34 +29,39 @@
   <main>
     <section class="hero">
       <div class="wrap">
-        <h1>在 Rhino 里，把模型变成效果图</h1>
-        <p>Chameleon 是 Rhino 的 AI 渲染插件。截取当前视口，写一句想要的效果，几十秒后得到写实的渲染图；不满意就接着改，每一版都留在历史里。</p>
+        <h1><span class="l-zh">在 Rhino 里，把模型变成效果图</span><span class="l-en">Turn your Rhino model into a rendering</span></h1>
+        <p class="l-zh">Chameleon 是 Rhino 的 AI 渲染插件。截取当前视口，写一句想要的效果，几十秒后得到写实的渲染图；不满意就接着改，每一版都留在历史里。</p>
+        <p class="l-en">Chameleon is an AI rendering plug-in for Rhino. Capture the viewport, describe the look you want, and get a photorealistic rendering in under a minute. Not quite right? Keep refining; every version stays in the history.</p>
         <div class="actions">
-          <a class="button" href="/docs/getting-started">开始使用</a>
-          <a class="button secondary" href="https://api.rhchameleon.top/sign-up">注册账号</a>
+          <a class="button" href="/docs/getting-started"><span class="l-zh">开始使用</span><span class="l-en">Get started</span></a>
+          <a class="button secondary" href="https://api.rhchameleon.top/sign-up"><span class="l-zh">注册账号</span><span class="l-en">Create an account</span></a>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="wrap">
-        <h2>能做什么</h2>
+        <h2><span class="l-zh">能做什么</span><span class="l-en">What it does</span></h2>
         <div class="grid">
           <div class="card">
-            <h3>视口直接出图</h3>
-            <p>保留模型的构图和视角，生成写实渲染。支持 1K、2K、4K 和多种画幅比例。</p>
+            <h3><span class="l-zh">视口直接出图</span><span class="l-en">Render from the viewport</span></h3>
+            <p class="l-zh">保留模型的构图和视角，生成写实渲染。支持 1K、2K、4K 和多种画幅比例。</p>
+            <p class="l-en">Keeps your composition and camera. 1K, 2K or 4K output in many aspect ratios.</p>
           </div>
           <div class="card">
-            <h3>参考图控制风格</h3>
-            <p>加入风格、材质、物体参考图，让结果贴近你想要的气氛和质感。</p>
+            <h3><span class="l-zh">参考图控制风格</span><span class="l-en">Guide the style</span></h3>
+            <p class="l-zh">加入风格、材质、物体参考图，让结果贴近你想要的气氛和质感。</p>
+            <p class="l-en">Add style, material and object references to steer the mood and materials.</p>
           </div>
           <div class="card">
-            <h3>历史与对比</h3>
-            <p>每次生成都记录在版本树里，滑块对比前后效果，随时回到任意一版继续修改。</p>
+            <h3><span class="l-zh">历史与对比</span><span class="l-en">History and comparison</span></h3>
+            <p class="l-zh">每次生成都记录在版本树里，滑块对比前后效果，随时回到任意一版继续修改。</p>
+            <p class="l-en">Every generation is kept in a version tree. Compare before and after with a slider and continue from any version.</p>
           </div>
           <div class="card">
-            <h3>批量渲染</h3>
-            <p>一次处理多个命名视图，适合方案汇报时快速出一整套图。</p>
+            <h3><span class="l-zh">批量渲染</span><span class="l-en">Batch rendering</span></h3>
+            <p class="l-zh">一次处理多个命名视图，适合方案汇报时快速出一整套图。</p>
+            <p class="l-en">Render several named views at once, ideal for a full set of images for a presentation.</p>
           </div>
         </div>
       </div>
@@ -61,27 +69,29 @@
 
     <section class="section">
       <div class="wrap">
-        <h2>三步开始</h2>
+        <h2><span class="l-zh">三步开始</span><span class="l-en">Three steps</span></h2>
         <ol class="steps">
-          <li>在本站<a href="https://api.rhchameleon.top/sign-up">注册账号</a>，并在钱包里充值或兑换额度。</li>
-          <li>安装插件，在 Rhino 中运行 <code>Chameleon</code> 命令，用账号密码登录。</li>
-          <li>捕获视口、写下想要的效果，点击「生成图片」。</li>
+          <li><span class="l-zh">在本站<a href="https://api.rhchameleon.top/sign-up">注册账号</a>，并在钱包里充值或兑换额度。</span><span class="l-en"><a href="https://api.rhchameleon.top/sign-up">Create an account</a> and top up or redeem credit in the wallet.</span></li>
+          <li><span class="l-zh">安装插件，在 Rhino 中运行 <code>Chameleon</code> 命令，用账号密码登录。</span><span class="l-en">Install the plug-in, run the <code>Chameleon</code> command in Rhino and sign in.</span></li>
+          <li><span class="l-zh">捕获视口、写下想要的效果，点击「生成图片」。</span><span class="l-en">Capture the viewport, describe the look and click "Generate image".</span></li>
         </ol>
-        <p style="margin-top:16px"><a href="/docs/getting-started">查看完整的安装与使用说明 →</a></p>
+        <p style="margin-top:16px"><a href="/docs/getting-started"><span class="l-zh">查看完整的安装与使用说明 →</span><span class="l-en">Read the full installation and usage guide →</span></a></p>
       </div>
     </section>
 
     <section class="section">
       <div class="wrap">
-        <h2>按张计费</h2>
-        <p>不需要订阅，用多少扣多少，价格按图片尺寸区分。各模型的单价见<a href="https://api.rhchameleon.top/pricing">价格页</a>，充值与兑换说明见<a href="/docs/account">账号、充值与余额</a>。</p>
+        <h2><span class="l-zh">按张计费</span><span class="l-en">Pay per image</span></h2>
+        <p class="l-zh">不需要订阅，用多少扣多少，价格按图片尺寸区分。各模型的单价见<a href="https://api.rhchameleon.top/pricing">价格页</a>，充值与兑换说明见<a href="/docs/account">账号、充值与余额</a>。</p>
+        <p class="l-en">No subscription: you pay for what you generate, priced by image size. See the <a href="https://api.rhchameleon.top/pricing">pricing page</a> for each model, and <a href="/docs/account">Account, top-up and balance</a> for how to top up.</p>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
-      Chameleon · Rhino AI 渲染插件 · <a href="/docs/">文档</a> · <a href="/docs/about">关于</a> · <a href="/docs/terms">用户协议</a> · <a href="/docs/privacy">隐私政策</a> · 遇到连接问题？查看<a href="/docs/network">无法连接网络</a>
+      <span class="l-zh">Chameleon · Rhino AI 渲染插件 · <a href="/docs/">文档</a> · <a href="/docs/about">关于</a> · <a href="/docs/terms">用户协议</a> · <a href="/docs/privacy">隐私政策</a> · 遇到连接问题？查看<a href="/docs/network">无法连接网络</a></span>
+      <span class="l-en">Chameleon · AI rendering for Rhino · <a href="/docs/">Docs</a> · <a href="/docs/about">About</a> · <a href="/docs/terms">User agreement</a> · <a href="/docs/privacy">Privacy policy</a> · Connection problems? See <a href="/docs/network">Cannot connect to the internet</a></span>
     </div>
   </footer>
 </body>

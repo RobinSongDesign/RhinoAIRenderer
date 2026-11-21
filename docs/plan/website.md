@@ -10,7 +10,14 @@
 | `api.rhchameleon.top` | new-api：注册、登录、钱包、令牌、价格、生成接口 | 已有的 new-api 容器 |
 | `api.robinsong.top` | 同上，旧域名，保留给旧版插件 | 已有的 Nginx 站点 |
 
-## 1. 文档的写法
+## 1. 中英文
+
+- 整站中英双语：首页、导航、页脚用 `.l-zh` / `.l-en` 标记两种语言的文字；`website/assets/lang.js` 在页面绘制前给 `<html>` 设置 `data-lang`，`site.css` 只显示当前语言。
+- 默认语言按顺序决定：地址里的 `?lang=zh|en`（插件的「查看解决方法」会带上插件的界面语言）→ 访客在本站的选择（存在浏览器的 localStorage）→ 系统/浏览器语言（中文为 `zh`，英文为 `en`，其他语言显示英文）。右上角「English / 中文」切换并记住。
+- 文档：中文 `<slug>.md`，英文 `<slug>.en.md`，两份内容保持一致；切换语言时阅读器重新加载对应文件。新增文档时两种语言一起写，并在 `docs.js` 的 `PAGES` 中登记两种标题。
+- 关于、用户协议、隐私政策的 HTML 同时包含中英文（供 new-api 使用），网站按当前语言只显示其中一种。
+
+## 1.0 文档的写法
 
 - 文档是 `website/docs/` 下的 Markdown 文件，文件名即地址（`network.md` → `/docs/network`）。新增页面后，在 `website/assets/docs.js` 的 `PAGES` 中登记标题和顺序。
 - 标题自动生成锚点：小写，空格换成 `-`，去掉标点，例如 `## Windows 防火墙` → `#windows-防火墙`。

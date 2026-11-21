@@ -31,6 +31,24 @@
 
 * { box-sizing: border-box; }
 
+/* Bilingual text: lang.js sets data-lang on <html>; only that language's elements show. */
+html[data-lang="en"] .l-zh,
+html[data-lang="zh"] .l-en { display: none !important; }
+/* The legal fragments carry both languages (for new-api); the site shows the selected one. */
+html[data-lang="en"] .doc .cm-doc section[lang="zh-CN"],
+html[data-lang="zh"] .doc .cm-doc section[lang="en"],
+html[data-lang] .doc .cm-doc .cm-sep { display: none; }
+
+.lang-toggle {
+  font-size: 14px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text) !important;
+  text-decoration: none;
+}
+.lang-toggle:hover { border-color: var(--accent); }
+
 body {
   margin: 0;
   background: var(--bg);

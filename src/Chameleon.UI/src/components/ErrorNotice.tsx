@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { RpcError } from '../bridge/types';
 import { helpLinkFor } from '../help/helpLinks';
 import { isMessageKey } from '../i18n';
-import { useBridge, useT } from '../state/services';
+import { useAppStore, useBridge, useT } from '../state/services';
 import { Button } from './Button';
 import styles from './components.module.css';
 
@@ -13,8 +13,9 @@ import styles from './components.module.css';
 export function ErrorNotice({ error }: { error: RpcError }) {
   const t = useT();
   const bridge = useBridge();
+  const language = useAppStore((s) => s.language);
   const [open, setOpen] = useState(false);
-  const help = helpLinkFor(error.code);
+  const help = helpLinkFor(error.code, language);
   const key = `error.${error.code}`;
   const message = isMessageKey(key) ? t(key) : t('error.internal');
   const detail = error.detail || error.message;

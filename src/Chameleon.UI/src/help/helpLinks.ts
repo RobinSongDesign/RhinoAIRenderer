@@ -1,4 +1,4 @@
-import type { ErrorCode } from '../bridge/types';
+import type { ErrorCode, Language } from '../bridge/types';
 
 /** The product website; its documentation explains how to fix problems on the user's computer. */
 export const WEBSITE_URL = 'https://rhchameleon.top';
@@ -14,7 +14,13 @@ const HELP_BY_ERROR: Partial<Record<ErrorCode, string>> = {
   network: HELP_PAGES.network,
 };
 
-/** The help page for an error code, if the documentation has one. */
-export function helpLinkFor(code: string): string | undefined {
-  return Object.prototype.hasOwnProperty.call(HELP_BY_ERROR, code) ? HELP_BY_ERROR[code as ErrorCode] : undefined;
+/**
+ * The help page for an error code, if the documentation has one, in the plug-in's UI language
+ * (the website otherwise follows the system language, which may differ from the plug-in's).
+ */
+export function helpLinkFor(code: string, language: Language): string | undefined {
+  if (!Object.prototype.hasOwnProperty.call(HELP_BY_ERROR, code)) {
+    return undefined;
+  }
+  return `${HELP_BY_ERROR[code as ErrorCode]}?lang=${language}`;
 }

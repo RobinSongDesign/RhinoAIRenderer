@@ -18,6 +18,13 @@
 - Markdown 由内置的 `website/assets/vendor/marked-18.1.3.umd.js`（MIT，许可证在同目录）渲染，不依赖外部 CDN，国内访问不受影响。
 - 本地预览：用 `deploy/website/nginx-rhchameleon.conf`（把 `root` 改成本地路径）启动 Nginx。直接用 `python -m http.server` 时 `/docs/network` 这类地址无法访问，只能看首页。
 
+## 1.1 品牌与条款
+
+- 徽标在 `website/assets/brand/`：`logo.svg`（青到洋红渐变圆底，白色变色龙，用作图标、头像、网站图标）、`logo-mark.svg`（渐变变色龙，透明底，用于浅色背景上的大尺寸展示），以及 512 / 192 / 64 / 32 像素的 PNG 和 `website/favicon.ico`。渐变为 `#00C8E0` → `#E6007E`；网页正文强调色在浅色模式为 `#b0006b`、深色模式为 `#4fd6ea`，以保证可读性。
+- 徽标由用户提供的原始变色龙图标描摹为矢量后重新着色，眼睛按原图重画。修改时直接编辑 SVG，再用浏览器导出各尺寸 PNG。
+- new-api 后台：「徽标 URL」填 `https://rhchameleon.top/assets/brand/logo-192.png`；「关于」「用户协议」「隐私政策」三栏粘贴 `website/docs/about.md`、`terms.md`、`privacy.md` 的全文（new-api 会把 Markdown 渲染出来）。网站与后台使用同一份文字，修改时两处一起更新。
+- 用户协议与隐私政策中的「〔运营者名称〕」「〔联系邮箱〕」「〔生效日期〕」由运营者填写；这两份文本不是法律意见，正式收费前建议请律师审阅。
+
 ## 2. 部署（东京服务器，2026-11）
 
 服务器已有 Nginx 与 certbot。以下命令都需要 `sudo`。

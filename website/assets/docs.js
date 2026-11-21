@@ -10,7 +10,10 @@
   var PAGES = [
     { slug: 'getting-started', title: '安装与开始使用' },
     { slug: 'account', title: '账号、充值与余额' },
-    { slug: 'network', title: '无法连接网络' }
+    { slug: 'network', title: '无法连接网络' },
+    { slug: 'about', title: '关于 Chameleon', group: '关于' },
+    { slug: 'terms', title: '用户协议', group: '关于' },
+    { slug: 'privacy', title: '隐私政策', group: '关于' }
   ];
 
   function currentSlug() {
@@ -21,7 +24,16 @@
 
   function renderNav(active) {
     var list = document.getElementById('docs-pages');
+    var group = '';
     PAGES.forEach(function (page) {
+      // A page with a new group starts a heading in the list (e.g. "关于" before the legal pages).
+      if (page.group && page.group !== group) {
+        group = page.group;
+        var heading = document.createElement('li');
+        heading.className = 'docs-group';
+        heading.textContent = group;
+        list.appendChild(heading);
+      }
       var item = document.createElement('li');
       var link = document.createElement('a');
       link.href = '/docs/' + page.slug;

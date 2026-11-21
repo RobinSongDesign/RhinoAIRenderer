@@ -5,8 +5,10 @@
   --text: #1d1f22;
   --muted: #5f646b;
   --border: #e3e1dc;
-  --accent: #2f6b4f;
-  --accent-soft: #e6f0ea;
+  /* Brand: cyan to magenta (see assets/brand/logo.svg). Text accents use the deeper magenta for contrast. */
+  --accent: #b0006b;
+  --accent-soft: #fbe7f2;
+  --brand-gradient: linear-gradient(135deg, #0097b2, #c4006f);
   --code-bg: #f2f1ec;
   --radius: 10px;
   --max: 1080px;
@@ -20,8 +22,8 @@
     --text: #e8e6e1;
     --muted: #a3a7ad;
     --border: #2d3035;
-    --accent: #7cc4a0;
-    --accent-soft: #1f3129;
+    --accent: #4fd6ea;
+    --accent-soft: #10303a;
     --code-bg: #24272b;
     color-scheme: dark;
   }
@@ -43,8 +45,8 @@ a { color: var(--accent); }
 /* Header */
 .site-header { border-bottom: 1px solid var(--border); background: var(--surface); }
 .site-header .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
-.brand { font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; letter-spacing: 0.2px; }
-.brand span { color: var(--accent); }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; letter-spacing: 0.2px; }
+.brand img { width: 30px; height: 30px; }
 .nav { display: flex; align-items: center; gap: 20px; margin-left: auto; flex-wrap: wrap; }
 .nav a { color: var(--muted); text-decoration: none; font-size: 15px; }
 .nav a:hover, .nav a[aria-current="page"] { color: var(--text); }
@@ -54,12 +56,11 @@ a { color: var(--accent); }
   display: inline-block;
   padding: 9px 18px;
   border-radius: var(--radius);
-  background: var(--accent);
+  background: var(--brand-gradient);
   color: #fff;
   text-decoration: none;
   font-weight: 600;
 }
-@media (prefers-color-scheme: dark) { .button, .nav a.button { color: #10241a; } }
 .button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
 
 /* Intro page */
@@ -93,6 +94,7 @@ a { color: var(--accent); }
 .docs-nav { position: sticky; top: 16px; align-self: start; }
 .docs-nav h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin: 0 0 8px; }
 .docs-nav ul { list-style: none; margin: 0; padding: 0; }
+.docs-nav .docs-group { margin: 16px 0 6px; padding: 0 10px; font-size: 13px; color: var(--muted); }
 .docs-nav a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; }
 .docs-nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 

@@ -1,8 +1,8 @@
 # 用户协议
 
-生效日期：〔生效日期〕
+~ 生效日期：{{effective}}
 
-欢迎使用 Chameleon。本协议是你与 Chameleon 运营者 〔运营者名称〕（以下称「我们」）之间关于使用 Chameleon Rhino 插件、网站 rhchameleon.top 与账号服务 api.rhchameleon.top（以下合称「本服务」）的约定。注册、登录或使用本服务，即表示你已阅读并同意本协议与《[隐私政策](https://rhchameleon.top/docs/privacy)》。
+欢迎使用 Chameleon。本协议是你与 Chameleon 运营者 {{operator}}（以下称「我们」）之间关于使用 Chameleon Rhino 插件、网站 rhchameleon.top 与账号服务 api.rhchameleon.top（以下合称「本服务」）的约定。注册、登录或使用本服务，即表示你已阅读并同意本协议与《[隐私政策](https://rhchameleon.top/docs/privacy)》。
 
 ## 1. 服务内容
 
@@ -76,6 +76,10 @@
 
 本协议适用中华人民共和国法律（不含冲突法规则）。因本协议产生的争议，双方应友好协商；协商不成的，任何一方均可向我们所在地有管辖权的人民法院提起诉讼。
 
-## 10. 联系我们
+## 10. 语言版本
 
-如对本协议有任何疑问，请联系：〔联系邮箱〕
+本协议提供多种语言版本，各版本如有不一致，以简体中文版本为准。
+
+## 11. 联系我们
+
+如对本协议有任何疑问，请联系：{{email}}

@@ -1,6 +1,8 @@
 /*
- * Documentation reader: the pages are Markdown files next to docs/index.html, rendered in the
- * browser so they stay plain .md in the repository and need no build step.
+ * Documentation reader: most pages are Markdown files next to docs/index.html, rendered in the
+ * browser so they stay plain .md in the repository and need no build step. The About and legal
+ * pages are multilingual HTML fragments built by legal/build.py (the same ones pasted into
+ * new-api); for those the reader selects the visitor's language tab.
  * /docs/network loads /docs/network.md; /docs/ loads the first page of the list below.
  */
 (function () {
@@ -11,9 +13,9 @@
     { slug: 'getting-started', title: '安装与开始使用' },
     { slug: 'account', title: '账号、充值与余额' },
     { slug: 'network', title: '无法连接网络' },
-    { slug: 'about', title: '关于 Chameleon', group: '关于' },
-    { slug: 'terms', title: '用户协议', group: '关于' },
-    { slug: 'privacy', title: '隐私政策', group: '关于' }
+    { slug: 'about', title: '关于 Chameleon', group: '关于', html: '/legal/about.html' },
+    { slug: 'terms', title: '用户协议', group: '关于', html: '/legal/terms.html' },
+    { slug: 'privacy', title: '隐私政策', group: '关于', html: '/legal/privacy.html' }
   ];
 
   function currentSlug() {
@@ -51,10 +53,61 @@
     document.title = '页面不存在 · Chameleon 文档';
   }
 
+  // Language tabs of the legal fragments, matched against ?lang= or the browser's languages.
+  var LEGAL_LANGUAGES = ['zh-CN', 'zh-TW', 'en', 'ja', 'fr', 'ru', 'vi'];
+
+  function preferredLanguage() {
+    var wanted = [new URLSearchParams(window.location.search).get('lang')]
+      .concat(navigator.languages || [navigator.language]);
+    for (var i = 0; i < wanted.length; i++) {
+      var tag = (wanted[i] || '').toLowerCase();
+      if (!tag) {
+        continue;
+      }
+      if (tag.indexOf('zh') === 0) {
+        return /tw|hk|mo|hant/.test(tag) ? 'zh-TW' : 'zh-CN';
+      }
+      var base = tag.split('-')[0];
+      if (LEGAL_LANGUAGES.indexOf(base) >= 0) {
+        return base;
+      }
+    }
+    return 'zh-CN';
+  }
+
+  function selectLanguage(target, slug) {
+    var input = target.querySelector('#cm-' + slug + '-' + preferredLanguage().toLowerCase());
+    if (input) {
+      input.checked = true;
+    }
+  }
+
+  function pageOf(slug) {
+    return PAGES.filter(function (p) { return p.slug === slug; })[0];
+  }
+
   function render(slug) {
     var target = document.getElementById('doc');
     if (!slug) {
       showMissing(target);
+      return;
+    }
+    var page = pageOf(slug);
+    if (page.html) {
+      fetch(page.html, { cache: 'no-cache' })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.text();
+        })
+        .then(function (fragment) {
+          // Built from this repository's own sources (legal/build.py), so the HTML is trusted.
+          target.innerHTML = fragment;
+          selectLanguage(target, slug);
+          document.title = page.title + ' · Chameleon';
+        })
+        .catch(function () { showMissing(target); });
       return;
     }
     fetch('/docs/' + slug + '.md', { cache: 'no-cache' })

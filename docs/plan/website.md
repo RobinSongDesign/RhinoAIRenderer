@@ -22,8 +22,17 @@
 
 - 徽标在 `website/assets/brand/`：`logo.svg`（青到洋红渐变圆底，白色变色龙，用作图标、头像、网站图标）、`logo-mark.svg`（渐变变色龙，透明底，用于浅色背景上的大尺寸展示），以及 512 / 192 / 64 / 32 像素的 PNG 和 `website/favicon.ico`。渐变为 `#00C8E0` → `#E6007E`；网页正文强调色在浅色模式为 `#b0006b`、深色模式为 `#4fd6ea`，以保证可读性。
 - 徽标由用户提供的原始变色龙图标描摹为矢量后重新着色，眼睛按原图重画。修改时直接编辑 SVG，再用浏览器导出各尺寸 PNG。
-- new-api 后台：「徽标 URL」填 `https://rhchameleon.top/assets/brand/logo-192.png`；「关于」「用户协议」「隐私政策」三栏粘贴 `website/docs/about.md`、`terms.md`、`privacy.md` 的全文（new-api 会把 Markdown 渲染出来）。网站与后台使用同一份文字，修改时两处一起更新。
-- 用户协议与隐私政策中的「〔运营者名称〕」「〔联系邮箱〕」「〔生效日期〕」由运营者填写；这两份文本不是法律意见，正式收费前建议请律师审阅。
+- new-api 后台：「徽标 URL」填 `https://rhchameleon.top/assets/brand/logo-192.png`。
+
+## 1.2 关于、用户协议、隐私政策
+
+- 三份文档提供 new-api 的全部 7 种界面语言：简体中文、繁体中文、英语、日语、法语、俄语、越南语。原文是 `website/legal/src/<文档>.<语言>.md`（Markdown 子集：标题、段落、列表、表格、粗体、链接、`~ ` 开头的说明行）。繁体中文由 `build.py` 用 OpenCC（`s2twp`，台湾用词）从简体转换，不单独维护。
+- `python3 website/legal/build.py` 生成 `website/legal/{about,terms,privacy}.html`。每份都是独立的 HTML 片段，包含全部语言，顶部用纯 CSS 的语言标签切换（单选框 + `:checked`）。之所以不用脚本，是因为 new-api 会删除这些设置里的脚本，也不会把界面语言写到页面的 `lang` 属性上。生成需要 `pip install opencc-python-reimplemented`；CI 用 `--check` 确认生成结果与原文一致。
+- 运营者名称、联系邮箱、生效日期写在 `website/legal/legal.json`，留空时显示各语言的占位符。
+- new-api 后台「关于」「用户协议」「隐私政策」三栏分别粘贴对应 HTML 文件的全文。已用 new-api `v1.0.0-rc.51` 的 DOMPurify 3.4.17 与相同的清理参数实测：用户协议、隐私政策（隔离显示）完整保留；「关于」（直接嵌入）只去掉链接的 `target` 属性，链接改为在当前页打开。语言切换在亮色、暗色主题下都正常；文字颜色继承 new-api 主题，不写死。
+- 网站上的 `/docs/about`、`/docs/terms`、`/docs/privacy` 显示同一份 HTML，并按 `?lang=` 或浏览器语言自动选中标签（不支持的语言显示简体中文）。
+- 改了原文或 `legal.json` 后：运行 `build.py`，提交，服务器上 `git pull`，并把新的 HTML 重新粘贴到 new-api 后台。
+- 这些文本不是法律意见，正式收费前建议请律师审阅。各语言版本声明以简体中文版为准。
 
 ## 2. 部署（东京服务器，2026-11）
 

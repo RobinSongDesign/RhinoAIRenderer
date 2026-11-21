@@ -1,0 +1,276 @@
+<div class="cm-doc">
+<style>
+.cm-doc { line-height: 1.75; font-size: 15px; max-width: 860px; margin: 0 auto; padding: 8px 4px 32px; }
+.cm-doc .cm-lang-input { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+.cm-doc .cm-lang-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+.cm-doc .cm-lang-tabs label { cursor: pointer; padding: 4px 14px; border-radius: 999px; border: 1px solid rgba(128, 128, 128, 0.35); font-size: 13px; opacity: 0.8; user-select: none; }
+.cm-doc .cm-lang-tabs label:hover { opacity: 1; }
+.cm-doc .cm-lang { display: none; }
+.cm-doc h1 { font-size: 28px; line-height: 1.3; margin: 0 0 8px; }
+.cm-doc h2 { font-size: 19px; margin: 32px 0 10px; padding-top: 16px; border-top: 1px solid rgba(128, 128, 128, 0.25); }
+.cm-doc h3 { font-size: 16px; margin: 20px 0 6px; }
+.cm-doc p, .cm-doc ul, .cm-doc ol { margin: 0 0 12px; }
+.cm-doc ul, .cm-doc ol { padding-left: 1.4em; }
+.cm-doc li { margin: 4px 0; }
+.cm-doc .cm-meta { opacity: 0.7; font-size: 14px; margin-bottom: 20px; }
+.cm-doc a { color: inherit; text-decoration: underline; text-decoration-color: #e6007e; text-underline-offset: 3px; }
+.cm-doc code { font-size: 0.92em; padding: 1px 6px; border-radius: 6px; background: rgba(128, 128, 128, 0.15); }
+.cm-doc table { border-collapse: collapse; width: 100%; margin: 0 0 16px; display: block; overflow-x: auto; }
+.cm-doc th, .cm-doc td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 8px 10px; text-align: left; vertical-align: top; }
+.cm-doc th { background: rgba(128, 128, 128, 0.1); }
+.cm-doc .cm-brand { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #00c8e0, #e6007e); margin: 0 0 16px; }
+#cm-privacy-zh-cn:checked ~ .cm-lang-zh-cn { display: block; }
+#cm-privacy-zh-cn:checked ~ .cm-lang-tabs label[for="cm-privacy-zh-cn"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+#cm-privacy-zh-tw:checked ~ .cm-lang-zh-tw { display: block; }
+#cm-privacy-zh-tw:checked ~ .cm-lang-tabs label[for="cm-privacy-zh-tw"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+#cm-privacy-en:checked ~ .cm-lang-en { display: block; }
+#cm-privacy-en:checked ~ .cm-lang-tabs label[for="cm-privacy-en"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+#cm-privacy-ja:checked ~ .cm-lang-ja { display: block; }
+#cm-privacy-ja:checked ~ .cm-lang-tabs label[for="cm-privacy-ja"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+#cm-privacy-fr:checked ~ .cm-lang-fr { display: block; }
+#cm-privacy-fr:checked ~ .cm-lang-tabs label[for="cm-privacy-fr"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+#cm-privacy-ru:checked ~ .cm-lang-ru { display: block; }
+#cm-privacy-ru:checked ~ .cm-lang-tabs label[for="cm-privacy-ru"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+#cm-privacy-vi:checked ~ .cm-lang-vi { display: block; }
+#cm-privacy-vi:checked ~ .cm-lang-tabs label[for="cm-privacy-vi"] { background: linear-gradient(135deg, #0097b2, #c4006f); border-color: transparent; color: #fff; opacity: 1; }
+</style>
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-zh-cn" checked>
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-zh-tw">
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-en">
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-ja">
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-fr">
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-ru">
+<input type="radio" class="cm-lang-input" name="cm-privacy-lang" id="cm-privacy-vi">
+<div class="cm-lang-tabs"><label for="cm-privacy-zh-cn" lang="zh-CN">简体中文</label><label for="cm-privacy-zh-tw" lang="zh-TW">繁體中文</label><label for="cm-privacy-en" lang="en">English</label><label for="cm-privacy-ja" lang="ja">日本語</label><label for="cm-privacy-fr" lang="fr">Français</label><label for="cm-privacy-ru" lang="ru">Русский</label><label for="cm-privacy-vi" lang="vi">Tiếng Việt</label></div>
+<section class="cm-lang cm-lang-zh-cn" lang="zh-CN">
+<div class="cm-brand"></div>
+<h1>隐私政策</h1>
+<p class="cm-meta">生效日期：〔生效日期〕</p>
+<p>本政策说明 Chameleon 运营者 〔运营者名称〕（以下称「我们」）在你使用 Chameleon Rhino 插件、网站 rhchameleon.top 与账号服务 api.rhchameleon.top（以下合称「本服务」）时，如何收集、使用、存储和保护你的个人信息。</p>
+<h2>1. 我们收集的信息</h2>
+<table><thead><tr><th>信息</th><th>用途</th><th>何时收集</th></tr></thead><tbody><tr><td>用户名、邮箱、密码（加密存储，我们无法看到原文）</td><td>注册、登录、找回密码</td><td>注册与登录时</td></tr><tr><td>令牌（每台电脑一个，名称包含电脑名）</td><td>让插件代表你使用本服务</td><td>插件登录时</td></tr><tr><td>余额、充值与兑换记录</td><td>计费、对账、处理退款</td><td>充值、兑换时</td></tr><tr><td>使用记录：时间、模型、图片尺寸、费用、令牌名称、IP 地址</td><td>计费、排查故障、防止滥用、依法留存</td><td>每次生成或查询余额时</td></tr><tr><td>网站登录状态的 Cookie</td><td>保持网站登录</td><td>使用网站时</td></tr></tbody></table>
+<p><strong>提示词与图片</strong>：你生成时提交的源图、参考图与提示词，以及生成的图片，只用于完成这一次生成。它们经我们的服务器转发给模型提供者，我们的服务器<strong>不保存</strong>这些内容，也不将其用于训练模型。</p>
+<p>插件在你电脑本地保存生成历史与图片，在系统钥匙串（Windows 凭据保护、macOS 钥匙串）中保存令牌；这些数据不会上传给我们，卸载插件或删除插件数据目录即可清除。</p>
+<h2>2. 我们如何使用信息</h2>
+<ul><li>提供、维护和改进本服务；</li><li>计费、对账，处理充值、兑换与退款；</li><li>保障账号与服务安全，识别和处理异常请求与违规内容；</li><li>履行法律法规规定的义务，配合有权机关的依法要求。</li></ul>
+<p>我们不会出售你的个人信息，也不会将其用于与本服务无关的营销。</p>
+<h2>3. 委托处理与向第三方提供</h2>
+<p>为完成图片生成，你提交的提示词与图片需要传输给以下第三方，由其在各自的隐私政策约束下处理：</p>
+<table><thead><tr><th>接收方</th><th>处理的内容</th><th>目的</th></tr></thead><tbody><tr><td>图像生成接口服务商（APIMart）</td><td>提示词、源图、参考图、生成的图片</td><td>调用模型生成图片；生成的图片在其服务器上临时保存 24 至 72 小时后失效</td></tr><tr><td>模型提供者（Google Gemini）</td><td>同上</td><td>生成图片</td></tr><tr><td>云服务器提供者（腾讯云）</td><td>我们服务器上的全部数据</td><td>托管本服务</td></tr></tbody></table>
+<p>除上述情形和法律法规要求外，未经你同意，我们不会向其他第三方提供你的个人信息。</p>
+<h2>4. 存储地点与跨境传输</h2>
+<p>本服务的服务器位于<strong>日本东京</strong>，上述图像生成服务也位于中国大陆以外。使用本服务即意味着你的账号信息、使用记录，以及你提交生成的提示词与图片会被传输到中国大陆以外处理。我们会采取第 6 条所述的措施保护这些信息。你不同意跨境传输的，请不要使用本服务。</p>
+<h2>5. 保存期限</h2>
+<ul><li>账号信息：保存至你注销账号。</li><li>使用记录与充值记录：按法律法规要求保存不少于六个月；超过必要期限后删除或匿名化。</li><li>提示词与图片：我们的服务器不保存。</li></ul>
+<h2>6. 我们如何保护信息</h2>
+<ul><li>网站、插件与服务器之间的通信全部使用 HTTPS 加密；</li><li>密码以不可逆的方式加密存储；插件不保存你的密码；</li><li>服务器日志不记录提示词、图片和令牌原文；</li><li>仅限必要的人员访问服务器与后台。</li></ul>
+<p>如发生个人信息安全事件，我们会依法及时告知你并向有关部门报告。</p>
+<h2>7. 你的权利</h2>
+<ul><li>在网站上查看和修改账号信息、查看使用记录与余额；</li><li>在网站「令牌管理」中删除任何令牌，使对应电脑上的插件立即失效；</li><li>联系我们复制你的个人信息、更正信息，或注销账号并删除个人信息。</li></ul>
+<p>我们会在收到请求后十五个工作日内处理。</p>
+<h2>8. 未成年人</h2>
+<p>本服务面向成年人提供。未满十八周岁的用户，应在监护人同意和指导下使用；我们不会主动收集不满十四周岁儿童的个人信息，发现后将尽快删除。</p>
+<h2>9. 政策更新</h2>
+<p>本政策更新后将在网站公布；涉及处理目的、方式、范围等重大变化时，我们会以网站公告等方式提示你。本政策各语言版本如有不一致，以简体中文版本为准。</p>
+<h2>10. 联系我们</h2>
+<p>如对本政策或你的个人信息有任何问题，请联系：〔联系邮箱〕</p>
+</section>
+<section class="cm-lang cm-lang-zh-tw" lang="zh-TW">
+<div class="cm-brand"></div>
+<h1>隱私政策</h1>
+<p class="cm-meta">生效日期：〔生效日期〕</p>
+<p>本政策說明 Chameleon 運營者 〔運營者名稱〕（以下稱「我們」）在你使用 Chameleon Rhino 外掛、網站 rhchameleon.top 與帳號服務 api.rhchameleon.top（以下合稱「本服務」）時，如何收集、使用、儲存和保護你的個人資訊。</p>
+<h2>1. 我們收集的資訊</h2>
+<table><thead><tr><th>資訊</th><th>用途</th><th>何時收集</th></tr></thead><tbody><tr><td>使用者名稱、郵箱、密碼（加密儲存，我們無法看到原文）</td><td>註冊、登入、找回密碼</td><td>註冊與登入時</td></tr><tr><td>令牌（每臺電腦一個，名稱包含電腦名）</td><td>讓外掛代表你使用本服務</td><td>外掛登入時</td></tr><tr><td>餘額、充值與兌換記錄</td><td>計費、對帳、處理退款</td><td>充值、兌換時</td></tr><tr><td>使用記錄：時間、模型、圖片尺寸、費用、令牌名稱、IP 地址</td><td>計費、排查故障、防止濫用、依法留存</td><td>每次生成或查詢餘額時</td></tr><tr><td>網站登入狀態的 Cookie</td><td>保持網站登入</td><td>使用網站時</td></tr></tbody></table>
+<p><strong>提示詞與圖片</strong>：你生成時提交的源圖、參考圖與提示詞，以及生成的圖片，只用於完成這一次生成。它們經我們的伺服器轉發給模型提供者，我們的伺服器<strong>不儲存</strong>這些內容，也不將其用於訓練模型。</p>
+<p>外掛在你電腦本地儲存生成歷史與圖片，在系統鑰匙串（Windows 憑據保護、macOS 鑰匙串）中儲存令牌；這些資料不會上傳給我們，解除安裝外掛或刪除外掛資料目錄即可清除。</p>
+<h2>2. 我們如何使用資訊</h2>
+<ul><li>提供、維護和改進本服務；</li><li>計費、對帳，處理充值、兌換與退款；</li><li>保障帳號與服務安全，識別和處理異常請求與違規內容；</li><li>履行法律法規規定的義務，配合有權機關的依法要求。</li></ul>
+<p>我們不會出售你的個人資訊，也不會將其用於與本服務無關的營銷。</p>
+<h2>3. 委託處理與向第三方提供</h2>
+<p>為完成圖片生成，你提交的提示詞與圖片需要傳輸給以下第三方，由其在各自的隱私政策約束下處理：</p>
+<table><thead><tr><th>接收方</th><th>處理的內容</th><th>目的</th></tr></thead><tbody><tr><td>影象生成介面服務商（APIMart）</td><td>提示詞、源圖、參考圖、生成的圖片</td><td>呼叫模型生成圖片；生成的圖片在其伺服器上臨時儲存 24 至 72 小時後失效</td></tr><tr><td>模型提供者（Google Gemini）</td><td>同上</td><td>生成圖片</td></tr><tr><td>雲伺服器提供者（騰訊雲）</td><td>我們伺服器上的全部資料</td><td>託管本服務</td></tr></tbody></table>
+<p>除上述情形和法律法規要求外，未經你同意，我們不會向其他第三方提供你的個人資訊。</p>
+<h2>4. 儲存地點與跨境傳輸</h2>
+<p>本服務的伺服器位於<strong>日本東京</strong>，上述影象生成服務也位於中國大陸以外。使用本服務即意味著你的帳號資訊、使用記錄，以及你提交生成的提示詞與圖片會被傳輸到中國大陸以外處理。我們會採取第 6 條所述的措施保護這些資訊。你不同意跨境傳輸的，請不要使用本服務。</p>
+<h2>5. 儲存期限</h2>
+<ul><li>帳號資訊：儲存至你登出帳號。</li><li>使用記錄與充值記錄：按法律法規要求儲存不少於六個月；超過必要期限後刪除或匿名化。</li><li>提示詞與圖片：我們的伺服器不儲存。</li></ul>
+<h2>6. 我們如何保護資訊</h2>
+<ul><li>網站、外掛與伺服器之間的通訊全部使用 HTTPS 加密；</li><li>密碼以不可逆的方式加密儲存；外掛不儲存你的密碼；</li><li>伺服器日誌不記錄提示詞、圖片和令牌原文；</li><li>僅限必要的人員訪問伺服器與後臺。</li></ul>
+<p>如發生個人資訊保安事件，我們會依法及時告知你並向有關部門報告。</p>
+<h2>7. 你的權利</h2>
+<ul><li>在網站上檢視和修改帳號資訊、檢視使用記錄與餘額；</li><li>在網站「令牌管理」中刪除任何令牌，使對應電腦上的外掛立即失效；</li><li>聯絡我們複製你的個人資訊、更正資訊，或登出帳號並刪除個人資訊。</li></ul>
+<p>我們會在收到請求後十五個工作日內處理。</p>
+<h2>8. 未成年人</h2>
+<p>本服務面向成年人提供。未滿十八週歲的使用者，應在監護人同意和指導下使用；我們不會主動收集不滿十四周歲兒童的個人資訊，發現後將盡快刪除。</p>
+<h2>9. 政策更新</h2>
+<p>本政策更新後將在網站公佈；涉及處理目的、方式、範圍等重大變化時，我們會以網站公告等方式提示你。本政策各語言版本如有不一致，以簡體中文版本為準。</p>
+<h2>10. 聯絡我們</h2>
+<p>如對本政策或你的個人資訊有任何問題，請聯絡：〔聯絡郵箱〕</p>
+</section>
+<section class="cm-lang cm-lang-en" lang="en">
+<div class="cm-brand"></div>
+<h1>Privacy Policy</h1>
+<p class="cm-meta">Effective date: [Effective date]</p>
+<p>This policy explains how the operator of Chameleon, [Operator name] ("we", "us"), collects, uses, stores and protects your personal information when you use the Chameleon plug-in for Rhino, the website rhchameleon.top and the account service api.rhchameleon.top (together, the "Service").</p>
+<h2>1. Information we collect</h2>
+<table><thead><tr><th>Information</th><th>Purpose</th><th>When</th></tr></thead><tbody><tr><td>User name, e-mail, password (stored hashed; we cannot see it)</td><td>Registration, sign-in, password recovery</td><td>When you register or sign in</td></tr><tr><td>Tokens (one per computer, named after the computer)</td><td>Let the plug-in use the Service on your behalf</td><td>When you sign in from the plug-in</td></tr><tr><td>Balance, top-up and redemption records</td><td>Billing, reconciliation, refunds</td><td>When you top up or redeem</td></tr><tr><td>Usage records: time, model, image size, cost, token name, IP address</td><td>Billing, troubleshooting, abuse prevention, legal retention</td><td>Each generation or balance query</td></tr><tr><td>Cookie holding the website sign-in</td><td>Keep you signed in on the website</td><td>When you use the website</td></tr></tbody></table>
+<p><strong>Prompts and images</strong>: the source images, reference images and prompts you submit, and the images generated, are used only to complete that generation. They pass through our server to the model providers; our server does <strong>not store</strong> them and does not use them to train models.</p>
+<p>The plug-in keeps your generation history and images on your own computer and its token in the system keychain (Windows Data Protection, macOS Keychain). These are never uploaded to us; uninstalling the plug-in or deleting its data folder removes them.</p>
+<h2>2. How we use information</h2>
+<ul><li>To provide, maintain and improve the Service;</li><li>To bill, reconcile and process top-ups, redemptions and refunds;</li><li>To keep accounts and the Service secure and to detect abnormal requests and prohibited content;</li><li>To meet legal obligations and lawful requests from competent authorities.</li></ul>
+<p>We do not sell your personal information or use it for marketing unrelated to the Service.</p>
+<h2>3. Processors and third parties</h2>
+<p>To generate images, your prompts and images are transmitted to the following third parties, which process them under their own privacy policies:</p>
+<table><thead><tr><th>Recipient</th><th>Data</th><th>Purpose</th></tr></thead><tbody><tr><td>Image generation API provider (APIMart)</td><td>Prompts, source and reference images, generated images</td><td>Calling the models; generated images are kept on its servers temporarily and expire after 24 to 72 hours</td></tr><tr><td>Model provider (Google Gemini)</td><td>Same as above</td><td>Generating images</td></tr><tr><td>Cloud server provider (Tencent Cloud)</td><td>All data on our server</td><td>Hosting the Service</td></tr></tbody></table>
+<p>Apart from the above and where required by law, we do not provide your personal information to other third parties without your consent.</p>
+<h2>4. Storage location and cross-border transfer</h2>
+<p>Our server is located in <strong>Tokyo, Japan</strong>, and the image generation services above are also outside mainland China. Using the Service means that your account information, usage records and the prompts and images you submit for generation are transferred outside mainland China for processing. We protect them with the measures in Section 6. If you do not agree to this transfer, please do not use the Service.</p>
+<h2>5. Retention</h2>
+<ul><li>Account information: until you close your account.</li><li>Usage and top-up records: at least six months as required by law; deleted or anonymized when no longer needed.</li><li>Prompts and images: not stored on our server.</li></ul>
+<h2>6. How we protect information</h2>
+<ul><li>All traffic between the website, the plug-in and our server is encrypted with HTTPS;</li><li>Passwords are stored with one-way hashing; the plug-in never stores your password;</li><li>Server logs do not record prompts, images or token values;</li><li>Only necessary personnel can access the server and the administration console.</li></ul>
+<p>In the event of a personal information security incident, we will inform you and report to the authorities as required by law.</p>
+<h2>7. Your rights</h2>
+<ul><li>View and update your account details, usage records and balance on the website;</li><li>Delete any token under "Token management" on the website, which immediately disables the plug-in on that computer;</li><li>Contact us to obtain a copy of your personal information, correct it, or close your account and have your personal information deleted.</li></ul>
+<p>We handle requests within fifteen working days.</p>
+<h2>8. Minors</h2>
+<p>The Service is intended for adults. Users under 18 should use it only with the consent and guidance of a guardian. We do not knowingly collect personal information of children under 14 and will delete it as soon as we become aware of it.</p>
+<h2>9. Updates</h2>
+<p>Updates to this policy are published on the website; significant changes to the purposes, means or scope of processing will be pointed out by a website notice. If the language versions of this policy differ, the Simplified Chinese version prevails.</p>
+<h2>10. Contact</h2>
+<p>Questions about this policy or your personal information: [Contact e-mail]</p>
+</section>
+<section class="cm-lang cm-lang-ja" lang="ja">
+<div class="cm-brand"></div>
+<h1>プライバシーポリシー</h1>
+<p class="cm-meta">施行日：〔施行日〕</p>
+<p>本ポリシーは、Chameleon の運営者 〔運営者名〕（以下「当方」）が、Rhino 用プラグイン Chameleon、ウェブサイト rhchameleon.top およびアカウントサービス api.rhchameleon.top（以下総称して「本サービス」）のご利用に際し、お客様の個人情報をどのように収集、利用、保存および保護するかを説明するものです。</p>
+<h2>1. 収集する情報</h2>
+<table><thead><tr><th>情報</th><th>目的</th><th>収集の時期</th></tr></thead><tbody><tr><td>ユーザー名、メールアドレス、パスワード（ハッシュ化して保存し、当方は原文を閲覧できません）</td><td>登録、ログイン、パスワード再設定</td><td>登録・ログイン時</td></tr><tr><td>トークン（コンピューターごとに 1 つ、名前にコンピューター名を含む）</td><td>プラグインがお客様に代わって本サービスを利用するため</td><td>プラグインからのログイン時</td></tr><tr><td>残高、チャージおよび引き換えの記録</td><td>課金、照合、返金処理</td><td>チャージ・引き換え時</td></tr><tr><td>利用記録：日時、モデル、画像サイズ、料金、トークン名、IP アドレス</td><td>課金、障害調査、不正防止、法令に基づく保存</td><td>生成または残高照会のたび</td></tr><tr><td>ウェブサイトのログイン状態を保持する Cookie</td><td>ウェブサイトのログイン維持</td><td>ウェブサイト利用時</td></tr></tbody></table>
+<p><strong>プロンプトと画像</strong>：生成時に送信された元画像、参考画像、プロンプトおよび生成された画像は、その生成を完了するためにのみ使用されます。これらは当方のサーバーを経由してモデル提供者に転送されますが、当方のサーバーはこれらを<strong>保存せず</strong>、モデルの学習にも使用しません。</p>
+<p>プラグインは生成履歴と画像をお客様のコンピューターに、トークンをシステムキーチェーン（Windows データ保護、macOS キーチェーン）に保存します。これらが当方にアップロードされることはなく、プラグインのアンインストールまたはデータフォルダーの削除によって消去できます。</p>
+<h2>2. 情報の利用目的</h2>
+<ul><li>本サービスの提供、保守および改善</li><li>課金、照合、チャージ・引き換え・返金の処理</li><li>アカウントと本サービスの安全確保、異常なリクエストや禁止コンテンツの検出と対応</li><li>法令上の義務の履行および権限ある機関からの適法な要請への対応</li></ul>
+<p>当方はお客様の個人情報を販売せず、本サービスと無関係なマーケティングにも利用しません。</p>
+<h2>3. 委託および第三者への提供</h2>
+<p>画像生成のため、お客様のプロンプトと画像は次の第三者に送信され、各社のプライバシーポリシーに基づいて処理されます。</p>
+<table><thead><tr><th>提供先</th><th>処理する情報</th><th>目的</th></tr></thead><tbody><tr><td>画像生成 API 提供者（APIMart）</td><td>プロンプト、元画像、参考画像、生成画像</td><td>モデルの呼び出し。生成画像は同社サーバーに一時保存され、24〜72 時間で失効します</td></tr><tr><td>モデル提供者（Google Gemini）</td><td>同上</td><td>画像の生成</td></tr><tr><td>クラウドサーバー提供者（Tencent Cloud）</td><td>当方サーバー上のすべてのデータ</td><td>本サービスのホスティング</td></tr></tbody></table>
+<p>上記および法令に基づく場合を除き、お客様の同意なく他の第三者に個人情報を提供することはありません。</p>
+<h2>4. 保存場所と国外移転</h2>
+<p>本サービスのサーバーは<strong>日本・東京</strong>にあり、上記の画像生成サービスも中国本土外にあります。本サービスを利用することにより、お客様のアカウント情報、利用記録および生成のために送信されたプロンプトと画像は、中国本土外に移転されて処理されます。当方は第 6 条の措置によりこれらを保護します。この移転に同意されない場合は、本サービスをご利用にならないでください。</p>
+<h2>5. 保存期間</h2>
+<ul><li>アカウント情報：アカウント削除まで</li><li>利用記録・チャージ記録：法令に従い 6 か月以上保存し、不要になった時点で削除または匿名化します</li><li>プロンプトと画像：当方のサーバーには保存しません</li></ul>
+<h2>6. 安全管理措置</h2>
+<ul><li>ウェブサイト、プラグインおよびサーバー間の通信はすべて HTTPS で暗号化しています</li><li>パスワードは不可逆なハッシュで保存し、プラグインはパスワードを保存しません</li><li>サーバーのログにはプロンプト、画像およびトークンの値を記録しません</li><li>サーバーと管理画面へのアクセスは必要な担当者に限定しています</li></ul>
+<p>個人情報の安全に関わる事故が発生した場合は、法令に従い速やかにお客様に通知し、関係当局に報告します。</p>
+<h2>7. お客様の権利</h2>
+<ul><li>ウェブサイトでアカウント情報、利用記録および残高を確認・変更できます</li><li>ウェブサイトの「トークン管理」で任意のトークンを削除でき、該当コンピューターのプラグインは直ちに無効になります</li><li>当方に連絡して、個人情報の写しの取得、訂正、またはアカウントの削除と個人情報の消去を請求できます</li></ul>
+<p>ご請求は 15 営業日以内に対応します。</p>
+<h2>8. 未成年者</h2>
+<p>本サービスは成人向けです。18 歳未満の方は保護者の同意と指導のもとでご利用ください。当方は 14 歳未満の児童の個人情報を意図的に収集せず、判明した場合は速やかに削除します。</p>
+<h2>9. 改定</h2>
+<p>本ポリシーを改定した場合はウェブサイトで公表し、処理の目的・方法・範囲の重要な変更はウェブサイトでの告知でお知らせします。各言語版の間に相違がある場合は、簡体字中国語版が優先します。</p>
+<h2>10. お問い合わせ</h2>
+<p>本ポリシーまたは個人情報に関するお問い合わせ：〔連絡先メール〕</p>
+</section>
+<section class="cm-lang cm-lang-fr" lang="fr">
+<div class="cm-brand"></div>
+<h1>Politique de confidentialité</h1>
+<p class="cm-meta">Date d’entrée en vigueur : [Date d’entrée en vigueur]</p>
+<p>La présente politique explique comment l’exploitant de Chameleon, [Nom de l’exploitant] (« nous »), collecte, utilise, conserve et protège vos données personnelles lorsque vous utilisez le plug-in Chameleon pour Rhino, le site rhchameleon.top et le service de compte api.rhchameleon.top (ensemble, le « Service »).</p>
+<h2>1. Données collectées</h2>
+<table><thead><tr><th>Donnée</th><th>Finalité</th><th>Moment</th></tr></thead><tbody><tr><td>Nom d’utilisateur, e-mail, mot de passe (stocké haché ; nous ne pouvons pas le lire)</td><td>Inscription, connexion, récupération du mot de passe</td><td>À l’inscription et à la connexion</td></tr><tr><td>Jetons (un par ordinateur, nommé d’après l’ordinateur)</td><td>Permettre au plug-in d’utiliser le Service pour vous</td><td>À la connexion depuis le plug-in</td></tr><tr><td>Solde, historique des recharges et des codes</td><td>Facturation, rapprochement, remboursements</td><td>Lors des recharges et des codes</td></tr><tr><td>Journaux d’utilisation : date, modèle, taille d’image, coût, nom du jeton, adresse IP</td><td>Facturation, diagnostic, prévention des abus, conservation légale</td><td>À chaque génération ou consultation du solde</td></tr><tr><td>Cookie de session du site</td><td>Rester connecté au site</td><td>Lors de l’utilisation du site</td></tr></tbody></table>
+<p><strong>Instructions et images</strong> : les images source, images de référence et instructions que vous soumettez, ainsi que les images générées, ne servent qu’à réaliser la génération demandée. Elles transitent par notre serveur vers les fournisseurs de modèles ; notre serveur ne les <strong>conserve pas</strong> et ne les utilise pas pour entraîner des modèles.</p>
+<p>Le plug-in conserve votre historique et vos images sur votre propre ordinateur, et son jeton dans le trousseau système (protection des données Windows, trousseau macOS). Ces données ne nous sont jamais transmises ; désinstaller le plug-in ou supprimer son dossier de données les efface.</p>
+<h2>2. Utilisation des données</h2>
+<ul><li>Fournir, maintenir et améliorer le Service ;</li><li>Facturer, rapprocher et traiter les recharges, codes et remboursements ;</li><li>Sécuriser les comptes et le Service, détecter les requêtes anormales et les contenus interdits ;</li><li>Respecter nos obligations légales et répondre aux demandes légitimes des autorités compétentes.</li></ul>
+<p>Nous ne vendons pas vos données personnelles et ne les utilisons pas à des fins de marketing sans rapport avec le Service.</p>
+<h2>3. Sous-traitants et tiers</h2>
+<p>Pour générer les images, vos instructions et images sont transmises aux tiers suivants, qui les traitent selon leurs propres politiques de confidentialité :</p>
+<table><thead><tr><th>Destinataire</th><th>Données</th><th>Finalité</th></tr></thead><tbody><tr><td>Fournisseur d’API de génération d’images (APIMart)</td><td>Instructions, images source et de référence, images générées</td><td>Appel des modèles ; les images générées sont conservées temporairement sur ses serveurs et expirent après 24 à 72 heures</td></tr><tr><td>Fournisseur de modèles (Google Gemini)</td><td>Idem</td><td>Génération des images</td></tr><tr><td>Hébergeur (Tencent Cloud)</td><td>Toutes les données de notre serveur</td><td>Hébergement du Service</td></tr></tbody></table>
+<p>En dehors de ces cas et des obligations légales, nous ne communiquons pas vos données personnelles à d’autres tiers sans votre consentement.</p>
+<h2>4. Lieu de conservation et transferts internationaux</h2>
+<p>Notre serveur est situé à <strong>Tokyo, au Japon</strong>, et les services de génération d’images ci-dessus se trouvent également hors de Chine continentale. Utiliser le Service implique que vos informations de compte, vos journaux d’utilisation ainsi que les instructions et images soumises sont transférés hors de Chine continentale pour y être traités. Nous les protégeons par les mesures de l’article 6. Si vous n’acceptez pas ce transfert, n’utilisez pas le Service.</p>
+<h2>5. Durée de conservation</h2>
+<ul><li>Informations de compte : jusqu’à la fermeture du compte.</li><li>Journaux d’utilisation et historique des recharges : au moins six mois conformément à la loi, puis suppression ou anonymisation.</li><li>Instructions et images : non conservées sur notre serveur.</li></ul>
+<h2>6. Sécurité</h2>
+<ul><li>Toutes les communications entre le site, le plug-in et notre serveur sont chiffrées en HTTPS ;</li><li>Les mots de passe sont stockés sous forme hachée ; le plug-in ne conserve jamais votre mot de passe ;</li><li>Les journaux du serveur n’enregistrent ni les instructions, ni les images, ni la valeur des jetons ;</li><li>Seules les personnes qui en ont besoin accèdent au serveur et à la console d’administration.</li></ul>
+<p>En cas d’incident de sécurité concernant vos données, nous vous en informerons et le signalerons aux autorités conformément à la loi.</p>
+<h2>7. Vos droits</h2>
+<ul><li>Consulter et modifier vos informations de compte, vos journaux d’utilisation et votre solde sur le site ;</li><li>Supprimer tout jeton dans la « Gestion des jetons » du site, ce qui désactive immédiatement le plug-in sur l’ordinateur concerné ;</li><li>Nous contacter pour obtenir une copie de vos données, les rectifier, ou fermer votre compte et faire supprimer vos données.</li></ul>
+<p>Nous traitons les demandes dans un délai de quinze jours ouvrés.</p>
+<h2>8. Mineurs</h2>
+<p>Le Service s’adresse aux adultes. Les personnes de moins de 18 ans ne doivent l’utiliser qu’avec l’accord et sous la supervision d’un tuteur. Nous ne collectons pas sciemment de données d’enfants de moins de 14 ans et les supprimons dès que nous en avons connaissance.</p>
+<h2>9. Mises à jour</h2>
+<p>Les mises à jour de la présente politique sont publiées sur le site ; les changements importants des finalités, moyens ou périmètre du traitement sont signalés par un avis sur le site. En cas de divergence entre les versions linguistiques, la version en chinois simplifié prévaut.</p>
+<h2>10. Contact</h2>
+<p>Questions sur cette politique ou sur vos données : [Adresse e-mail de contact]</p>
+</section>
+<section class="cm-lang cm-lang-ru" lang="ru">
+<div class="cm-brand"></div>
+<h1>Политика конфиденциальности</h1>
+<p class="cm-meta">Дата вступления в силу: [Дата вступления в силу]</p>
+<p>Настоящая политика описывает, как оператор Chameleon — [Наименование оператора] («мы») — собирает, использует, хранит и защищает ваши персональные данные при использовании плагина Chameleon для Rhino, сайта rhchameleon.top и сервиса аккаунтов api.rhchameleon.top (вместе — «Сервис»).</p>
+<h2>1. Какие данные мы собираем</h2>
+<table><thead><tr><th>Данные</th><th>Цель</th><th>Когда</th></tr></thead><tbody><tr><td>Имя пользователя, e-mail, пароль (хранится в виде хеша; мы не видим его)</td><td>Регистрация, вход, восстановление пароля</td><td>При регистрации и входе</td></tr><tr><td>Токены (по одному на компьютер, с именем компьютера в названии)</td><td>Работа плагина с Сервисом от вашего имени</td><td>При входе из плагина</td></tr><tr><td>Баланс, история пополнений и активаций кодов</td><td>Расчёты, сверка, возвраты</td><td>При пополнении и активации кода</td></tr><tr><td>Журналы использования: время, модель, размер изображения, стоимость, имя токена, IP-адрес</td><td>Расчёты, диагностика, защита от злоупотреблений, хранение по закону</td><td>При каждой генерации или запросе баланса</td></tr><tr><td>Cookie сеанса сайта</td><td>Сохранение входа на сайте</td><td>При использовании сайта</td></tr></tbody></table>
+<p><strong>Запросы и изображения</strong>: отправленные исходные изображения, референсы и запросы, а также сгенерированные изображения используются только для выполнения соответствующей генерации. Они проходят через наш сервер к поставщикам моделей; наш сервер их <strong>не хранит</strong> и не использует для обучения моделей.</p>
+<p>Плагин хранит историю генераций и изображения на вашем компьютере, а токен — в системной связке ключей (защита данных Windows, связка ключей macOS). Эти данные никогда не передаются нам; удаление плагина или его папки данных стирает их.</p>
+<h2>2. Как мы используем данные</h2>
+<ul><li>Предоставление, поддержка и улучшение Сервиса;</li><li>Расчёты, сверка, обработка пополнений, кодов и возвратов;</li><li>Обеспечение безопасности аккаунтов и Сервиса, выявление аномальных запросов и запрещённого контента;</li><li>Исполнение требований закона и законных запросов уполномоченных органов.</li></ul>
+<p>Мы не продаём ваши персональные данные и не используем их для маркетинга, не связанного с Сервисом.</p>
+<h2>3. Обработчики и третьи лица</h2>
+<p>Для генерации изображений ваши запросы и изображения передаются следующим третьим лицам, которые обрабатывают их в соответствии со своими политиками конфиденциальности:</p>
+<table><thead><tr><th>Получатель</th><th>Данные</th><th>Цель</th></tr></thead><tbody><tr><td>Поставщик API генерации изображений (APIMart)</td><td>Запросы, исходные изображения и референсы, сгенерированные изображения</td><td>Вызов моделей; сгенерированные изображения временно хранятся на его серверах и становятся недоступны через 24–72 часа</td></tr><tr><td>Поставщик моделей (Google Gemini)</td><td>То же</td><td>Генерация изображений</td></tr><tr><td>Поставщик облачных серверов (Tencent Cloud)</td><td>Все данные на нашем сервере</td><td>Размещение Сервиса</td></tr></tbody></table>
+<p>Помимо указанных случаев и требований закона, мы не передаём ваши персональные данные другим третьим лицам без вашего согласия.</p>
+<h2>4. Место хранения и трансграничная передача</h2>
+<p>Наш сервер находится в <strong>Токио (Япония)</strong>, а указанные сервисы генерации изображений также расположены за пределами материкового Китая. Используя Сервис, вы соглашаетесь с тем, что данные аккаунта, журналы использования, а также отправленные для генерации запросы и изображения передаются для обработки за пределы материкового Китая. Мы защищаем их мерами, описанными в разделе 6. Если вы не согласны с такой передачей, не используйте Сервис.</p>
+<h2>5. Сроки хранения</h2>
+<ul><li>Данные аккаунта: до закрытия аккаунта.</li><li>Журналы использования и пополнений: не менее шести месяцев согласно закону, затем удаляются или обезличиваются.</li><li>Запросы и изображения: на нашем сервере не хранятся.</li></ul>
+<h2>6. Защита данных</h2>
+<ul><li>Весь обмен данными между сайтом, плагином и сервером шифруется по HTTPS;</li><li>Пароли хранятся в виде необратимого хеша; плагин никогда не сохраняет ваш пароль;</li><li>Журналы сервера не содержат запросов, изображений и значений токенов;</li><li>Доступ к серверу и панели администрирования есть только у необходимых сотрудников.</li></ul>
+<p>При инциденте безопасности, затрагивающем персональные данные, мы уведомим вас и уполномоченные органы в соответствии с законом.</p>
+<h2>7. Ваши права</h2>
+<ul><li>Просматривать и изменять данные аккаунта, журналы использования и баланс на сайте;</li><li>Удалять любой токен в разделе «Управление токенами» на сайте — плагин на соответствующем компьютере сразу перестанет работать;</li><li>Обратиться к нам, чтобы получить копию своих данных, исправить их или закрыть аккаунт с удалением персональных данных.</li></ul>
+<p>Мы рассматриваем запросы в течение пятнадцати рабочих дней.</p>
+<h2>8. Несовершеннолетние</h2>
+<p>Сервис предназначен для взрослых. Лица младше 18 лет должны пользоваться им только с согласия и под руководством законного представителя. Мы сознательно не собираем данные детей младше 14 лет и удаляем их, как только узнаём о них.</p>
+<h2>9. Обновления</h2>
+<p>Обновления политики публикуются на сайте; о существенных изменениях целей, способов или объёма обработки мы сообщаем объявлением на сайте. При расхождениях между языковыми версиями преимущественную силу имеет версия на упрощённом китайском языке.</p>
+<h2>10. Контакты</h2>
+<p>Вопросы о политике или ваших данных: [Контактный e-mail]</p>
+</section>
+<section class="cm-lang cm-lang-vi" lang="vi">
+<div class="cm-brand"></div>
+<h1>Chính sách quyền riêng tư</h1>
+<p class="cm-meta">Ngày hiệu lực: [Ngày hiệu lực]</p>
+<p>Chính sách này giải thích cách đơn vị vận hành Chameleon là [Tên đơn vị vận hành] (sau đây gọi là "chúng tôi") thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân của bạn khi bạn sử dụng plug-in Chameleon cho Rhino, trang web rhchameleon.top và dịch vụ tài khoản api.rhchameleon.top (gọi chung là "Dịch vụ").</p>
+<h2>1. Thông tin chúng tôi thu thập</h2>
+<table><thead><tr><th>Thông tin</th><th>Mục đích</th><th>Thời điểm</th></tr></thead><tbody><tr><td>Tên người dùng, email, mật khẩu (lưu dạng băm; chúng tôi không thể xem)</td><td>Đăng ký, đăng nhập, khôi phục mật khẩu</td><td>Khi đăng ký và đăng nhập</td></tr><tr><td>Token (mỗi máy tính một token, tên chứa tên máy)</td><td>Cho phép plug-in dùng Dịch vụ thay bạn</td><td>Khi đăng nhập từ plug-in</td></tr><tr><td>Số dư, lịch sử nạp tiền và đổi mã</td><td>Tính phí, đối soát, hoàn tiền</td><td>Khi nạp tiền, đổi mã</td></tr><tr><td>Nhật ký sử dụng: thời gian, mô hình, kích thước ảnh, chi phí, tên token, địa chỉ IP</td><td>Tính phí, xử lý sự cố, chống lạm dụng, lưu trữ theo luật</td><td>Mỗi lần tạo ảnh hoặc tra số dư</td></tr><tr><td>Cookie phiên đăng nhập trang web</td><td>Duy trì đăng nhập trên trang web</td><td>Khi sử dụng trang web</td></tr></tbody></table>
+<p><strong>Câu lệnh và hình ảnh</strong>: ảnh nguồn, ảnh tham chiếu và câu lệnh bạn gửi khi tạo ảnh, cũng như ảnh được tạo, chỉ được dùng để hoàn thành lần tạo ảnh đó. Chúng đi qua máy chủ của chúng tôi tới nhà cung cấp mô hình; máy chủ của chúng tôi <strong>không lưu</strong> các nội dung này và không dùng chúng để huấn luyện mô hình.</p>
+<p>Plug-in lưu lịch sử tạo ảnh và hình ảnh trên máy tính của bạn, lưu token trong chuỗi khóa hệ thống (Windows Data Protection, macOS Keychain). Các dữ liệu này không bao giờ được tải lên cho chúng tôi; gỡ cài đặt plug-in hoặc xóa thư mục dữ liệu của plug-in sẽ xóa chúng.</p>
+<h2>2. Cách chúng tôi sử dụng thông tin</h2>
+<ul><li>Cung cấp, duy trì và cải thiện Dịch vụ;</li><li>Tính phí, đối soát, xử lý nạp tiền, đổi mã và hoàn tiền;</li><li>Bảo đảm an toàn cho tài khoản và Dịch vụ, phát hiện yêu cầu bất thường và nội dung bị cấm;</li><li>Thực hiện nghĩa vụ theo pháp luật và đáp ứng yêu cầu hợp pháp của cơ quan có thẩm quyền.</li></ul>
+<p>Chúng tôi không bán thông tin cá nhân của bạn và không dùng nó cho hoạt động tiếp thị không liên quan đến Dịch vụ.</p>
+<h2>3. Bên xử lý và bên thứ ba</h2>
+<p>Để tạo ảnh, câu lệnh và hình ảnh của bạn được chuyển tới các bên thứ ba sau, và được họ xử lý theo chính sách quyền riêng tư của riêng họ:</p>
+<table><thead><tr><th>Bên nhận</th><th>Dữ liệu</th><th>Mục đích</th></tr></thead><tbody><tr><td>Nhà cung cấp API tạo ảnh (APIMart)</td><td>Câu lệnh, ảnh nguồn và ảnh tham chiếu, ảnh được tạo</td><td>Gọi mô hình; ảnh được tạo được lưu tạm trên máy chủ của họ và hết hạn sau 24 đến 72 giờ</td></tr><tr><td>Nhà cung cấp mô hình (Google Gemini)</td><td>Như trên</td><td>Tạo ảnh</td></tr><tr><td>Nhà cung cấp máy chủ đám mây (Tencent Cloud)</td><td>Toàn bộ dữ liệu trên máy chủ của chúng tôi</td><td>Lưu trữ Dịch vụ</td></tr></tbody></table>
+<p>Ngoài các trường hợp trên và theo yêu cầu của pháp luật, chúng tôi không cung cấp thông tin cá nhân của bạn cho bên thứ ba khác khi chưa có sự đồng ý của bạn.</p>
+<h2>4. Nơi lưu trữ và chuyển dữ liệu ra nước ngoài</h2>
+<p>Máy chủ của chúng tôi đặt tại <strong>Tokyo, Nhật Bản</strong>, và các dịch vụ tạo ảnh nêu trên cũng nằm ngoài Trung Quốc đại lục. Việc sử dụng Dịch vụ đồng nghĩa với việc thông tin tài khoản, nhật ký sử dụng, cùng câu lệnh và hình ảnh bạn gửi để tạo ảnh sẽ được chuyển ra ngoài Trung Quốc đại lục để xử lý. Chúng tôi bảo vệ chúng bằng các biện pháp tại Mục 6. Nếu bạn không đồng ý với việc chuyển dữ liệu này, vui lòng không sử dụng Dịch vụ.</p>
+<h2>5. Thời hạn lưu trữ</h2>
+<ul><li>Thông tin tài khoản: cho đến khi bạn xóa tài khoản.</li><li>Nhật ký sử dụng và lịch sử nạp tiền: ít nhất sáu tháng theo quy định của pháp luật, sau đó được xóa hoặc ẩn danh hóa.</li><li>Câu lệnh và hình ảnh: không lưu trên máy chủ của chúng tôi.</li></ul>
+<h2>6. Cách chúng tôi bảo vệ thông tin</h2>
+<ul><li>Mọi kết nối giữa trang web, plug-in và máy chủ đều được mã hóa bằng HTTPS;</li><li>Mật khẩu được lưu dạng băm một chiều; plug-in không bao giờ lưu mật khẩu của bạn;</li><li>Nhật ký máy chủ không ghi câu lệnh, hình ảnh và giá trị token;</li><li>Chỉ những nhân sự cần thiết mới được truy cập máy chủ và trang quản trị.</li></ul>
+<p>Khi xảy ra sự cố an ninh liên quan đến thông tin cá nhân, chúng tôi sẽ thông báo cho bạn và báo cáo cơ quan có thẩm quyền theo quy định của pháp luật.</p>
+<h2>7. Quyền của bạn</h2>
+<ul><li>Xem và sửa thông tin tài khoản, nhật ký sử dụng và số dư trên trang web;</li><li>Xóa bất kỳ token nào trong mục "Quản lý token" trên trang web, plug-in trên máy tính tương ứng sẽ ngừng hoạt động ngay;</li><li>Liên hệ với chúng tôi để nhận bản sao, chỉnh sửa thông tin cá nhân, hoặc xóa tài khoản và thông tin cá nhân.</li></ul>
+<p>Chúng tôi xử lý yêu cầu trong vòng mười lăm ngày làm việc.</p>
+<h2>8. Trẻ vị thành niên</h2>
+<p>Dịch vụ dành cho người trưởng thành. Người dưới 18 tuổi chỉ nên sử dụng khi có sự đồng ý và hướng dẫn của người giám hộ. Chúng tôi không cố ý thu thập thông tin cá nhân của trẻ em dưới 14 tuổi và sẽ xóa ngay khi phát hiện.</p>
+<h2>9. Cập nhật</h2>
+<p>Các bản cập nhật chính sách được công bố trên trang web; những thay đổi quan trọng về mục đích, phương thức hoặc phạm vi xử lý sẽ được thông báo trên trang web. Nếu có khác biệt giữa các phiên bản ngôn ngữ, bản tiếng Trung giản thể được ưu tiên áp dụng.</p>
+<h2>10. Liên hệ</h2>
+<p>Câu hỏi về chính sách này hoặc thông tin cá nhân của bạn: [Email liên hệ]</p>
+</section>
+</div>

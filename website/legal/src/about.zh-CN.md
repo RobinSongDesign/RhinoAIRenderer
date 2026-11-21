@@ -21,6 +21,6 @@ Chameleon（变色龙）是一款 Rhino AI 渲染插件。它把 Rhino 视口里
 
 - 官网：<https://rhchameleon.top>
 - 账号与充值：<https://api.rhchameleon.top>
-- 邮箱：〔联系邮箱〕
+- 邮箱：{{email}}
 
-Chameleon 由 Robin不做设计 开发和运营。
+Chameleon 由 {{operator}} 开发和运营。

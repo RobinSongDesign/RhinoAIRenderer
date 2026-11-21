@@ -23,7 +23,7 @@ namespace Chameleon.Core.Tests.Catalog
             Assert.Equal("Chameleon", BuiltIn.DefaultProviderId);
 
             CatalogProvider account = BuiltIn.FindProvider("Chameleon")!;
-            Assert.Equal("https://api.robinsong.top", account.BaseUrl);
+            Assert.Equal("https://api.rhchameleon.top", account.BaseUrl);
             Assert.Equal("bearer", account.AuthType);
             Assert.Equal("gemini", account.ApiFormat);
             Assert.Equal("oneapi", account.BalanceApi);

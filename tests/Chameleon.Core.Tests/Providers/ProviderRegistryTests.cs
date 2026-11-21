@@ -73,7 +73,7 @@ namespace Chameleon.Core.Tests.Providers
             Assert.Equal("gemini-nano-banana-2.1", account.DefaultModel);
             // An override cannot redirect the balance query or the top-up page.
             Assert.Equal(BalanceApis.OneApi, account.BalanceApi);
-            Assert.StartsWith("https://api.robinsong.top", account.TopUpUrl);
+            Assert.StartsWith("https://api.rhchameleon.top", account.TopUpUrl);
         }
 
         [Fact]

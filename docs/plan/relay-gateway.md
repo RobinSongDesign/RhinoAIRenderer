@@ -94,7 +94,7 @@ docker compose logs -f new-api   # 看到 "Local: http://..." 即启动成功
   在设置里对这类中转服务商点「测试」，插件只查一次余额（免费），不发生成请求：中转按次计价，测试生成也会扣用户的钱。2026-11-19 用本地运行的 new-api `v1.0.0-rc.51` 实测通过：错误密码被拒、普通登录、开启两步验证后的登录（错误验证码被拒）、再次登录复用同一个令牌（不重复创建）、关闭 `DisplayTokenStatEnabled` 前显示「不限额」与关闭后显示账号余额。尚未在正式站点 `api.robinsong.top` 上验证。注意：new-api 的登录错误信息固定为英文，插件在其上方显示本地化的「登录失败」提示。
 
 - **用户自己添加**：设置 → 添加服务商，接口格式选 Gemini，地址填你的域名，模型填你开放的模型 ID；勾选「显示剩余额度（兼容 One API / new-api 的中转）」，「充值页面」填你网站的充值或兑换地址（必须 https）。保存后填入令牌。
-- **随版本预置**（推荐，用户只需填令牌；当前版本已预置 `Chameleon` 服务商，指向 `https://api.robinsong.top`，域名变化时改这一项）：在 `src/Chameleon.Core/Catalog/catalog.json` 的 `providers` 中增加一项，`balanceApi` 设为 `"oneapi"`，`topUpUrl` 设为充值页面，`apiKeyUrl` 设为用户获取令牌的页面，然后发布新版本。例如：
+- **随版本预置**（推荐，用户只需填令牌；当前版本已预置 `Chameleon` 服务商，指向 `https://api.rhchameleon.top`（2026-11 由 `api.robinsong.top` 迁来，旧域名在服务器上保留为别名），域名变化时改这一项）：在 `src/Chameleon.Core/Catalog/catalog.json` 的 `providers` 中增加一项，`balanceApi` 设为 `"oneapi"`，`topUpUrl` 设为充值页面，`apiKeyUrl` 设为用户获取令牌的页面，然后发布新版本。例如：
 
   ```json
   {

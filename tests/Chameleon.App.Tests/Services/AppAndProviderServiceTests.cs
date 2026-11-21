@@ -217,7 +217,7 @@ namespace Chameleon.App.Tests.Services
             Assert.Equal("https://mirror.example.com", (string)overridden["baseUrl"]!);
             Assert.False((bool)overridden["enableSearchGrounding"]!);
             Assert.False((bool)reset["isOverridden"]!);
-            Assert.Equal("https://api.robinsong.top", (string)reset["baseUrl"]!);
+            Assert.Equal("https://api.rhchameleon.top", (string)reset["baseUrl"]!);
             Assert.Equal(4, ((JArray)reset["models"]!).Count);
             Assert.Equal("not_found", await _app.ErrorCodeAsync("providers.resetBuiltIn", new { id = "nope" }));
         }

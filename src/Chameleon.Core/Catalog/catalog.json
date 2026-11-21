@@ -70,12 +70,12 @@
         "zh": "Chameleon 账号",
         "en": "Chameleon account"
       },
-      "baseUrl": "https://api.robinsong.top",
+      "baseUrl": "https://api.rhchameleon.top",
       "apiFormat": "gemini",
       "authType": "bearer",
       "defaultModel": "gemini-nano-banana-2.1",
-      "apiKeyUrl": "https://api.robinsong.top/console/token",
-      "topUpUrl": "https://api.robinsong.top/console/topup",
+      "apiKeyUrl": "https://api.rhchameleon.top/keys",
+      "topUpUrl": "https://api.rhchameleon.top/wallet",
       "balanceApi": "oneapi",
       "signInApi": "newapi",
       "models": [

@@ -13,7 +13,7 @@ Chameleon 是一个 Rhino 插件：截取视口画面，调用图像生成模型
 
 - 旧的 WPF 单体插件已原样移入 `legacy/`，处于冻结状态，只能在 Windows 上构建（CI 的 `legacy` 作业负责验证）。不要修改它的代码。
 - 新代码位于 `src/`（`Chameleon.Core`、`Chameleon.App`、`Chameleon.UI` 前端、`Chameleon.Rhino` 插件）、`tests/`、`tools/`（`Chameleon.Cli`、`Chameleon.DevHost`），解决方案为 `Chameleon.sln`。
-- `website/` 是产品网站 rhchameleon.top（介绍页与 Markdown 文档），部署见 `docs/plan/website.md`；`deploy/` 是服务器配置（中转网关、APIMart 桥接、网站 Nginx）。
+- `website/` 是产品网站 rhchameleon.top（介绍页与 Markdown 文档），部署见 `docs/plan/website.md`；`deploy/` 是服务器配置（中转网关、APIMart 桥接、支付转接 `pay-bridge`、网站 Nginx），收款方案见 `docs/plan/payments.md`。
 - `spikes/ChameleonSpike` 是阶段 0 的验证插件，等待在真实 Rhino 中运行（P0-T2）。
 - 各任务的完成情况见 `docs/plan/README.md` 的任务表。
 

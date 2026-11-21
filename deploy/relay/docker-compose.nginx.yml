@@ -60,3 +60,33 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  # Takes new-api's Epay payments to the operator's own Alipay merchant account (pay-bridge/).
+  # Settings in pay.env (see pay-bridge/pay.env.example); Nginx forwards /pay/ to it.
+  pay-bridge:
+    build: ./pay-bridge
+    restart: always
+    env_file: ./pay.env
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - ./pay-data:/data
+    read_only: true
+    # SQLite may need scratch space; the rest of the file system stays read-only.
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8090/healthz | grep -q ok || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

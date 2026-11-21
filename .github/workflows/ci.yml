@@ -23,6 +23,11 @@ jobs:
       - name: Test the APIMart bridge
         run: python3 -m unittest discover -s deploy/relay/apimart-bridge
 
+      - name: Test the payment bridge
+        run: |
+          pip install -r deploy/relay/pay-bridge/requirements.txt
+          python3 -m unittest discover -s deploy/relay/pay-bridge
+
       - name: Legal pages are built from their sources
         run: |
           python3 -m unittest discover -s website/legal

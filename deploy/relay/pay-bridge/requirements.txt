@@ -1,0 +1,4 @@
+# RSA2 signatures for Alipay (and, later, WeChat Pay APIv3).
+cryptography==50.0.2
+# QR codes for the payment page, pure Python.
+segno==1.6.6

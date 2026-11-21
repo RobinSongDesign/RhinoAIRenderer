@@ -125,6 +125,7 @@ P4 分两个阶段：先用开源的 new-api 做中转网关（P4-R，见 [`rela
 | P4-R3 | 部署上线并用真实上游验收 | P4-R0、P4-R1 | human | todo |
 | P4-R4 | 接入 APIMart 上游：Gemini 同步请求 → APIMart 异步任务的桥接服务（`deploy/relay/apimart-bridge`） | P4-R1 | agent | done |
 | P4-W1 | 产品网站 rhchameleon.top：介绍页、Markdown 文档、Nginx 配置；账号域名迁到 `api.rhchameleon.top` | P4-R2 | agent+human | doing |
+| P4-R5 | 收款：自建易支付转接服务接入运营者的支付宝当面付（`deploy/relay/pay-bridge`，见 [`payments.md`](payments.md)）；微信 Native 待商户号开通 | P4-R1 | agent+human | doing |
 | P4-T00 | 准备私有仓库、服务器、域名、邮件服务、上游 Key | — | human | todo |
 | P4-T01 | OpenAPI 契约定稿 | P1-T03 | agent | done |
 | P4-T02 | 服务端骨架 | P4-T00、P4-T01 | agent | todo |

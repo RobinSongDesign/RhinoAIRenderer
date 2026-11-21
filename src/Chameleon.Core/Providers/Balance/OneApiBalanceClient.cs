@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -54,12 +55,28 @@ namespace Chameleon.Core.Providers.Balance
             return new ProviderBalance(total.Value >= UnlimitedThreshold ? (decimal?)null : total.Value, usedCents.Value / 100m, "USD");
         }
 
+        private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, string apiKey, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await _http.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw NetworkFailures.From(ex, Redactor.Redact(ex.Message, apiKey));
+            }
+            catch (IOException ex)
+            {
+                throw NetworkFailures.From(ex, Redactor.Redact(ex.Message, apiKey));
+            }
+        }
+
         private async Task<JObject> GetAsync(ProviderProfile profile, string apiKey, string path, CancellationToken cancellationToken)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, profile.BaseUrl.TrimEnd('/') + path))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                using (HttpResponseMessage response = await _http.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false))
+                using (HttpResponseMessage response = await SendAsync(request, apiKey, cancellationToken).ConfigureAwait(false))
                 {
                     string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)

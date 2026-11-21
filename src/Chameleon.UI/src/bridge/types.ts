@@ -17,6 +17,7 @@ export type ErrorCode =
   | 'model_unavailable'
   | 'timeout'
   | 'network'
+  | 'network_blocked'
   | 'provider_error'
   | 'no_image'
   | 'cancelled'

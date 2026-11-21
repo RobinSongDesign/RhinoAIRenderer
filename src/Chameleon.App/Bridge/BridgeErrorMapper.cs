@@ -22,6 +22,7 @@ namespace Chameleon.App.Bridge
                 case RenderErrorCode.ModelUnavailable: return BridgeErrorCodes.ModelUnavailable;
                 case RenderErrorCode.Timeout: return BridgeErrorCodes.Timeout;
                 case RenderErrorCode.Network: return BridgeErrorCodes.Network;
+                case RenderErrorCode.NetworkBlocked: return BridgeErrorCodes.NetworkBlocked;
                 case RenderErrorCode.ProviderError: return BridgeErrorCodes.ProviderError;
                 case RenderErrorCode.NoImageReturned: return BridgeErrorCodes.NoImage;
                 default: return BridgeErrorCodes.Internal;

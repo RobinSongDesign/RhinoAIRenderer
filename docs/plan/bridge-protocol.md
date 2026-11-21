@@ -308,6 +308,7 @@ interface LoginState {
 | `model_unavailable` | 模型不存在或不可用 | `ModelUnavailable` |
 | `timeout` | 超时 | `Timeout` |
 | `network` | 网络错误 | `Network` |
+| `network_blocked` | 本机的防火墙或安全软件禁止 Rhino 联网（Windows 错误 10013 / `SocketError.AccessDenied`），不重试。UI 显示链接到 `https://rhchameleon.top/docs/network` 的「查看解决方法」；`network` 也显示同一链接 | `NetworkBlocked` |
 | `provider_error` | 服务商返回错误或无法解析 | `ProviderError` |
 | `no_image` | 响应中没有图片 | `NoImageReturned` |
 | `cancelled` | 已取消 | `OperationCanceledException` |

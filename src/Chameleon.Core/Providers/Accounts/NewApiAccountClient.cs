@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -139,10 +140,24 @@ namespace Chameleon.Core.Providers.Accounts
                     request.Headers.TryAddWithoutValidation("New-Api-User", auth.UserId);
                 }
 
-                using (HttpResponseMessage response = await _http.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false))
+                string?[] hide = secrets.Concat(new[] { auth?.Session }).ToArray();
+                HttpResponseMessage sent;
+                try
+                {
+                    sent = await _http.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw NetworkFailures.From(ex, Redactor.Redact(ex.Message, hide), "the account website");
+                }
+                catch (IOException ex)
+                {
+                    throw NetworkFailures.From(ex, Redactor.Redact(ex.Message, hide), "the account website");
+                }
+
+                using (HttpResponseMessage response = sent)
                 {
                     string text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    string?[] hide = secrets.Concat(new[] { auth?.Session }).ToArray();
                     if (!response.IsSuccessStatusCode)
                     {
                         throw RenderException.FromHttpStatus((int)response.StatusCode, Redactor.Redact(text, hide));

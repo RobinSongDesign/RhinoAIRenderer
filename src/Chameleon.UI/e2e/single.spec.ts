@@ -132,3 +132,16 @@ test('points to the settings when the provider has no key', async ({ page }) => 
 
   await expect(page.getByTestId('error-notice')).toHaveAttribute('data-error-code', 'not_ready');
 });
+
+test('a computer that blocks Rhino gets a plain explanation and a link to the fix', async ({ page }) => {
+  await openApp(page);
+  await page.getByTestId('backend-select').selectOption('fake');
+  await page.getByTestId('capture-button').click();
+  await page.getByTestId('prompt-input').fill('render #fail:network_blocked');
+  await page.getByTestId('generate-button').click();
+
+  const notice = page.getByTestId('error-notice');
+  await expect(notice).toHaveAttribute('data-error-code', 'network_blocked');
+  await expect(notice).toContainText('firewall or security software');
+  await expect(notice.getByTestId('error-help')).toBeVisible();
+});

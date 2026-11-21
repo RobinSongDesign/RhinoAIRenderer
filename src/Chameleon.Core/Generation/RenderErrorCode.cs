@@ -27,6 +27,12 @@ namespace Chameleon.Core.Generation
         /// <summary>Connection failure; retryable.</summary>
         Network,
 
+        /// <summary>
+        /// The operating system refused to let the program connect (firewall rule or security
+        /// software); retrying cannot help until the user allows it.
+        /// </summary>
+        NetworkBlocked,
+
         /// <summary>Server-side failure or an unparseable response; retryable.</summary>
         ProviderError,
 

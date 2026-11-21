@@ -208,12 +208,7 @@ namespace Chameleon.Core.Backends
 
         private static RenderException NetworkFailure(AdapterContext context, Exception ex)
         {
-            return new RenderException(
-                RenderErrorCode.Network,
-                "Could not reach the provider.",
-                null,
-                context.Redact(ex.Message),
-                ex);
+            return NetworkFailures.From(ex, context.Redact(ex.Message));
         }
     }
 }

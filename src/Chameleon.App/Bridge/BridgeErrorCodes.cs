@@ -30,6 +30,9 @@ namespace Chameleon.App.Bridge
         /// <summary>Connection failure.</summary>
         public const string Network = "network";
 
+        /// <summary>The operating system refused the connection (firewall or security software).</summary>
+        public const string NetworkBlocked = "network_blocked";
+
         /// <summary>Provider-side failure or unparseable response.</summary>
         public const string ProviderError = "provider_error";
 

@@ -1,7 +1,8 @@
 name: Release
 
 # Builds the cross-platform plug-in, packages it for Rhino's package manager (Yak) and publishes
-# a GitHub release. Tags v2.0.0 and later; a tag with a suffix (v2.0.0-beta.1) is a pre-release.
+# a GitHub release. Tags v2.0.0 and later; a tag with a suffix (v2.0.0-beta.1) is a test build,
+# published as a GitHub pre-release only, never pushed to the Yak server.
 on:
   push:
     tags:
@@ -72,11 +73,34 @@ jobs:
           zip -r "../Chameleon-${{ steps.version.outputs.version }}-net7.0.zip" net7.0
           zip -r "../Chameleon-${{ steps.version.outputs.version }}-net48.zip" net48
 
+      - name: Create GitHub release (test build)
+        if: steps.version.outputs.prerelease == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Chameleon ${{ steps.version.outputs.version }}（测试版）
+          prerelease: true
+          files: |
+            dist/*.yak
+            dist/*.zip
+          body: |
+            ## Chameleon ${{ steps.version.outputs.version }}（测试版）
+
+            测试版只发布在这里，不上架 Rhino 包管理器。需要 Rhino 8.19 或更高版本（含 Rhino 9），Windows 与 macOS 通用。
+
+            ### 安装
+            1. 装过旧版 AIRenderer 的，先在 Rhino 中执行 `PluginManager` 卸载它，并完全退出 Rhino（新旧版不能同时加载）。
+            2. 下载 `Chameleon-${{ steps.version.outputs.version }}-net7.0.zip`，解压到一个固定的文件夹（之后不要移动）。
+            3. 把其中的 `Chameleon.rhp` 拖入 Rhino 窗口，执行命令 `Chameleon`。
+            - Windows 上以 `/netfx` 方式启动的 Rhino 8 用 `net48` 的 zip；`.yak` 文件也可以直接拖入 Rhino 安装。
+
+            使用说明：https://rhchameleon.top/docs/getting-started
+
       - name: Create GitHub release
+        if: steps.version.outputs.prerelease != 'true'
         uses: softprops/action-gh-release@v2
         with:
           name: Chameleon ${{ steps.version.outputs.version }}
-          prerelease: ${{ steps.version.outputs.prerelease }}
+          prerelease: false
           files: |
             dist/*.yak
             dist/*.zip
@@ -95,6 +119,8 @@ jobs:
             安装后执行命令 `Chameleon`（旧命令 `AIRender` 仍可用）。
 
       - name: Publish to the Yak server
+        # Test builds (tags with a suffix, e.g. v2.0.0-beta.1) are published on GitHub only.
+        if: steps.version.outputs.prerelease != 'true'
         env:
           YAK_TOKEN: ${{ secrets.YAK_TOKEN }}
         run: |
